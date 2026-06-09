@@ -3,3 +3,10 @@ node_modules/
 *.log
 .vercel
 .env
+
+# local working artifacts (not for publish)
+.claude/
+_prototype/
+_inspect_clone/
+_content_check.txt
+*.updated.html
