@@ -175,10 +175,11 @@ main,nav,footer{position:relative;z-index:2}
 .about-pic{position:relative;padding:12px}
 .about-pic .pic{aspect-ratio:1/1.18;overflow:hidden;background:var(--panel);position:relative}
 .about-pic .pic img{width:100%;height:100%;object-fit:cover}
-.about-body{align-self:center}
-.about-body .bio{color:var(--tx-60);font-size:1.06rem;margin:1rem 0 1.6rem}
-.ach{list-style:none;display:grid;gap:0;border-top:1px solid var(--line)}
-.ach li{display:grid;grid-template-columns:54px 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.about-body{align-self:stretch;display:flex;flex-direction:column}
+.about-body h2{margin-bottom:.2rem}
+.about-body .bio{color:var(--tx-60);font-size:1rem;line-height:1.5;margin:.7rem 0 1rem}
+.ach{list-style:none;display:grid;gap:0;border-top:1px solid var(--line);flex:1 1 auto;align-content:space-between}
+.ach li{display:grid;grid-template-columns:54px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .ach .nn{font-family:var(--mono);font-size:.8rem;color:var(--yellow);font-weight:600}
 .ach b{font-weight:700}.ach span.d{display:block;color:var(--tx-60);font-size:.92rem;margin-top:.2rem}
 
@@ -267,11 +268,8 @@ main,nav,footer{position:relative;z-index:2}
 .book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
 .book{border:1px solid var(--line);background:var(--bg-2);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s}
 .book:hover{border-color:var(--blue-l);transform:translateY(-4px)}
-.book .cov{aspect-ratio:3/4;display:grid;place-items:center;padding:20px;border-bottom:1px solid var(--line);overflow:hidden}
-.book:nth-child(1) .cov{background:var(--yellow)}
-.book:nth-child(2) .cov{background:var(--blue)}
-.book:nth-child(3) .cov{background:var(--sky)}
-.book .cov img{max-height:100%;max-width:100%;width:auto;height:auto;filter:none;opacity:1}
+.book .cov{aspect-ratio:1270/1726;display:grid;place-items:center;padding:0;border-bottom:1px solid var(--line);overflow:hidden;background:var(--bg-2)}
+.book .cov img{width:100%;height:100%;object-fit:cover;filter:none;opacity:1}
 .book .bd{padding:22px;display:flex;flex-direction:column;flex:1}
 .book h3{font-size:1.08rem;margin-bottom:.5rem}
 .book p{color:var(--tx-60);font-size:.88rem;font-style:italic;margin-bottom:1.1rem;flex:1}
@@ -415,18 +413,24 @@ footer a:hover{color:var(--yellow)}
   <div class="wrap">
     <span class="lab">Press &amp; features</span>
     <div class="mrow"><div class="mtrack" style="align-items:center">
-      <img class="pm" src="assets/live-logos/EO-london-1.svg" alt="EO London" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/GoldenLogo_WhiteBG-p-500-B_W-1.svg" alt="Golden Speaker Award" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/Inc._business_magazine_logo-1.svg" alt="Inc. Business Magazine" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/fa08d3fd20464be0e05afb8ca64681e0898df453_original-copy_BW-1.svg" alt="Entrepreneurial leadership publication" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/Vector-17.svg" alt="Featured publication" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/the-guardian-1.png" alt="The Guardian" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/EO-london-1.svg" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/GoldenLogo_WhiteBG-p-500-B_W-1.svg" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/Inc._business_magazine_logo-1.svg" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/fa08d3fd20464be0e05afb8ca64681e0898df453_original-copy_BW-1.svg" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/Vector-17.svg" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
-      <img class="pm" src="assets/live-logos/the-guardian-1.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>    </div></div>
+      <img class="pm" src="assets/live-logos/the-guardian.png" alt="The Guardian" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/the-argus.png" alt="The Argus" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/inc.png" alt="Inc." style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/informit.png" alt="InformIT" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/oreilly.png" alt="O'Reilly Media" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/eo-london.png" alt="EO London" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/goodman-lantern.png" alt="Goodman Lantern" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/golden.png" alt="Golden Speaker Award" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/telecom-reseller.png" alt="Telecom Reseller" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/the-guardian.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/the-argus.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/inc.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/informit.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/oreilly.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/eo-london.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/goodman-lantern.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/golden.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>
+      <img class="pm" src="assets/live-logos/telecom-reseller.png" alt="" aria-hidden="true" style="height:40px;width:auto;margin:0 30px;object-fit:contain;filter:brightness(0) invert(1);opacity:.72;flex:0 0 auto"/>    </div></div>
   </div>
 </section>
 
@@ -468,7 +472,7 @@ footer a:hover{color:var(--yellow)}
           <li><span class="nn">03</span><span><b>Award-winning</b><span class="d">BusinessWeek Europe's Young Entrepreneur of the Year.</span></span></li>
           <li><span class="nn">04</span><span><b>Global keynote speaker</b><span class="d">On AI's transformative role in business and society.</span></span></li>
         </ul>
-        <a href="about.html" class="btn btn-line" style="margin-top:1.6rem">Read about Raj's early years <span class="ar">→</span></a>
+        <a href="about.html" class="btn btn-line" style="margin-top:1.1rem">Read about Raj's early years <span class="ar">→</span></a>
       </div>
     </div>
   </div>
@@ -609,9 +613,9 @@ footer a:hover{color:var(--yellow)}
     <h2 data-reveal>Raj's eBooks &amp; Audiobooks: Practical AI &amp; Growth Insights</h2>
     <p class="sub" data-reveal>Your Executive Learning Library. Stay ahead in the AI-driven business world by learning at your own pace. Explore resources that are available anytime, anywhere, for professionals prepared to take the lead in the future.</p>
     <div class="book-grid" style="margin-top:34px">
-      <article class="book" data-reveal><div class="cov"><img src="assets/image-106.svg" alt=""/></div><div class="bd"><h3>The AI-First Mindset® — Embracing the Future Today</h3><p>Delve into the potential of AI and its impact on business. Prioritise AI for problem-solving to stay competitive and thrive.</p><div class="dl"><a class="p" href="#work">eBook</a><a class="s" href="#work">Audiobook</a></div></div></article>
-      <article class="book" data-reveal data-delay="80"><div class="cov"><img src="assets/image-106-1.svg" alt=""/></div><div class="bd"><h3>The AI Era — Adapting &amp; Thriving</h3><p>Parallels the Industrial and AI Revolutions, emphasising mastery of AI technology, ethics, and regulation to build trust.</p><div class="dl"><a class="p" href="#work">eBook</a><a class="s" href="#work">Audiobook</a></div></div></article>
-      <article class="book" data-reveal data-delay="160"><div class="cov"><img src="assets/image-105.svg" alt=""/></div><div class="bd"><h3>The AI-First Mindset® — Building Trust in the Digital Age</h3><p>Examines trust challenges and opportunities in AI adoption across global business environments.</p><div class="dl"><a class="p" href="#work">eBook</a></div></div></article>
+      <article class="book" data-reveal><div class="cov"><img src="assets/ebook-embracing.png" alt="The AI-First Mindset — For Businesses Embracing the Future Today, by Raj Goodman Anand"/></div><div class="bd"><h3>The AI-First Mindset® — Embracing the Future Today</h3><p>Delve into the potential of AI and its impact on business. Prioritise AI for problem-solving to stay competitive and thrive.</p><div class="dl"><a class="p" href="#work">eBook</a><a class="s" href="#work">Audiobook</a></div></div></article>
+      <article class="book" data-reveal data-delay="80"><div class="cov"><img src="assets/ebook-ai-era.png" alt="The AI Era: Adapting &amp; Thriving — Insights from the Industrial Revolution for Modern Businesses, by Raj Goodman Anand"/></div><div class="bd"><h3>The AI Era — Adapting &amp; Thriving</h3><p>Parallels the Industrial and AI Revolutions, emphasising mastery of AI technology, ethics, and regulation to build trust.</p><div class="dl"><a class="p" href="#work">eBook</a><a class="s" href="#work">Audiobook</a></div></div></article>
+      <article class="book" data-reveal data-delay="160"><div class="cov"><img src="assets/ebook-trust.png" alt="The AI-First Mindset — Building Trust in the Digital Age, by Raj Goodman"/></div><div class="bd"><h3>The AI-First Mindset® — Building Trust in the Digital Age</h3><p>Examines trust challenges and opportunities in AI adoption across global business environments.</p><div class="dl"><a class="p" href="#work">eBook</a></div></div></article>
     </div>
   </div>
 </section>
@@ -646,8 +650,8 @@ footer a:hover{color:var(--yellow)}
     <h2 data-reveal style="margin-bottom:34px">Work with Raj</h2>
     <div class="work-grid" data-reveal>
       <div class="work-quote">
-        <div class="wp"><img src="assets/HHH_6355-copy-1.webp" alt="Raj Goodman"/></div>
-        <div class="q">Harness AI-First Mindset® responsibly for global business benefits.</div>
+        <div class="wp"><img src="assets/raj-work.webp" alt="Raj Goodman"/></div>
+        <div class="q" style="font-style:italic">“Harness AI-First Mindset® responsibly for global business benefits.”</div>
         <div class="who">Raj Goodman<span>AI-First Mindset® Founder</span></div>
       </div>
       <div class="work-form">
