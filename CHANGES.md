@@ -9,7 +9,7 @@ only **content** was changed to match live. Copy was pulled **verbatim** from th
 live site.
 
 > **Intended difference kept on purpose:** stats remain
-> **250+ workshops · 20+ countries · 20,000+ leaders**. The "Leaders" figure is
+> **300+ workshops · 20+ countries · 20,000+ leaders**. The "Leaders" figure is
 > displayed as **20K+** so it fits the stat box. (Live phrases its reach as
 > "5 continents, 50+ countries" — deliberately not matched.)
 

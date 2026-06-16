@@ -30,5 +30,5 @@ Then open the printed URL (e.g. http://localhost:3000 or http://localhost:8000).
 ## Status / notes
 - **Design is a new direction.** Content is being brought to **parity with the current rajgoodman.com** (verbatim copy), page by page — Keynote is the completed reference.
 - **Not wired up yet (POC):** contact forms, newsletter signup, eBook/audiobook downloads — these don't submit and don't need testing.
-- **Stats are intentionally** 250+ workshops / 20+ countries / 20,000+ leaders.
+- **Stats are intentionally** 300+ workshops / 20+ countries / 20,000+ leaders.
 - URLs currently end in `.html`; clean `/slug/` URLs are a later step.
