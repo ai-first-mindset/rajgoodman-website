@@ -130,6 +130,10 @@ main,nav,footer{position:relative;z-index:2}
 .prose p{color:var(--tx-60);font-size:1.06rem;margin-bottom:1.2rem}
 .prose p strong{color:var(--tx);font-weight:700}
 .prose h3{font-size:1.5rem;margin:2.2rem 0 .8rem}
+.prose h2{font-size:1.85rem;margin:2.4rem 0 .9rem;line-height:1.2}
+.prose a{color:var(--yellow);text-decoration:underline;text-underline-offset:2px}
+.prose img{width:100%;height:auto;margin:1.6rem 0;border:1px solid var(--line)}
+
 .prose ul{list-style:none;margin:1rem 0 1.6rem}
 .prose ul li{position:relative;padding-left:1.6em;margin-bottom:.7rem;color:var(--tx-60)}
 .prose ul li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;background:var(--yellow);transform:rotate(45deg)}
