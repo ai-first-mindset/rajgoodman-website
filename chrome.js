@@ -77,7 +77,7 @@
       '<a href="about.html">About Raj</a><a href="events.html">Events</a><a href="blog.html">Blog</a><a href="testimonials.html">Testimonials</a>' +
     '</div>' +
   '</div>' +
-  '<div class="f-bot"><span>\u00a9 2025 RAJGOODMAN.COM \u2014 ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
+  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM \u2014 ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
   '</div></footer>';
 
   document.body.insertAdjacentHTML('afterbegin', nav);
