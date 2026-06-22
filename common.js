@@ -225,6 +225,7 @@
         [].slice.call(form.querySelectorAll('[name]')).forEach(function (f) {
           payload[f.name] = f.value;
         });
+        payload.source_page = location.host + location.pathname;
 
         setBtn(btn, 'Sending…', true);
         fetch(endpoint, {
