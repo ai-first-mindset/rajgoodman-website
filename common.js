@@ -177,6 +177,88 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }
 
+  /* ---- Forms: Cloudflare Turnstile + serverless submit ----
+     Each form is marked with data-form="contact" | "newsletter". The widget is
+     rendered explicitly so we control placement, and submit is intercepted to
+     POST JSON (named fields + Turnstile token) to the matching /api endpoint. */
+  var TURNSTILE_SITEKEY = '0x4AAAAAADpKQw5ozbUsMz-E'; // public sitekey — safe to commit
+  var FORM_ENDPOINTS = { contact: '/api/contact', newsletter: '/api/subscribe' };
+
+  function initForms() {
+    var forms = [].slice.call(document.querySelectorAll('form[data-form]'));
+    if (forms.length === 0) return;
+
+    // Load the Turnstile script once, then render every widget explicitly.
+    window.onTurnstileLoad = function () {
+      forms.forEach(function (form) {
+        var mount = form.querySelector('[data-turnstile]');
+        if (!mount) return;
+        form._tsWidgetId = window.turnstile.render(mount, {
+          sitekey: TURNSTILE_SITEKEY,
+          theme: 'dark',
+        });
+      });
+    };
+    var s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad';
+    s.async = true;
+    s.defer = true;
+    document.head.appendChild(s);
+
+    forms.forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var type = form.getAttribute('data-form');
+        var endpoint = FORM_ENDPOINTS[type];
+        if (!endpoint) return;
+
+        var btn = form.querySelector('.btn');
+        var token = window.turnstile && form._tsWidgetId != null
+          ? window.turnstile.getResponse(form._tsWidgetId) : '';
+        if (!token) {
+          setBtn(btn, 'Please complete the verification', false);
+          return;
+        }
+
+        // Serialize named fields.
+        var payload = { token: token };
+        [].slice.call(form.querySelectorAll('[name]')).forEach(function (f) {
+          payload[f.name] = f.value;
+        });
+
+        setBtn(btn, 'Sending…', true);
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return r.ok && j.ok; }); })
+          .then(function (ok) {
+            if (ok) {
+              setBtn(btn, type === 'newsletter' ? 'Thanks — you\'re subscribed' : 'Thank you — we\'ll be in touch', true);
+              [].slice.call(form.querySelectorAll('input,select,textarea,button')).forEach(function (el) { el.disabled = true; });
+            } else {
+              setBtn(btn, 'Something went wrong — try again', false);
+              if (window.turnstile && form._tsWidgetId != null) window.turnstile.reset(form._tsWidgetId);
+            }
+          })
+          .catch(function () {
+            setBtn(btn, 'Network error — try again', false);
+            if (window.turnstile && form._tsWidgetId != null) window.turnstile.reset(form._tsWidgetId);
+          });
+      });
+    });
+
+    // Update button label while preserving its arrow icon; disabled controls re-submit.
+    function setBtn(btn, text, disabled) {
+      if (!btn) return;
+      var ar = btn.querySelector('.ar');
+      btn.textContent = text;
+      if (ar) { btn.appendChild(document.createTextNode(' ')); btn.appendChild(ar); }
+      btn.disabled = !!disabled;
+    }
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -184,6 +266,7 @@
     initNav();
     initParallax();
     initVideoLightbox();
+    initForms();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

@@ -274,15 +274,16 @@
         <div class="who">Raj Goodman<span>AI-First Mindset® Founder</span></div>
       </div>
       <div class="work-form">
-        <form onsubmit="event.preventDefault();this.querySelector('.btn').textContent='Thank you — we\'ll be in touch';">
+        <form data-form="contact">
           <div class="row2">
-            <div class="fld"><label>Name *</label><input required placeholder="Your name" /></div>
-            <div class="fld"><label>Email Address *</label><input type="email" required placeholder="you@company.com" /></div>
+            <div class="fld"><label>Name *</label><input name="name" required placeholder="Your name" /></div>
+            <div class="fld"><label>Email Address *</label><input name="email" type="email" required placeholder="you@company.com" /></div>
           </div>
           <div class="fld"><label>Services *</label>
-            <select required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
+            <select name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
           </div>
-          <div class="fld"><label>Message *</label><textarea required placeholder="Tell Raj about your event or goals…"></textarea></div>
+          <div class="fld"><label>Message *</label><textarea name="message" required placeholder="Tell Raj about your event or goals…"></textarea></div>
+          <div data-turnstile style="margin:6px 0 18px"></div>
           <button class="btn btn-y" type="submit">Send message <span class="ar">→</span></button>
         </form>
       </div>

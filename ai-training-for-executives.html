@@ -244,12 +244,13 @@
     <div class="shead" data-reveal><span class="idx">[ 11 ]</span><span class="kick">Newsletter</span><span class="ln"></span></div>
     <h2 data-reveal>Stay Ahead with Raj's Insights</h2>
     <p class="sub" data-reveal>Join Raj's newsletter for the latest on AI, strategy &amp; innovation — straight to your inbox.</p>
-    <form class="news-form" data-reveal style="margin-top:24px;max-width:680px" onsubmit="event.preventDefault();this.querySelector('.btn').textContent='Thanks — you\'re subscribed';">
+    <form class="news-form" data-form="newsletter" data-reveal style="margin-top:24px;max-width:680px">
       <div class="row2">
-        <div class="fld"><input required placeholder="First Name"></div>
-        <div class="fld"><input required placeholder="Last Name"></div>
+        <div class="fld"><input name="firstName" required placeholder="First Name"></div>
+        <div class="fld"><input name="lastName" required placeholder="Last Name"></div>
       </div>
-      <div class="fld"><input type="email" required placeholder="Email"></div>
+      <div class="fld"><input name="email" type="email" required placeholder="Email"></div>
+      <div data-turnstile style="margin:6px 0 18px"></div>
       <button class="btn btn-y" type="submit">Join the Newsletter <span class="ar">→</span></button>
     </form>
   </div>
@@ -266,15 +267,16 @@
         <div class="who">Raj Goodman<span>AI-First Mindset® Founder</span></div>
       </div>
       <div class="work-form">
-        <form onsubmit="event.preventDefault();this.querySelector('.btn').textContent='Thank you — we\'ll be in touch';">
+        <form data-form="contact">
           <div class="row2">
-            <div class="fld"><label>Name *</label><input required placeholder="Your name" /></div>
-            <div class="fld"><label>Email Address *</label><input type="email" required placeholder="you@company.com" /></div>
+            <div class="fld"><label>Name *</label><input name="name" required placeholder="Your name" /></div>
+            <div class="fld"><label>Email Address *</label><input name="email" type="email" required placeholder="you@company.com" /></div>
           </div>
           <div class="fld"><label>Services *</label>
-            <select required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
+            <select name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
           </div>
-          <div class="fld"><label>Message *</label><textarea required placeholder="Tell Raj about your goals…"></textarea></div>
+          <div class="fld"><label>Message *</label><textarea name="message" required placeholder="Tell Raj about your goals…"></textarea></div>
+          <div data-turnstile style="margin:6px 0 18px"></div>
           <button class="btn btn-y" type="submit">Send message <span class="ar">→</span></button>
         </form>
       </div>
