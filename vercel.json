@@ -3,6 +3,7 @@
   "trailingSlash": true,
   "regions": ["sin1"],
   "rewrites": [
+    { "source": "/blog/", "destination": "/api/blog-index/" },
     { "source": "/blog/:slug/", "destination": "/api/render-post/?slug=:slug" },
     { "source": "/sitemap_index.xml", "destination": "/api/sitemap/?kind=index" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap/?kind=index" },
