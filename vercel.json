@@ -3,6 +3,10 @@
   "trailingSlash": true,
   "regions": ["sin1"],
   "rewrites": [
-    { "source": "/blog/:slug/", "destination": "/api/render-post/?slug=:slug" }
+    { "source": "/blog/:slug/", "destination": "/api/render-post/?slug=:slug" },
+    { "source": "/sitemap_index.xml", "destination": "/api/sitemap/?kind=index" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap/?kind=index" },
+    { "source": "/post-sitemap.xml", "destination": "/api/sitemap/?kind=posts" },
+    { "source": "/page-sitemap.xml", "destination": "/api/sitemap/?kind=pages" }
   ]
 }
