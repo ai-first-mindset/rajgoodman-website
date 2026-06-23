@@ -1,6 +1,6 @@
-// Newsletter handler: verifies Turnstile, then (eventually) adds the subscriber
-// to the mailing list. Destination is deferred per the 2026-06-19 call — for now
-// it verifies the human and logs the signup so the widget can be tested end-to-end.
+// Newsletter handler: verifies Turnstile, then adds the subscriber to the
+// EmailOctopus "rajgoodman.com Newsletter" list. Gated on EMAILOCTOPUS_API_KEY
+// + EMAILOCTOPUS_LIST_ID so it degrades gracefully if either is missing.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
 
@@ -21,8 +21,37 @@ export default async function handler(req, res) {
     return res.status(422).json({ ok: false, error: 'missing-fields' });
   }
 
-  // TODO: wire to the mailing-list provider once chosen (deferred from launch call).
-  console.warn('Newsletter signup (backend deferred):', { firstName, lastName, email });
+  // Add to EmailOctopus (v1.6). Re-subscribing an existing email is treated as
+  // success so the user never sees an error for already being on the list.
+  const apiKey = process.env.EMAILOCTOPUS_API_KEY;
+  const listId = process.env.EMAILOCTOPUS_LIST_ID;
+  if (apiKey && listId) {
+    try {
+      const resp = await fetch(`https://emailoctopus.com/api/1.6/lists/${listId}/contacts`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          api_key: apiKey,
+          email_address: email,
+          fields: { FirstName: firstName || '', LastName: lastName || '' },
+          status: 'SUBSCRIBED',
+        }),
+      });
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        const code = body && body.error && body.error.code;
+        if (code !== 'MEMBER_EXISTS_WITH_EMAIL_ADDRESS') {
+          console.error('EmailOctopus subscribe failed', resp.status, code, body);
+          return res.status(502).json({ ok: false, error: 'subscribe-error' });
+        }
+      }
+    } catch (err) {
+      console.error('EmailOctopus subscribe threw', err);
+      return res.status(502).json({ ok: false, error: 'subscribe-unreachable' });
+    }
+  } else {
+    console.warn('EmailOctopus not configured (need EMAILOCTOPUS_API_KEY + EMAILOCTOPUS_LIST_ID); signup not stored:', { email });
+  }
 
   return res.status(200).json({ ok: true });
 }
