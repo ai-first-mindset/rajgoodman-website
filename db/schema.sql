@@ -1,0 +1,39 @@
+-- Blog posts schema for the rajgoodman.com editor (Supabase / Postgres).
+-- Run in the Supabase SQL editor. service_role (used by our serverless functions)
+-- bypasses RLS; anon is restricted to published rows only.
+
+create table if not exists posts (
+  id                  uuid primary key default gen_random_uuid(),
+  slug                text unique not null,
+  title               text not null,                 -- on-page H1
+  seo_title           text,                          -- <title>; falls back to title
+  meta_description    text,
+  excerpt             text,
+  body_html           text,                          -- sanitised HTML body
+  featured_image      text,                          -- og:image URL
+  featured_image_alt  text,
+  author              text not null default 'Raj Goodman Anand',
+  canonical_url       text,                          -- override; defaults to self
+  robots              text not null default 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  focus_keyphrase     text,                          -- editorial only, never rendered
+  status              text not null default 'draft' check (status in ('draft','published')),
+  published_at        timestamptz,                   -- set once on first publish
+  modified_at         timestamptz not null default now(),
+  created_at          timestamptz not null default now()
+);
+
+create index if not exists posts_status_pub_idx on posts (status, published_at desc);
+create unique index if not exists posts_slug_idx on posts (slug);
+
+-- keep modified_at fresh on every update
+create or replace function set_modified_at() returns trigger as $$
+begin new.modified_at = now(); return new; end; $$ language plpgsql;
+drop trigger if exists posts_set_modified on posts;
+create trigger posts_set_modified before update on posts
+  for each row execute function set_modified_at();
+
+-- RLS: functions use service_role (bypasses). Public/anon may read published only.
+alter table posts enable row level security;
+drop policy if exists posts_public_read on posts;
+create policy posts_public_read on posts for select
+  using (status = 'published');

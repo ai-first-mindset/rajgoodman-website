@@ -1,0 +1,95 @@
+// Renders a post record into a complete, SEO-faithful HTML page that matches
+// the site theme (chrome injected by chrome.js, styling via site.css).
+
+const SITE = 'https://rajgoodman.com';
+const SITE_NAME = 'Raj Goodman';
+const TWITTER = '@RajAnand';
+const DEFAULT_OG_IMAGE = 'https://cdn.rajgoodman.com/wp-content/uploads/2025/06/Rectangle-2-1.webp';
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
+export function renderPost(post) {
+  const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
+  const title = post.seo_title || post.title;
+  const desc = post.meta_description || post.excerpt || '';
+  const ogImage = post.featured_image || DEFAULT_OG_IMAGE;
+  const published = post.published_at;
+  const modified = post.modified_at || post.published_at;
+
+  const jsonld = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: desc,
+    image: ogImage ? [ogImage] : undefined,
+    datePublished: published,
+    dateModified: modified,
+    author: { '@type': 'Person', name: post.author },
+    publisher: { '@type': 'Organization', name: SITE_NAME },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+  };
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}" />
+<meta name="robots" content="${esc(post.robots || 'index, follow')}" />
+<meta name="author" content="${esc(post.author)}" />
+<link rel="canonical" href="${esc(url)}" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="${esc(title)}" />
+<meta property="og:description" content="${esc(desc)}" />
+<meta property="og:url" content="${esc(url)}" />
+<meta property="og:site_name" content="${esc(SITE_NAME)}" />
+${published ? `<meta property="article:published_time" content="${esc(published)}" />` : ''}
+${modified ? `<meta property="article:modified_time" content="${esc(modified)}" />` : ''}
+<meta property="og:image" content="${esc(ogImage)}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="${TWITTER}" />
+<meta name="twitter:creator" content="${TWITTER}" />
+<script type="application/ld+json">${JSON.stringify(jsonld)}</script>
+<!-- TODO(site-wide): inject GTM-PQ6PSBZN here once analytics is added to the build (REQ-014/017) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+</head>
+<body data-page="blog">
+<main>
+  <article class="wrap" style="max-width:760px;padding-top:120px;padding-bottom:80px">
+    <a href="/blog/" style="opacity:.7;text-decoration:none">&larr; All articles</a>
+    <h1 style="margin:18px 0 10px">${esc(post.title)}</h1>
+    <div style="opacity:.7;margin-bottom:28px">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</div>
+    ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
+    <div class="post-body">${post.body_html || ''}</div>
+  </article>
+</main>
+<script src="/chrome.js"></script>
+<script src="/common.js"></script>
+</body>
+</html>`;
+}
+
+export function renderNotFound() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Article not found — ${SITE_NAME}</title><meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/site.css" /></head>
+<body data-page="blog"><main><article class="wrap" style="max-width:760px;padding:140px 0 100px;text-align:center">
+<h1>Article not found</h1><p style="opacity:.75">That post doesn't exist or isn't published yet.</p>
+<p><a href="/blog/">&larr; Back to all articles</a></p></article></main>
+<script src="/chrome.js"></script><script src="/common.js"></script></body></html>`;
+}
