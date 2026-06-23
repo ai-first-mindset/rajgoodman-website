@@ -5,7 +5,11 @@ import { getPostBySlug } from './_blog-data.js';
 import { renderPost, renderNotFound } from './_post-template.js';
 
 export default async function handler(req, res) {
-  const slug = (req.query.slug || '').toString().replace(/\/+$/, '');
+  let raw = req.query && req.query.slug;
+  if (!raw && req.url) {
+    try { raw = new URL(req.url, 'http://x').searchParams.get('slug'); } catch (e) { /* noop */ }
+  }
+  const slug = (raw || '').toString().replace(/\/+$/, '');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
   if (!slug) {
