@@ -182,7 +182,7 @@
      rendered explicitly so we control placement, and submit is intercepted to
      POST JSON (named fields + Turnstile token) to the matching /api endpoint. */
   var TURNSTILE_SITEKEY = '0x4AAAAAADpKQw5ozbUsMz-E'; // public sitekey — safe to commit
-  var FORM_ENDPOINTS = { contact: '/api/contact', newsletter: '/api/subscribe' };
+  var FORM_ENDPOINTS = { contact: '/api/contact/', newsletter: '/api/subscribe/' }; // trailing slash: trailingSlash:true 308-redirects the non-slash form
 
   function initForms() {
     var forms = [].slice.call(document.querySelectorAll('form[data-form]'));
