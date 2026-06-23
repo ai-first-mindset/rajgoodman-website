@@ -1,4 +1,17 @@
 {
   "cleanUrls": true,
-  "trailingSlash": true
+  "trailingSlash": true,
+  "regions": ["sin1"],
+  "redirects": [
+    { "source": "/blog/category/:slug/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/author/:slug/", "destination": "/blog/", "statusCode": 301 }
+  ],
+  "rewrites": [
+    { "source": "/blog/", "destination": "/api/blog-index/" },
+    { "source": "/blog/:slug/", "destination": "/api/render-post/?slug=:slug" },
+    { "source": "/sitemap_index.xml", "destination": "/api/sitemap/?kind=index" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap/?kind=index" },
+    { "source": "/post-sitemap.xml", "destination": "/api/sitemap/?kind=posts" },
+    { "source": "/page-sitemap.xml", "destination": "/api/sitemap/?kind=pages" }
+  ]
 }
