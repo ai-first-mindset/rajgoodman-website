@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Blog Admin — rajgoodman.com</title>
+<link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+<style>
+  :root { --bd:#e3e6ea; --mut:#6b7280; --acc:#f3af00; --ink:#1f2933; }
+  * { box-sizing:border-box }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:#f6f7f9 }
+  header.bar { display:flex; align-items:center; justify-content:space-between; padding:14px 22px; background:#fff; border-bottom:1px solid var(--bd); position:sticky; top:0; z-index:5 }
+  header.bar h1 { font-size:16px; margin:0 } header.bar .sub { color:var(--mut); font-weight:400 }
+  .wrap { max-width:980px; margin:0 auto; padding:24px 22px }
+  button { font:inherit; cursor:pointer; border:1px solid var(--bd); background:#fff; border-radius:7px; padding:8px 14px }
+  button.primary { background:var(--ink); color:#fff; border-color:var(--ink) }
+  button.accent { background:var(--acc); border-color:var(--acc); font-weight:600 }
+  button.danger { color:#b42318; border-color:#f0c2bd }
+  button:disabled { opacity:.5; cursor:default }
+  input, textarea, select { width:100%; padding:9px 11px; border:1px solid var(--bd); border-radius:7px; font:inherit; background:#fff }
+  label { display:block; font-size:12.5px; font-weight:600; color:#374151; margin:14px 0 5px }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:16px }
+  .card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:18px 20px; margin-bottom:18px }
+  .muted { color:var(--mut); font-size:12px } .count { float:right; font-weight:400 }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--bd); border-radius:10px; overflow:hidden }
+  th, td { text-align:left; padding:11px 14px; border-bottom:1px solid var(--bd); font-size:14px }
+  th { background:#fafbfc; font-size:12px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em }
+  tr:last-child td { border-bottom:0 }
+  .pill { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600 }
+  .pill.published { background:#e7f6ec; color:#1a7f37 } .pill.draft { background:#fdf3d8; color:#8a6d00 }
+  .actions { display:flex; gap:8px; flex-wrap:wrap } .right { display:flex; gap:8px }
+  #editor { background:#fff } .ql-container { min-height:280px; font-size:15px }
+  .hide { display:none } .toast { position:fixed; bottom:20px; right:20px; background:var(--ink); color:#fff; padding:11px 16px; border-radius:8px; opacity:0; transition:opacity .2s }
+  .toast.show { opacity:1 } a.link { color:#1a56db; text-decoration:none }
+  .login { max-width:360px; margin:12vh auto; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login hide">
+  <div class="card">
+    <h1 style="margin-top:0">Blog Admin</h1>
+    <p class="muted">Enter the admin password to continue.</p>
+    <form id="loginForm">
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password" />
+      <button class="primary" style="margin-top:12px;width:100%" type="submit">Sign in</button>
+      <p id="loginErr" class="muted hide" style="color:#b42318;margin-top:10px">Incorrect password.</p>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hide">
+  <header class="bar">
+    <h1>Blog Admin <span class="sub">— rajgoodman.com</span></h1>
+    <div class="right">
+      <button id="newBtn">+ New post</button>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <!-- LIST -->
+  <div id="listView" class="wrap">
+    <table id="postsTable"><thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Modified</th><th></th></tr></thead><tbody></tbody></table>
+    <p id="emptyMsg" class="muted hide" style="margin-top:16px">No posts yet — create one.</p>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="editView" class="wrap hide">
+    <div class="actions" style="justify-content:space-between;margin-bottom:16px">
+      <button id="backBtn">&larr; Back</button>
+      <div class="actions">
+        <span id="statusPill"></span>
+        <button id="previewBtn">Preview</button>
+        <button id="saveBtn">Save draft</button>
+        <button id="publishBtn" class="accent">Publish</button>
+        <button id="unpubBtn" class="hide">Unpublish</button>
+        <button id="deleteBtn" class="danger hide">Delete</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Title</label>
+      <input id="f_title" placeholder="Post title (the H1)" />
+      <label>Slug <span class="muted">— URL: /blog/<span id="slugPreview">…</span>/</span></label>
+      <input id="f_slug" placeholder="post-slug" />
+      <label>Body</label>
+      <div id="editor"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px">SEO &amp; metadata</h3>
+      <label>SEO title <span class="muted">(the &lt;title&gt;; falls back to Title)</span><span id="c_seo" class="count muted">0</span></label>
+      <input id="f_seo_title" maxlength="70" />
+      <label>Meta description <span id="c_desc" class="count muted">0</span></label>
+      <textarea id="f_meta_description" rows="2" maxlength="200"></textarea>
+      <label>Excerpt</label>
+      <textarea id="f_excerpt" rows="2"></textarea>
+      <div class="row">
+        <div><label>Featured image URL</label><input id="f_featured_image" placeholder="https://…" /></div>
+        <div><label>Featured image alt</label><input id="f_featured_image_alt" /></div>
+      </div>
+      <div class="row">
+        <div><label>Author</label><input id="f_author" /></div>
+        <div><label>Focus keyphrase <span class="muted">(editorial only)</span></label><input id="f_focus_keyphrase" /></div>
+      </div>
+      <label>Canonical URL <span class="muted">(blank = self)</span></label>
+      <input id="f_canonical_url" placeholder="(defaults to /blog/{slug}/)" />
+      <label>Robots</label>
+      <input id="f_robots" />
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const DEFAULT_ROBOTS = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+let quill, current = null, slugEdited = false;
+
+function toast(msg) { const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+function slugify(s){ return (s||'').toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); }
+
+async function api(path, opts={}) {
+  const r = await fetch(path, { headers:{'content-type':'application/json'}, ...opts });
+  let body=null; try { body = await r.json(); } catch(e){}
+  return { status:r.status, ok:r.ok, body };
+}
+
+async function boot() {
+  const s = await api('/api/admin/session/');
+  if (s.status === 200) { showApp(); } else { $('login').classList.remove('hide'); }
+}
+function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); loadList(); }
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const r = await api('/api/admin/login/', { method:'POST', body: JSON.stringify({ password: $('pw').value }) });
+  if (r.ok) { $('loginErr').classList.add('hide'); showApp(); } else { $('loginErr').classList.remove('hide'); }
+});
+$('logoutBtn').addEventListener('click', async () => { await api('/api/admin/session/', { method:'DELETE' }); location.reload(); });
+
+async function loadList() {
+  $('editView').classList.add('hide'); $('listView').classList.remove('hide');
+  const r = await api('/api/admin/posts/');
+  const tb = $('postsTable').querySelector('tbody'); tb.innerHTML='';
+  const posts = (r.body && r.body.posts) || [];
+  $('emptyMsg').classList.toggle('hide', posts.length>0);
+  posts.forEach(p => {
+    const tr = document.createElement('tr');
+    const mod = p.modified_at ? new Date(p.modified_at).toLocaleDateString() : '';
+    tr.innerHTML = `<td><a class="link" href="#" data-id="${p.id}">${esc(p.title)}</a></td>
+      <td class="muted">/blog/${esc(p.slug)}/</td>
+      <td><span class="pill ${p.status}">${p.status}</span></td>
+      <td class="muted">${mod}</td>
+      <td><button data-edit="${p.id}">Edit</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('[data-edit],[data-id]').forEach(el => el.addEventListener('click', (e)=>{ e.preventDefault(); openEditor(el.getAttribute('data-edit')||el.getAttribute('data-id')); }));
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function ensureQuill(){ if(!quill){ quill = new Quill('#editor', { theme:'snow', modules:{ toolbar:[[{header:[2,3,false]}],['bold','italic','link','blockquote'],[{list:'ordered'},{list:'bullet'}],['clean']] } }); } }
+
+async function openEditor(id) {
+  ensureQuill();
+  $('listView').classList.add('hide'); $('editView').classList.remove('hide');
+  slugEdited = false;
+  if (id) {
+    const r = await api('/api/admin/posts/?id='+encodeURIComponent(id));
+    current = r.body.posts;
+  } else {
+    current = { status:'draft', author:'Raj Goodman Anand', robots:DEFAULT_ROBOTS };
+  }
+  fill(current);
+}
+function fill(p){
+  $('f_title').value=p.title||''; $('f_slug').value=p.slug||'';
+  $('f_seo_title').value=p.seo_title||''; $('f_meta_description').value=p.meta_description||'';
+  $('f_excerpt').value=p.excerpt||''; $('f_featured_image').value=p.featured_image||'';
+  $('f_featured_image_alt').value=p.featured_image_alt||''; $('f_author').value=p.author||'Raj Goodman Anand';
+  $('f_focus_keyphrase').value=p.focus_keyphrase||''; $('f_canonical_url').value=p.canonical_url||'';
+  $('f_robots').value=p.robots||DEFAULT_ROBOTS;
+  quill.root.innerHTML = p.body_html||'';
+  slugEdited = !!p.slug;
+  refreshMeta();
+  const pub = p.status==='published';
+  $('statusPill').innerHTML = p.id ? `<span class="pill ${p.status}">${p.status}</span>` : '';
+  $('unpubBtn').classList.toggle('hide', !pub);
+  $('deleteBtn').classList.toggle('hide', !p.id);
+  $('publishBtn').classList.toggle('hide', pub);
+}
+function refreshMeta(){
+  $('slugPreview').textContent = $('f_slug').value||'…';
+  $('c_seo').textContent = $('f_seo_title').value.length;
+  $('c_desc').textContent = $('f_meta_description').value.length;
+}
+$('f_title').addEventListener('input', ()=>{ if(!slugEdited){ $('f_slug').value=slugify($('f_title').value); refreshMeta(); } });
+$('f_slug').addEventListener('input', ()=>{ slugEdited=true; $('f_slug').value=slugify($('f_slug').value); refreshMeta(); });
+['f_seo_title','f_meta_description'].forEach(id=>$(id).addEventListener('input',refreshMeta));
+$('newBtn').addEventListener('click', ()=>openEditor(null));
+$('backBtn').addEventListener('click', loadList);
+
+function collect(){
+  return {
+    slug:$('f_slug').value.trim(), title:$('f_title').value.trim(),
+    seo_title:$('f_seo_title').value.trim()||null, meta_description:$('f_meta_description').value.trim()||null,
+    excerpt:$('f_excerpt').value.trim()||null, body_html:quill.root.innerHTML,
+    featured_image:$('f_featured_image').value.trim()||null, featured_image_alt:$('f_featured_image_alt').value.trim()||null,
+    author:$('f_author').value.trim()||'Raj Goodman Anand', canonical_url:$('f_canonical_url').value.trim()||null,
+    robots:$('f_robots').value.trim()||DEFAULT_ROBOTS, focus_keyphrase:$('f_focus_keyphrase').value.trim()||null,
+  };
+}
+async function save(status){
+  const f = collect();
+  if(!f.title || !f.slug){ toast('Title and slug are required'); return; }
+  f.status = status;
+  let r;
+  if (current && current.id) { f.id = current.id; r = await api('/api/admin/posts/', { method:'PATCH', body:JSON.stringify(f) }); }
+  else { r = await api('/api/admin/posts/', { method:'POST', body:JSON.stringify(f) }); }
+  if (r.ok) { current = r.body.post; fill(current); toast(status==='published'?'Published':'Saved'); }
+  else { toast('Error: '+((r.body&&r.body.error)||r.status)); }
+}
+$('saveBtn').addEventListener('click', ()=>save(current && current.status==='published' ? 'published' : 'draft'));
+$('publishBtn').addEventListener('click', ()=>save('published'));
+$('unpubBtn').addEventListener('click', ()=>save('draft'));
+$('previewBtn').addEventListener('click', ()=>{ const s=$('f_slug').value.trim(); if(s) window.open('/blog/'+s+'/','_blank'); });
+$('deleteBtn').addEventListener('click', async ()=>{
+  if(!current||!current.id) return;
+  if(!confirm('Delete this post permanently?')) return;
+  const r = await api('/api/admin/posts/', { method:'DELETE', body:JSON.stringify({id:current.id}) });
+  if(r.ok){ toast('Deleted'); loadList(); } else { toast('Delete failed'); }
+});
+
+boot();
+</script>
+</body>
+</html>

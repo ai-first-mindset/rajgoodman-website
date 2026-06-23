@@ -22,6 +22,13 @@ export async function getPostBySlug(slug) {
   return rows[0] || null;
 }
 
+// Any-status lookup — used only for authed admin draft preview.
+export async function getPostBySlugAnyStatus(slug) {
+  if (!configured) return SEED.find((p) => p.slug === slug) || null;
+  const rows = await sb(`posts?slug=eq.${encodeURIComponent(slug)}&limit=1`);
+  return rows[0] || null;
+}
+
 export async function listPublished() {
   if (!configured) return SEED.filter((p) => p.status === 'published');
   return sb('posts?status=eq.published&select=slug,title,excerpt,featured_image,published_at,modified_at&order=published_at.desc');
