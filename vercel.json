@@ -1,6 +1,7 @@
 {
   "cleanUrls": true,
   "trailingSlash": true,
+  "regions": ["sin1"],
   "rewrites": [
     { "source": "/blog/:slug/", "destination": "/api/render-post/?slug=:slug" }
   ]
