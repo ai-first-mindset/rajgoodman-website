@@ -12,36 +12,36 @@
 
   var nav =
   '<nav class="nav" data-nav><div class="wrap nav-in">' +
-    '<a href="index.html" class="brand" aria-label="Raj Goodman home"><img class="mark" src="' + MARK + '" alt="" width="27" height="32" aria-hidden="true"/><span class="wm">Raj Goodman</span></a>' +
+    '<a href="/" class="brand" aria-label="Raj Goodman home"><img class="mark" src="/' + MARK + '" alt="" width="27" height="32" aria-hidden="true"/><span class="wm">Raj Goodman</span></a>' +
     '<div class="nav-links">' +
       '<div class="nav-item' + (page === 'about' || page === 'eo-ypo' ? ' active' : '') + '"><a>About</a>' +
         '<div class="nav-menu">' +
-          '<a href="about.html">About Raj</a>' +
-          '<a href="eo-ypo-leadership.html">EO Leadership &amp; YPO Impact</a>' +
+          '<a href="/about/">About Raj</a>' +
+          '<a href="/eo-ypo-leadership/">EO Leadership &amp; YPO Impact</a>' +
         '</div>' +
       '</div>' +
       '<div class="nav-item' + (['keynote','workshops','exec-training','biz-leaders','ai-trainer','ai-consultant','org-transform','caio'].indexOf(page) > -1 ? ' active' : '') + '"><a>Services</a>' +
         '<div class="nav-menu">' +
-          '<a href="keynote-speaker.html">Keynote Speaker</a>' +
-          '<a href="workshops.html">Workshops</a>' +
+          '<a href="/keynote-speaker/">Keynote Speaker</a>' +
+          '<a href="/workshops/tech-workshop/">Workshops</a>' +
           '<span class="grp">AI Training</span>' +
-          '<a href="ai-training-for-executives.html">Executive AI Training</a>' +
-          '<a href="ai-for-business-leaders.html">AI for Business Leaders</a>' +
-          '<a href="ai-trainer.html">AI Trainer</a>' +
+          '<a href="/ai-training-for-executives/">Executive AI Training</a>' +
+          '<a href="/ai-for-business-leaders/">AI for Business Leaders</a>' +
+          '<a href="/ai-trainer/">AI Trainer</a>' +
           '<span class="grp">Consulting</span>' +
-          '<a href="ai-business-consultant.html">AI Business Consultant</a>' +
-          '<a href="organizational-transformation.html">Organizational Transformation</a>' +
-          '<a href="fractional-caio.html">Fractional Chief AI Officer</a>' +
+          '<a href="/ai-business-consultant/">AI Business Consultant</a>' +
+          '<a href="/organizational-transformation-consultant/">Organizational Transformation</a>' +
+          '<a href="/fractional-chief-ai-officer/">Fractional Chief AI Officer</a>' +
         '</div>' +
       '</div>' +
-      '<a href="events.html"' + on('events') + '>Events</a>' +
+      '<a href="/events/"' + on('events') + '>Events</a>' +
       '<div class="nav-item' + (page === 'blog' || page === 'media' ? ' active' : '') + '"><a>Resources</a>' +
         '<div class="nav-menu">' +
-          '<a href="blog.html">Blog</a>' +
-          '<a href="media.html">Media</a>' +
+          '<a href="/blog/">Blog</a>' +
+          '<a href="/media/">Media</a>' +
         '</div>' +
       '</div>' +
-      '<a href="testimonials.html"' + on('testimonials') + '>Testimonials</a>' +
+      '<a href="/testimonials/"' + on('testimonials') + '>Testimonials</a>' +
     '</div>' +
     '<div class="nav-cta">' +
       '<a href="#work" class="btn btn-y">Let\u2019s Talk <span class="ar">\u2192</span></a>' +
@@ -50,31 +50,31 @@
   '</div></nav>' +
   '<div class="mnav" data-mobile-nav>' +
     '<span class="grp">About</span>' +
-    '<a href="about.html">About Raj</a><a href="eo-ypo-leadership.html">EO Leadership &amp; YPO Impact</a>' +
+    '<a href="/about/">About Raj</a><a href="/eo-ypo-leadership/">EO Leadership &amp; YPO Impact</a>' +
     '<span class="grp">Services</span>' +
-    '<a href="keynote-speaker.html">Keynote Speaker</a><a href="workshops.html">Workshops</a>' +
-    '<a href="ai-training-for-executives.html">Executive AI Training</a><a href="ai-for-business-leaders.html">AI for Business Leaders</a>' +
-    '<a href="ai-trainer.html">AI Trainer</a><a href="ai-business-consultant.html">AI Business Consultant</a>' +
-    '<a href="organizational-transformation.html">Organizational Transformation</a><a href="fractional-caio.html">Fractional CAIO</a>' +
+    '<a href="/keynote-speaker/">Keynote Speaker</a><a href="/workshops/tech-workshop/">Workshops</a>' +
+    '<a href="/ai-training-for-executives/">Executive AI Training</a><a href="/ai-for-business-leaders/">AI for Business Leaders</a>' +
+    '<a href="/ai-trainer/">AI Trainer</a><a href="/ai-business-consultant/">AI Business Consultant</a>' +
+    '<a href="/organizational-transformation-consultant/">Organizational Transformation</a><a href="/fractional-chief-ai-officer/">Fractional CAIO</a>' +
     '<span class="grp">More</span>' +
-    '<a href="events.html">Events</a><a href="blog.html">Blog</a><a href="media.html">Media</a><a href="testimonials.html">Testimonials</a>' +
+    '<a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/media/">Media</a><a href="/testimonials/">Testimonials</a>' +
     '<a href="#work">Let\u2019s Talk</a>' +
   '</div>';
 
   var footer =
   '<footer><div class="wrap"><div class="f-grid">' +
     '<div class="f-brand">' +
-      '<a href="index.html" class="brand" aria-label="Raj Goodman home"><img class="full" src="' + LOGO + '" alt="Raj Goodman" width="137" height="38"/></a>' +
+      '<a href="/" class="brand" aria-label="Raj Goodman home"><img class="full" src="/' + LOGO + '" alt="Raj Goodman" width="137" height="38"/></a>' +
       '<p>Insights from a visionary AI futurist speaker transforming business mindsets \u2014 changing how machines think, how businesses scale, and how entrepreneurs build tomorrow\u2019s solutions.</p>' +
     '</div>' +
     '<div class="fcol"><h4>Helping Through</h4>' +
-      '<a href="workshops.html">Workshops</a><a href="ai-training-for-executives.html">AI Training</a><a href="ai-business-consultant.html">AI Business Consultant</a><a href="organizational-transformation.html">Organizational Transformation</a><a href="fractional-caio.html">Fractional CAIO</a>' +
+      '<a href="/workshops/tech-workshop/">Workshops</a><a href="/ai-training-for-executives/">AI Training</a><a href="/ai-business-consultant/">AI Business Consultant</a><a href="/organizational-transformation-consultant/">Organizational Transformation</a><a href="/fractional-chief-ai-officer/">Fractional CAIO</a>' +
     '</div>' +
     '<div class="fcol"><h4>Ventures</h4>' +
       '<a href="https://goodmanlantern.com/" target="_blank" rel="noopener">Goodman Lantern</a><a href="https://aifirstmindset.ai/" target="_blank" rel="noopener">AI-First Mindset</a>' +
     '</div>' +
     '<div class="fcol"><h4>Quick Links</h4>' +
-      '<a href="about.html">About Raj</a><a href="events.html">Events</a><a href="blog.html">Blog</a><a href="testimonials.html">Testimonials</a>' +
+      '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/testimonials/">Testimonials</a>' +
     '</div>' +
   '</div>' +
   '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM \u2014 ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
