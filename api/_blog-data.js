@@ -2,8 +2,10 @@
 // key when configured; otherwise falls back to an in-repo SEED post so the
 // branch renders end-to-end before the database is wired.
 
+// Prefer the new Supabase secret key (sb_secret_…); fall back to the legacy
+// service_role JWT for resilience during the key migration.
 const SB_URL = process.env.SUPABASE_URL;
-const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const configured = Boolean(SB_URL && SB_KEY);
 
 async function sb(path) {
