@@ -6,6 +6,7 @@ node_modules/
 
 # local working artifacts (not for publish)
 .claude/
+CLAUDE.md
 *.code-workspace
 .mcp.json
 _prototype/
