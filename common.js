@@ -40,6 +40,7 @@
   function animateCount(el) {
     var target = parseFloat(el.getAttribute('data-count'));
     var decimals = (el.getAttribute('data-count').split('.')[1] || '').length;
+    var suffix = el.getAttribute('data-suffix') || '';
     var dur = 1600;
     var start = null;
     function ease(t) { return 1 - Math.pow(1 - t, 3); }
@@ -47,9 +48,9 @@
       if (!start) start = ts;
       var p = Math.min((ts - start) / dur, 1);
       var val = ease(p) * target;
-      el.textContent = decimals ? val.toFixed(decimals) : Math.round(val).toLocaleString();
+      el.textContent = (decimals ? val.toFixed(decimals) : Math.round(val).toLocaleString()) + suffix;
       if (p < 1) requestAnimationFrame(step);
-      else el.textContent = decimals ? target.toFixed(decimals) : target.toLocaleString();
+      else el.textContent = (decimals ? target.toFixed(decimals) : target.toLocaleString()) + suffix;
     }
     requestAnimationFrame(step);
   }
