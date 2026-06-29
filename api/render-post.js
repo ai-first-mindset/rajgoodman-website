@@ -1,7 +1,7 @@
 // SSR a single published blog post at /blog/{slug}/ (via the vercel.json rewrite).
 // Cached at the edge for static-like performance; 404s are themed + short-cached.
 
-import { getPostBySlug, getPostBySlugAnyStatus } from './_blog-data.js';
+import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug } from './_blog-data.js';
 import { renderPost, renderNotFound } from './_post-template.js';
 import { isAuthed } from './_auth.js';
 
@@ -33,6 +33,16 @@ export default async function handler(req, res) {
   }
 
   if (!post) {
+    // 301 from a previous slug of a published post, if one matches.
+    try {
+      const moved = await getPublishedByPrevSlug(slug);
+      if (moved) {
+        res.setHeader('Cache-Control', 'public, s-maxage=300');
+        res.statusCode = 301;
+        res.setHeader('Location', `/blog/${moved.slug}/`);
+        return res.end();
+      }
+    } catch (e) { /* fall through to 404 */ }
     res.setHeader('Cache-Control', 'public, s-maxage=60');
     return res.status(404).send(renderNotFound());
   }

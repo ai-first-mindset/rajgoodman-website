@@ -110,7 +110,14 @@
       <label>Excerpt</label>
       <textarea id="f_excerpt" rows="2"></textarea>
       <div class="row">
-        <div><label>Featured image URL</label><input id="f_featured_image" placeholder="https://…" /></div>
+        <div>
+          <label>Featured image URL</label>
+          <input id="f_featured_image" placeholder="https://…" />
+          <div class="actions" style="margin-top:6px">
+            <button type="button" id="fiUpload">Upload</button>
+            <button type="button" id="fiLibrary">Library</button>
+          </div>
+        </div>
         <div><label>Featured image alt</label><input id="f_featured_image_alt" /></div>
       </div>
       <div class="row">
@@ -161,6 +168,17 @@
       <p class="muted" style="margin:0 0 6px">Non-blocking checks against your focus keyphrase (Yoast-style). Editorial guidance only.</p>
       <ul id="seoChecks" style="list-style:none;padding:0;margin:8px 0 0;font-size:13.5px"></ul>
     </div>
+  </div>
+</div>
+
+<div id="mediaModal" class="hide" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="width:min(760px,94vw);max-height:82vh;overflow:auto;margin:0">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0">Media library</h3>
+      <button type="button" id="mediaClose">Close</button>
+    </div>
+    <p id="mediaEmpty" class="muted hide" style="margin:14px 0 0">No uploads yet — use Upload to add one.</p>
+    <div id="mediaGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px"></div>
   </div>
 </div>
 
@@ -215,7 +233,32 @@ async function loadList() {
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-function ensureQuill(){ if(!quill){ quill = new Quill('#editor', { theme:'snow', modules:{ toolbar:[[{header:[2,3,false]}],['bold','italic','link','blockquote'],[{list:'ordered'},{list:'bullet'}],['clean']] } }); quill.on('text-change', runSeoChecks); } }
+function ensureQuill(){ if(!quill){ quill = new Quill('#editor', { theme:'snow', modules:{ toolbar:{ container:[[{header:[2,3,false]}],['bold','italic','link','blockquote','code-block'],[{list:'ordered'},{list:'bullet'}],['image'],['clean']], handlers:{ image: quillImageHandler } } } }); quill.on('text-change', runSeoChecks); } }
+
+// --- Image upload (signed URL → direct PUT to Supabase Storage) + media library ---
+async function uploadFile(file){
+  const sign = await api('/api/admin/upload/', { method:'POST', body: JSON.stringify({ filename:file.name, contentType:file.type }) });
+  if(!sign.ok) throw new Error((sign.body&&sign.body.error)||'upload-failed');
+  const put = await fetch(sign.body.signedUrl, { method:'PUT', headers:{'content-type':file.type}, body:file });
+  if(!put.ok) throw new Error('put-failed');
+  return sign.body.publicUrl;
+}
+function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i.accept='image/png,image/jpeg,image/webp,image/gif,image/svg+xml'; i.onchange=()=>{ if(i.files[0]) cb(i.files[0]); }; i.click(); }
+function quillImageHandler(){
+  pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); const r=quill.getSelection(true); quill.insertEmbed(r.index,'image',url,'user'); quill.setSelection(r.index+1); toast('Image added'); }catch(e){ toast('Upload failed'); } });
+}
+let mediaPick = null;
+function openMedia(onPick){ mediaPick=onPick; $('mediaModal').classList.remove('hide'); loadMedia(); }
+function closeMedia(){ $('mediaModal').classList.add('hide'); mediaPick=null; }
+async function loadMedia(){
+  const grid=$('mediaGrid'); grid.innerHTML='<p class="muted">Loading…</p>';
+  const r=await api('/api/admin/media/'); const files=(r.body&&r.body.files)||[];
+  $('mediaEmpty').classList.toggle('hide', files.length>0); grid.innerHTML='';
+  files.forEach(f=>{ const b=document.createElement('button'); b.type='button'; b.title=f.name;
+    b.style.cssText='padding:0;border:1px solid var(--bd);border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#eef0f2;cursor:pointer';
+    b.innerHTML='<img src="'+esc(f.url)+'" alt="'+esc(f.name)+'" style="width:100%;height:100%;object-fit:cover" />';
+    b.addEventListener('click',()=>{ if(mediaPick) mediaPick(f.url); closeMedia(); }); grid.appendChild(b); });
+}
 
 async function openEditor(id) {
   ensureQuill();
@@ -317,6 +360,10 @@ $('f_slug').addEventListener('input', ()=>{ slugEdited=true; $('f_slug').value=s
 $('f_focus_keyphrase').addEventListener('input', runSeoChecks);
 $('f_noindex').addEventListener('change', ()=>{ $('f_robots').value = $('f_noindex').checked ? 'noindex, follow' : DEFAULT_ROBOTS; });
 $('f_robots').addEventListener('input', ()=>{ $('f_noindex').checked = /noindex/i.test($('f_robots').value); });
+$('fiUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); $('f_featured_image').value=url; refreshMeta(); toast('Uploaded'); }catch(e){ toast('Upload failed'); } }));
+$('fiLibrary').addEventListener('click', ()=> openMedia((url)=>{ $('f_featured_image').value=url; refreshMeta(); }));
+$('mediaClose').addEventListener('click', closeMedia);
+$('mediaModal').addEventListener('click', (e)=>{ if(e.target===$('mediaModal')) closeMedia(); });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);
 
