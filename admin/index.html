@@ -212,7 +212,7 @@ async function boot() {
   const s = await api('/api/admin/session/');
   if (s.status === 200) { showApp(); } else { $('login').classList.remove('hide'); }
 }
-function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); loadList(); }
+function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); ensureQuill(); loadList(); }
 
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -255,6 +255,20 @@ function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i
 function quillImageHandler(){
   pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); const r=quill.getSelection(true); quill.insertEmbed(r.index,'image',url,'user'); quill.setSelection(r.index+1); toast('Image added'); }catch(e){ toast('Upload failed'); } });
 }
+// Load post HTML into the editor. Uses Quill's converter + setContents (not
+// innerHTML) so inter-tag whitespace in migrated HTML doesn't become stray empty
+// paragraphs. Quill's converter can return an empty delta on its first call(s)
+// after init, so retry until it yields real content.
+function loadBody(html){
+  if(!html){ quill.setText(''); return; }
+  // Defer to a macrotask: Quill's converter returns an empty delta when called
+  // synchronously in the click→openEditor flow (before the just-shown editor has
+  // laid out); it works once a task boundary has passed.
+  setTimeout(() => {
+    quill.setContents(quill.clipboard.convert({ html }));
+    runSeoChecks();
+  }, 0);
+}
 let mediaPick = null;
 function openMedia(onPick){ mediaPick=onPick; $('mediaModal').style.display='flex'; loadMedia(); }
 function closeMedia(){ $('mediaModal').style.display='none'; mediaPick=null; }
@@ -269,8 +283,10 @@ async function loadMedia(){
 }
 
 async function openEditor(id) {
-  ensureQuill();
+  // Show the editor BEFORE creating Quill — a Quill initialised inside a
+  // display:none container won't render setContents.
   $('listView').classList.add('hide'); $('editView').classList.remove('hide');
+  ensureQuill();
   slugEdited = false;
   if (id) {
     const r = await api('/api/admin/posts/?id='+encodeURIComponent(id));
@@ -289,7 +305,7 @@ function fill(p){
   $('f_robots').value=p.robots||DEFAULT_ROBOTS;
   $('f_noindex').checked = /noindex/i.test(p.robots||DEFAULT_ROBOTS);
   $('f_og_title').value=p.og_title||''; $('f_og_description').value=p.og_description||''; $('f_og_image').value=p.og_image||'';
-  quill.root.innerHTML = p.body_html||'';
+  loadBody(p.body_html || '');
   slugEdited = !!p.slug;
   refreshMeta();
   const pub = p.status==='published';
