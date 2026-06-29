@@ -1,56 +1,57 @@
 /* ============================================================
    Shared blog-post typography.
    Applied to BOTH the rendered post (.post-body, see _post-template.js)
-   and the admin editor surface (.ql-editor, see admin/index.html) so the
+   and the admin editor surface (.ProseMirror, see admin/index.html) so the
    editor is WYSIWYG-accurate — what you type matches preview/live.
    Mirrors the site's .prose article styling (see site.css). Self-contained
    (concrete values, no design-token vars) so it works inside the admin,
    which does NOT load site.css.
    ============================================================ */
-.post-body, .ql-editor {
+.post-body, .ProseMirror {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 1.06rem;
   line-height: 1.75;
   color: rgba(244, 239, 230, .62);
 }
-.post-body p, .ql-editor p { margin: 0 0 1.2rem; }
-.post-body > :first-child, .ql-editor > :first-child { margin-top: 0; }
-.post-body strong, .ql-editor strong { color: #f4efe6; font-weight: 700; }
-.post-body em, .ql-editor em { font-style: italic; }
+.post-body p, .ProseMirror p { margin: 0 0 1.2rem; }
+.post-body > :first-child, .ProseMirror > :first-child { margin-top: 0; }
+.post-body strong, .ProseMirror strong { color: #f4efe6; font-weight: 700; }
+.post-body em, .ProseMirror em { font-style: italic; }
 
-.post-body h2, .ql-editor h2 {
+.post-body h2, .ProseMirror h2 {
   color: #f4efe6; font-weight: 800; letter-spacing: -.03em;
   font-size: 1.85rem; line-height: 1.2; margin: 2.4rem 0 .9rem;
 }
-.post-body h3, .ql-editor h3 {
+.post-body h3, .ProseMirror h3 {
   color: #f4efe6; font-weight: 700; letter-spacing: -.02em;
   font-size: 1.5rem; line-height: 1.25; margin: 2.2rem 0 .8rem;
 }
 
-.post-body a, .ql-editor a {
+.post-body a, .ProseMirror a {
   color: #f3af00; text-decoration: underline; text-underline-offset: 2px;
 }
 
-.post-body blockquote, .ql-editor blockquote {
+.post-body blockquote, .ProseMirror blockquote {
   margin: 1.6rem 0; padding: .4rem 0 .4rem 1.2rem;
   border-left: 3px solid #f3af00; color: #f4efe6; font-style: italic;
 }
 
-.post-body ul, .post-body ol, .ql-editor ul, .ql-editor ol {
+.post-body ul, .post-body ol, .ProseMirror ul, .ProseMirror ol {
   margin: 1rem 0 1.6rem; padding-left: 1.5em;
 }
-.post-body ul, .ql-editor ul { list-style: disc; }
-.post-body ol, .ql-editor ol { list-style: decimal; }
-.post-body li, .ql-editor li { margin-bottom: .6rem; }
+.post-body ul, .ProseMirror ul { list-style: disc; }
+.post-body ol, .ProseMirror ol { list-style: decimal; }
+.post-body li, .ProseMirror li { margin-bottom: .6rem; }
+.post-body li > p, .ProseMirror li > p { margin: 0; }
 
-.post-body img, .ql-editor img {
+.post-body img, .ProseMirror img {
   width: 100%; height: auto; margin: 1.6rem 0;
   border: 1px solid rgba(244, 239, 230, .12); border-radius: 6px;
 }
 
-.post-body pre, .ql-editor pre {
+.post-body pre, .ProseMirror pre {
   font-family: 'JetBrains Mono', monospace; font-size: .92em; line-height: 1.6;
   background: rgba(0, 0, 0, .3); padding: 1rem 1.2rem; border-radius: 6px;
   overflow: auto; margin: 1.4rem 0; color: #f4efe6;
 }
-.post-body code, .ql-editor code { font-family: 'JetBrains Mono', monospace; font-size: .92em; }
+.post-body code, .ProseMirror code { font-family: 'JetBrains Mono', monospace; font-size: .92em; }
