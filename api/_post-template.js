@@ -19,6 +19,25 @@ function fmtDate(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }
+function stripTags(s) {
+  return String(s == null ? '' : s).replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&#0?39;|&rsquo;|&#8217;/g, "'").replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+// Extract FAQ Q&A from <details><summary>Q</summary>…answer…</details> blocks for FAQPage schema.
+function extractFaqs(html) {
+  const out = [];
+  const re = /<details\b[^>]*>([\s\S]*?)<\/details>/gi;
+  let m;
+  while ((m = re.exec(html || ''))) {
+    const sm = m[1].match(/<summary\b[^>]*>([\s\S]*?)<\/summary>/i);
+    if (!sm) continue;
+    const q = stripTags(sm[1]);
+    const a = stripTags(m[1].replace(/<summary\b[\s\S]*?<\/summary>/i, ''));
+    if (q && a) out.push({ q, a });
+  }
+  return out;
+}
 
 export function renderPost(post) {
   const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
@@ -75,6 +94,15 @@ export function renderPost(post) {
       },
     ],
   };
+
+  // FAQPage schema from any <details> FAQ items in the body.
+  const faqs = extractFaqs(post.body_html);
+  if (faqs.length) {
+    jsonld['@graph'].push({
+      '@type': 'FAQPage', '@id': `${url}#faq`,
+      mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    });
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
