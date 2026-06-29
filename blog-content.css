@@ -81,3 +81,11 @@
 }
 .ProseMirror .faq-item[data-type="details"] > button { display: none; }
 .ProseMirror .faq-item[data-type="details"] [data-type="detailsContent"][hidden] { display: block; }
+
+/* Embedded video (YouTube) — responsive 16:9 */
+.post-body div[data-youtube-video], .ProseMirror div[data-youtube-video] {
+  margin: 1.6rem 0; aspect-ratio: 16 / 9; max-width: 100%;
+}
+.post-body div[data-youtube-video] iframe, .ProseMirror div[data-youtube-video] iframe {
+  width: 100%; height: 100%; border: 0; border-radius: 8px; display: block;
+}
