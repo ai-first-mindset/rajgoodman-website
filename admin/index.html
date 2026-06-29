@@ -127,11 +127,29 @@
         <button type="button" data-cmd="image" title="Insert image">Image</button>
         <button type="button" data-cmd="faq" title="FAQ item (collapsible Q&amp;A)">FAQ</button>
         <button type="button" data-cmd="video" title="Embed a YouTube video">Video</button>
+        <button type="button" data-cmd="cta" title="Insert a call-to-action">CTA</button>
       </div>
       <div id="tt-videobar" style="display:none;gap:8px;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
         <input id="tt-videourl" placeholder="Paste a YouTube URL, then Embed…" style="flex:1" />
         <button type="button" id="tt-videoembed" class="primary">Embed</button>
         <button type="button" id="tt-videocancel">Cancel</button>
+      </div>
+      <div id="tt-ctabar" style="display:none;flex-direction:column;gap:8px;padding:10px;background:#fff;border:1px solid var(--bd);border-bottom:none">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span class="muted">From the site:</span>
+          <button type="button" class="cta-preset" data-h="Work With Us" data-t="Have a question, or interested in working with Raj?" data-l="Get in touch" data-u="/#work">Work With Us</button>
+          <button type="button" class="cta-preset" data-h="Book Raj for your next event" data-t="Keynotes and workshops on AI, leadership and transformation." data-l="Book Raj" data-u="/#work">Book Raj</button>
+          <button type="button" class="cta-preset" data-h="Ready to start your AI journey?" data-t="Book a discovery call to map your next steps." data-l="Book a Discovery Call" data-u="/#work">Discovery call</button>
+          <button type="button" class="cta-preset" data-h="Stay ahead with Raj&rsquo;s insights" data-t="Practical AI thinking, straight to your inbox." data-l="Subscribe" data-u="/#newsletter">Subscribe</button>
+          <button type="button" class="cta-preset" data-h="Explore the AI-First Mindset&reg;" data-t="Raj&rsquo;s framework for future-proofing your business with AI." data-l="Visit AI-First Mindset" data-u="https://aifirstmindset.ai/">AI-First Mindset</button>
+          <button type="button" class="cta-preset" data-h="Work with Goodman Lantern" data-t="Raj&rsquo;s content and growth agency for ambitious businesses." data-l="Visit Goodman Lantern" data-u="https://goodmanlantern.com/">Goodman Lantern</button>
+          <button type="button" class="cta-preset" data-h="Follow Raj on LinkedIn" data-t="Daily takes on AI, leadership and the future of work." data-l="Connect on LinkedIn" data-u="https://www.linkedin.com/in/rajanand/">LinkedIn</button>
+        </div>
+        <div class="muted">&mdash; or build a custom one:</div>
+        <div class="row"><input id="cta-h" placeholder="Heading" /><input id="cta-l" placeholder="Button label (e.g. Get in touch)" /></div>
+        <input id="cta-t" placeholder="Supporting text" />
+        <input id="cta-u" placeholder="Button link (e.g. /#work or https://…)" />
+        <div style="display:flex;gap:8px"><button type="button" id="cta-insert" class="primary">Insert CTA</button><button type="button" id="cta-cancel">Cancel</button></div>
       </div>
       <div id="editor"></div>
     </div>
@@ -277,6 +295,32 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 // Build (or rebuild) the editor with the post body baked in at construction —
 // ProseMirror renders initial content reliably on mount, whereas setContent run
 // in the click→openEditor flow does not populate the view.
+// Custom CTA block node (atom): renders a themed call-to-action card from
+// heading/text/label/url attrs; round-trips via data-* attributes.
+let _ctaNode;
+function ctaNode(){
+  if(_ctaNode) return _ctaNode;
+  const { Node } = window.TipTap;
+  _ctaNode = Node.create({
+    name:'cta', group:'block', atom:true, selectable:true, draggable:true,
+    addAttributes(){ return {
+      heading:{ default:'', parseHTML:el=>el.getAttribute('data-heading')||'' },
+      text:{ default:'', parseHTML:el=>el.getAttribute('data-text')||'' },
+      label:{ default:'Get in touch', parseHTML:el=>el.getAttribute('data-label')||'Get in touch' },
+      url:{ default:'/#work', parseHTML:el=>el.getAttribute('data-url')||'/#work' },
+    }; },
+    parseHTML(){ return [{ tag:'div[data-cta]' }]; },
+    renderHTML({ node }){ const a=node.attrs; return ['div',
+      { 'data-cta':'', class:'post-cta', 'data-heading':a.heading, 'data-text':a.text, 'data-label':a.label, 'data-url':a.url },
+      ['div',{ class:'post-cta-h' }, a.heading], ['p',{}, a.text], ['a',{ class:'post-cta-btn', href:a.url }, a.label] ]; },
+  });
+  return _ctaNode;
+}
+function insertCTA(h,t,l,u){
+  if(!editor) return;
+  editor.chain().focus().insertContent([{ type:'cta', attrs:{ heading:h||'', text:t||'', label:l||'Get in touch', url:u||'/#work' } }, { type:'paragraph' }]).run();
+  $('tt-ctabar').style.display='none'; ['cta-h','cta-t','cta-l','cta-u'].forEach(id=>$(id).value='');
+}
 function mountEditor(html){
   const { Editor, StarterKit, Link, Image, Placeholder, Details, DetailsSummary, DetailsContent, Youtube } = window.TipTap;
   if(editor){ editor.destroy(); editor = null; }
@@ -291,6 +335,7 @@ function mountEditor(html){
       DetailsSummary,
       DetailsContent,
       Youtube.configure({ controls:true, nocookie:true, width:640, height:360 }),
+      ctaNode(),
     ],
     content: html || '',
     onUpdate: runSeoChecks,
@@ -321,6 +366,7 @@ function ttCmd(cmd){
   else if(cmd==='image') pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); editor.chain().focus().setImage({ src:url }).run(); toast('Image added'); }catch(e){ toast('Upload failed'); } });
   else if(cmd==='faq') c.setDetails().run();
   else if(cmd==='video'){ const bar=$('tt-videobar'); bar.style.display='flex'; const inp=$('tt-videourl'); inp.value=''; inp.focus(); return; }
+  else if(cmd==='cta'){ const bar=$('tt-ctabar'); bar.style.display='flex'; $('cta-h').focus(); return; }
   updateToolbarActive();
 }
 function updateToolbarActive(){
@@ -464,6 +510,9 @@ $('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[
 function embedVideo(){ const url=$('tt-videourl').value.trim(); if(url && editor) editor.commands.setYoutubeVideo({ src:url }); $('tt-videobar').style.display='none'; $('tt-videourl').value=''; }
 $('tt-videoembed').addEventListener('click', embedVideo);
 $('tt-videocancel').addEventListener('click', ()=>{ $('tt-videobar').style.display='none'; $('tt-videourl').value=''; });
+$('tt-ctabar').addEventListener('click', e=>{ const p=e.target.closest('.cta-preset'); if(p) insertCTA(p.dataset.h,p.dataset.t,p.dataset.l,p.dataset.u); });
+$('cta-insert').addEventListener('click', ()=> insertCTA($('cta-h').value.trim(),$('cta-t').value.trim(),$('cta-l').value.trim(),$('cta-u').value.trim()));
+$('cta-cancel').addEventListener('click', ()=>{ $('tt-ctabar').style.display='none'; });
 $('tt-videourl').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); embedVideo(); } });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);
