@@ -1,7 +1,7 @@
 // SSR a single published blog post at /blog/{slug}/ (via the vercel.json rewrite).
 // Cached at the edge for static-like performance; 404s are themed + short-cached.
 
-import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug, listPublished } from './_blog-data.js';
+import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug } from './_blog-data.js';
 import { renderPost, renderNotFound } from './_post-template.js';
 import { isAuthed } from './_auth.js';
 
@@ -47,17 +47,13 @@ export default async function handler(req, res) {
     return res.status(404).send(renderNotFound());
   }
 
-  // Recent posts for the "Recent Posts" section (3 most recent, excluding this one).
-  let recent = [];
-  try { recent = (await listPublished()).filter((p) => p.slug !== post.slug).slice(0, 3); } catch (e) { /* noop */ }
-
   if (preview) {
     post = { ...post, robots: 'noindex, nofollow' };
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).send(renderPost(post, recent));
+    return res.status(200).send(renderPost(post));
   }
 
   // Static-like caching; revalidate in the background after 5 min.
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
-  return res.status(200).send(renderPost(post, recent));
+  return res.status(200).send(renderPost(post));
 }

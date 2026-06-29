@@ -125,8 +125,6 @@
         <span class="sep"></span>
         <button type="button" data-cmd="hr" title="Divider">―</button>
         <button type="button" data-cmd="image" title="Insert image">Image</button>
-        <button type="button" data-cmd="faq" title="FAQ item (collapsible Q&amp;A)">FAQ</button>
-        <button type="button" data-cmd="video" title="Embed a YouTube video">Video</button>
       </div>
       <div id="editor"></div>
     </div>
@@ -267,7 +265,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 // ProseMirror renders initial content reliably on mount, whereas setContent run
 // in the click→openEditor flow does not populate the view.
 function mountEditor(html){
-  const { Editor, StarterKit, Link, Image, Placeholder, Details, DetailsSummary, DetailsContent, Youtube } = window.TipTap;
+  const { Editor, StarterKit, Link, Image, Placeholder } = window.TipTap;
   if(editor){ editor.destroy(); editor = null; }
   editor = new Editor({
     element: $('editor'),
@@ -276,10 +274,6 @@ function mountEditor(html){
       Link.configure({ openOnClick:false, autolink:true, protocols:['http','https','mailto'], HTMLAttributes:{ rel:'noopener noreferrer', target:null } }),
       Image.configure({ inline:false }),
       Placeholder.configure({ placeholder:'Write your post…' }),
-      Details.configure({ persist:false, HTMLAttributes:{ class:'faq-item' } }),
-      DetailsSummary,
-      DetailsContent,
-      Youtube.configure({ controls:true, nocookie:true, width:640, height:360 }),
     ],
     content: html || '',
     onUpdate: runSeoChecks,
@@ -308,8 +302,6 @@ function ttCmd(cmd){
     else editor.chain().focus().extendMarkRange('link').setLink({ href:url }).run();
   }
   else if(cmd==='image') pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); editor.chain().focus().setImage({ src:url }).run(); toast('Image added'); }catch(e){ toast('Upload failed'); } });
-  else if(cmd==='faq') c.setDetails().run();
-  else if(cmd==='video'){ const url=prompt('YouTube video URL'); if(url) editor.commands.setYoutubeVideo({ src:url }); }
   updateToolbarActive();
 }
 function updateToolbarActive(){
@@ -318,7 +310,7 @@ function updateToolbarActive(){
     h2:editor.isActive('heading',{level:2}), h3:editor.isActive('heading',{level:3}),
     bold:editor.isActive('bold'), italic:editor.isActive('italic'), link:editor.isActive('link'),
     bullet:editor.isActive('bulletList'), ordered:editor.isActive('orderedList'),
-    quote:editor.isActive('blockquote'), code:editor.isActive('codeBlock'), faq:editor.isActive('details'),
+    quote:editor.isActive('blockquote'), code:editor.isActive('codeBlock'),
   };
   document.querySelectorAll('#tt-toolbar button[data-cmd]').forEach(b=>b.classList.toggle('active', !!a[b.getAttribute('data-cmd')]));
 }

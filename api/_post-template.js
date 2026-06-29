@@ -19,35 +19,8 @@ function fmtDate(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }
-function stripTags(s) {
-  return String(s == null ? '' : s).replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&').replace(/&#0?39;|&rsquo;|&#8217;/g, "'").replace(/&quot;/g, '"')
-    .replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
-}
-// Extract FAQ Q&A from <details><summary>Q</summary>…answer…</details> blocks for FAQPage schema.
-function extractFaqs(html) {
-  const out = [];
-  const re = /<details\b[^>]*>([\s\S]*?)<\/details>/gi;
-  let m;
-  while ((m = re.exec(html || ''))) {
-    const sm = m[1].match(/<summary\b[^>]*>([\s\S]*?)<\/summary>/i);
-    if (!sm) continue;
-    const q = stripTags(sm[1]);
-    const a = stripTags(m[1].replace(/<summary\b[\s\S]*?<\/summary>/i, ''));
-    if (q && a) out.push({ q, a });
-  }
-  return out;
-}
 
-function recentCard(p) {
-  const img = p.featured_image
-    ? `<div class="th"><img src="${esc(p.featured_image)}" alt="${esc(p.featured_image_alt || p.title)}" loading="lazy"/></div>`
-    : '';
-  const ex = p.excerpt ? `<p>${esc(p.excerpt)}</p>` : '';
-  return `<a class="post" href="/blog/${esc(p.slug)}/">${img}<div class="bd"><h3>${esc(p.title)}</h3>${ex}<span class="go">READ &#8594;</span></div></a>`;
-}
-
-export function renderPost(post, recent = []) {
+export function renderPost(post) {
   const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
   const title = post.seo_title || post.title;
   const desc = post.meta_description || post.excerpt || '';
@@ -103,15 +76,6 @@ export function renderPost(post, recent = []) {
     ],
   };
 
-  // FAQPage schema from any <details> FAQ items in the body.
-  const faqs = extractFaqs(post.body_html);
-  if (faqs.length) {
-    jsonld['@graph'].push({
-      '@type': 'FAQPage', '@id': `${url}#faq`,
-      mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-    });
-  }
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,18 +118,6 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${post.body_html || ''}</div>
   </article>
-
-  <section class="wrap" style="max-width:760px;padding:0 0 70px">
-    <div style="border:1px solid var(--line);border-radius:12px;padding:34px;text-align:center;background:rgba(255,255,255,.03)">
-      <h2 style="margin:0 0 8px">Work With Us</h2>
-      <p style="opacity:.75;margin:0 auto 22px;max-width:34em">Do you have a question or are you interested in working with us?</p>
-      <a href="/#work" class="btn btn-y">Get in touch <span class="ar">&rarr;</span></a>
-    </div>
-  </section>
-${recent.length ? `  <section class="wrap" style="max-width:1080px;padding:0 0 90px">
-    <div class="shead" style="margin-bottom:22px"><span class="kick">Recent Posts</span><span class="ln"></span></div>
-    <div class="blog-grid">${recent.map(recentCard).join('')}</div>
-  </section>` : ''}
 </main>
 <script src="/chrome.js"></script>
 <script src="/common.js"></script>
