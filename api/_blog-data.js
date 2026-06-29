@@ -59,7 +59,7 @@ const SEED = [
       '<h2>What this demonstrates</h2><ul><li>SSR HTML with a complete &lt;head&gt; (canonical, OpenGraph, Twitter, Article JSON-LD)</li>' +
       '<li>The site theme via <code>site.css</code> + injected chrome</li><li>Edge caching for static-like performance</li></ul>' +
       '<p>Once Supabase is connected, this seed is ignored and real posts are served from the <code>posts</code> table.</p>',
-    featured_image: 'https://cdn.rajgoodman.com/wp-content/uploads/2025/06/Rectangle-2-1.webp',
+    featured_image: 'https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/wp-content/uploads/2025/06/Rectangle-2-1.webp',
     featured_image_alt: 'Raj Goodman',
     author: 'Raj Goodman Anand',
     canonical_url: null,
