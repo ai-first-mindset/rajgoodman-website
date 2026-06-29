@@ -39,7 +39,15 @@ function extractFaqs(html) {
   return out;
 }
 
-export function renderPost(post) {
+function recentCard(p) {
+  const img = p.featured_image
+    ? `<div class="th"><img src="${esc(p.featured_image)}" alt="${esc(p.featured_image_alt || p.title)}" loading="lazy"/></div>`
+    : '';
+  const ex = p.excerpt ? `<p>${esc(p.excerpt)}</p>` : '';
+  return `<a class="post" href="/blog/${esc(p.slug)}/">${img}<div class="bd"><h3>${esc(p.title)}</h3>${ex}<span class="go">READ &#8594;</span></div></a>`;
+}
+
+export function renderPost(post, recent = []) {
   const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
   const title = post.seo_title || post.title;
   const desc = post.meta_description || post.excerpt || '';
@@ -146,6 +154,18 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${post.body_html || ''}</div>
   </article>
+
+  <section class="wrap" style="max-width:760px;padding:0 0 70px">
+    <div style="border:1px solid var(--line);border-radius:12px;padding:34px;text-align:center;background:rgba(255,255,255,.03)">
+      <h2 style="margin:0 0 8px">Work With Us</h2>
+      <p style="opacity:.75;margin:0 auto 22px;max-width:34em">Do you have a question or are you interested in working with us?</p>
+      <a href="/#work" class="btn btn-y">Get in touch <span class="ar">&rarr;</span></a>
+    </div>
+  </section>
+${recent.length ? `  <section class="wrap" style="max-width:1080px;padding:0 0 90px">
+    <div class="shead" style="margin-bottom:22px"><span class="kick">Recent Posts</span><span class="ln"></span></div>
+    <div class="blog-grid">${recent.map(recentCard).join('')}</div>
+  </section>` : ''}
 </main>
 <script src="/chrome.js"></script>
 <script src="/common.js"></script>
