@@ -9,6 +9,7 @@ const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_R
 
 const ALLOWED = ['slug', 'title', 'seo_title', 'meta_description', 'excerpt', 'body_html',
   'featured_image', 'featured_image_alt', 'author', 'canonical_url', 'robots', 'focus_keyphrase',
+  'og_title', 'og_description', 'og_image',
   'status', 'published_at'];
 
 function headers(extra) {

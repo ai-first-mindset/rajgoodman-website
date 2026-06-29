@@ -5,6 +5,9 @@ const SITE = 'https://rajgoodman.com';
 const SITE_NAME = 'Raj Goodman';
 const TWITTER = '@RajAnand';
 const DEFAULT_OG_IMAGE = 'https://cdn.rajgoodman.com/wp-content/uploads/2025/06/Rectangle-2-1.webp';
+const PERSON_ID = `${SITE}/#raj`;        // matches the site-wide Person node (see index.html)
+const WEBSITE_ID = `${SITE}/#website`;
+const SAME_AS = ['https://www.linkedin.com/in/rajanand/', 'https://x.com/RajAnand'];
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -25,17 +28,52 @@ export function renderPost(post) {
   const published = post.published_at;
   const modified = post.modified_at || post.published_at;
 
+  // Social (OG/Twitter) values: per-post override, else fall back to SEO fields.
+  const ogTitle = post.og_title || title;
+  const ogDesc = post.og_description || desc;
+  const ogImg = post.og_image || ogImage;
+
+  // Yoast-equivalent JSON-LD @graph: linked Article + WebPage + Person + WebSite
+  // + ImageObject + BreadcrumbList, using the site-wide @ids.
+  const imageId = `${url}#primaryimage`;
+  const webpageId = `${url}#webpage`;
+  const articleId = `${url}#article`;
+  const breadcrumbId = `${url}#breadcrumb`;
   const jsonld = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    description: desc,
-    image: ogImage ? [ogImage] : undefined,
-    datePublished: published,
-    dateModified: modified,
-    author: { '@type': 'Person', name: post.author },
-    publisher: { '@type': 'Organization', name: SITE_NAME },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    '@graph': [
+      {
+        '@type': 'Person', '@id': PERSON_ID, name: post.author, alternateName: 'Raj Goodman',
+        url: `${SITE}/`, image: DEFAULT_OG_IMAGE, jobTitle: 'AI Futurist, Keynote Speaker & Founder',
+        sameAs: SAME_AS,
+      },
+      {
+        '@type': 'WebSite', '@id': WEBSITE_ID, url: `${SITE}/`, name: SITE_NAME,
+        publisher: { '@id': PERSON_ID }, inLanguage: 'en-US',
+      },
+      {
+        '@type': 'ImageObject', '@id': imageId, url: ogImg, contentUrl: ogImg, inLanguage: 'en-US',
+      },
+      {
+        '@type': 'WebPage', '@id': webpageId, url, name: title, isPartOf: { '@id': WEBSITE_ID },
+        primaryImageOfPage: { '@id': imageId }, image: { '@id': imageId },
+        datePublished: published, dateModified: modified, description: desc,
+        breadcrumb: { '@id': breadcrumbId }, inLanguage: 'en-US',
+      },
+      {
+        '@type': 'BreadcrumbList', '@id': breadcrumbId, itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
+          { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE}/blog/` },
+          { '@type': 'ListItem', position: 3, name: post.title },
+        ],
+      },
+      {
+        '@type': 'Article', '@id': articleId, isPartOf: { '@id': webpageId },
+        author: { '@id': PERSON_ID }, publisher: { '@id': PERSON_ID },
+        headline: post.title, description: desc, datePublished: published, dateModified: modified,
+        mainEntityOfPage: { '@id': webpageId }, image: { '@id': imageId }, inLanguage: 'en-US',
+      },
+    ],
   };
 
   return `<!DOCTYPE html>
@@ -50,16 +88,19 @@ export function renderPost(post) {
 <link rel="canonical" href="${esc(url)}" />
 <meta property="og:locale" content="en_US" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="${esc(title)}" />
-<meta property="og:description" content="${esc(desc)}" />
+<meta property="og:title" content="${esc(ogTitle)}" />
+<meta property="og:description" content="${esc(ogDesc)}" />
 <meta property="og:url" content="${esc(url)}" />
 <meta property="og:site_name" content="${esc(SITE_NAME)}" />
 ${published ? `<meta property="article:published_time" content="${esc(published)}" />` : ''}
 ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" />` : ''}
-<meta property="og:image" content="${esc(ogImage)}" />
+<meta property="og:image" content="${esc(ogImg)}" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="${TWITTER}" />
 <meta name="twitter:creator" content="${TWITTER}" />
+<meta name="twitter:title" content="${esc(ogTitle)}" />
+<meta name="twitter:description" content="${esc(ogDesc)}" />
+<meta name="twitter:image" content="${esc(ogImg)}" />
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <!-- TODO(site-wide): inject GTM-PQ6PSBZN here once analytics is added to the build (REQ-014/017) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
