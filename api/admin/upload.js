@@ -2,7 +2,7 @@
 // blog-media Supabase Storage bucket. The browser PUTs the file bytes directly
 // to that URL (bypassing the serverless body-size limit), then uses publicUrl.
 
-import { blockIfUnauthed } from '../_auth.js';
+import { requireUser } from '../_auth.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -15,7 +15,7 @@ function safeName(n) {
 }
 
 export default async function handler(req, res) {
-  if (blockIfUnauthed(req, res)) return;
+  if (!(await requireUser(req, res))) return;
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method-not-allowed' }); }
   if (!SB_URL || !SB_KEY) return res.status(500).json({ ok: false, error: 'storage-not-configured' });
 

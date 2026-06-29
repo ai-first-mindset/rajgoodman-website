@@ -2,7 +2,7 @@
 // server-side via PostgREST. GET list / GET ?id / POST create / PATCH update
 // (incl. publish bookkeeping) / DELETE.
 
-import { blockIfUnauthed } from '../_auth.js';
+import { requireUser } from '../_auth.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -39,7 +39,7 @@ function getId(req) {
 }
 
 export default async function handler(req, res) {
-  if (blockIfUnauthed(req, res)) return;
+  if (!(await requireUser(req, res))) return;
   if (!SB_URL || !SB_KEY) return res.status(500).json({ ok: false, error: 'db-not-configured' });
 
   try {

@@ -1,14 +1,14 @@
 // Authed media library: lists images in the blog-media Supabase Storage bucket
 // (most recent first) so the editor can reuse previously-uploaded images.
 
-import { blockIfUnauthed } from '../_auth.js';
+import { requireUser } from '../_auth.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const BUCKET = 'blog-media';
 
 export default async function handler(req, res) {
-  if (blockIfUnauthed(req, res)) return;
+  if (!(await requireUser(req, res))) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ ok: false, error: 'method-not-allowed' }); }
   if (!SB_URL || !SB_KEY) return res.status(500).json({ ok: false, error: 'storage-not-configured' });
 
