@@ -126,6 +126,12 @@
         <button type="button" data-cmd="hr" title="Divider">―</button>
         <button type="button" data-cmd="image" title="Insert image">Image</button>
         <button type="button" data-cmd="faq" title="FAQ item (collapsible Q&amp;A)">FAQ</button>
+        <button type="button" data-cmd="video" title="Embed a YouTube video">Video</button>
+      </div>
+      <div id="tt-videobar" style="display:none;gap:8px;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
+        <input id="tt-videourl" placeholder="Paste a YouTube URL, then Embed…" style="flex:1" />
+        <button type="button" id="tt-videoembed" class="primary">Embed</button>
+        <button type="button" id="tt-videocancel">Cancel</button>
       </div>
       <div id="editor"></div>
     </div>
@@ -266,7 +272,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 // ProseMirror renders initial content reliably on mount, whereas setContent run
 // in the click→openEditor flow does not populate the view.
 function mountEditor(html){
-  const { Editor, StarterKit, Link, Image, Placeholder, Details, DetailsSummary, DetailsContent } = window.TipTap;
+  const { Editor, StarterKit, Link, Image, Placeholder, Details, DetailsSummary, DetailsContent, Youtube } = window.TipTap;
   if(editor){ editor.destroy(); editor = null; }
   editor = new Editor({
     element: $('editor'),
@@ -278,6 +284,7 @@ function mountEditor(html){
       Details.configure({ persist:false, HTMLAttributes:{ class:'faq-item' } }),
       DetailsSummary,
       DetailsContent,
+      Youtube.configure({ controls:true, nocookie:true, width:640, height:360 }),
     ],
     content: html || '',
     onUpdate: runSeoChecks,
@@ -307,6 +314,7 @@ function ttCmd(cmd){
   }
   else if(cmd==='image') pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); editor.chain().focus().setImage({ src:url }).run(); toast('Image added'); }catch(e){ toast('Upload failed'); } });
   else if(cmd==='faq') c.setDetails().run();
+  else if(cmd==='video'){ const bar=$('tt-videobar'); bar.style.display='flex'; const inp=$('tt-videourl'); inp.value=''; inp.focus(); return; }
   updateToolbarActive();
 }
 function updateToolbarActive(){
@@ -446,6 +454,10 @@ $('fiLibrary').addEventListener('click', ()=> openMedia((url)=>{ $('f_featured_i
 $('mediaClose').addEventListener('click', closeMedia);
 $('mediaModal').addEventListener('click', (e)=>{ if(e.target===$('mediaModal')) closeMedia(); });
 $('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[data-cmd]'); if(b) ttCmd(b.getAttribute('data-cmd')); });
+function embedVideo(){ const url=$('tt-videourl').value.trim(); if(url && editor) editor.commands.setYoutubeVideo({ src:url }); $('tt-videobar').style.display='none'; $('tt-videourl').value=''; }
+$('tt-videoembed').addEventListener('click', embedVideo);
+$('tt-videocancel').addEventListener('click', ()=>{ $('tt-videobar').style.display='none'; $('tt-videourl').value=''; });
+$('tt-videourl').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); embedVideo(); } });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);
 
