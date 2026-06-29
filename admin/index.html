@@ -34,6 +34,17 @@
   .hide { display:none } .toast { position:fixed; bottom:20px; right:20px; background:var(--ink); color:#fff; padding:11px 16px; border-radius:8px; opacity:0; transition:opacity .2s }
   .toast.show { opacity:1 } a.link { color:#1a56db; text-decoration:none }
   .login { max-width:360px; margin:12vh auto; }
+  .serp { border:1px solid var(--bd); border-radius:8px; padding:13px 16px; max-width:600px; font-family:Arial,Helvetica,sans-serif }
+  .serp-url { font-size:13px; color:#202124; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .serp-title { color:#1a0dab; font-size:20px; line-height:1.3; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .serp-desc { color:#4d5156; font-size:13px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+  .social { border:1px solid var(--bd); border-radius:8px; overflow:hidden; max-width:520px }
+  .social-img { background:#eef0f2; aspect-ratio:1.91/1 }
+  .social-img img { width:100%; height:100%; object-fit:cover; display:block }
+  .social-body { padding:10px 14px; background:#f7f9fa }
+  .social-domain { font-size:12px; color:var(--mut) }
+  .social-title { font-weight:600; font-size:15px; margin:2px 0; color:var(--ink) }
+  .social-desc { font-size:13px; color:var(--mut); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
 </style>
 </head>
 <body>
@@ -108,8 +119,30 @@
       </div>
       <label>Canonical URL <span class="muted">(blank = self)</span></label>
       <input id="f_canonical_url" placeholder="(defaults to /blog/{slug}/)" />
-      <label>Robots</label>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin-top:16px;cursor:pointer">
+        <input type="checkbox" id="f_noindex" style="width:auto;margin:0" /> Discourage search engines (noindex)
+      </label>
+      <label>Robots <span class="muted">(advanced)</span></label>
       <input id="f_robots" />
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 12px">Search &amp; social preview</h3>
+      <div class="muted" style="margin-bottom:6px">Google search result</div>
+      <div class="serp">
+        <div class="serp-url" id="pv_url"></div>
+        <div class="serp-title" id="pv_title"></div>
+        <div class="serp-desc" id="pv_desc"></div>
+      </div>
+      <div class="muted" style="margin:18px 0 6px">Social share card</div>
+      <div class="social">
+        <div class="social-img"><img id="pv_img" alt="" /></div>
+        <div class="social-body">
+          <div class="social-domain">rajgoodman.com</div>
+          <div class="social-title" id="pv_stitle"></div>
+          <div class="social-desc" id="pv_sdesc"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -120,6 +153,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const DEFAULT_ROBOTS = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+const DEFAULT_OG_IMAGE = 'https://cdn.rajgoodman.com/wp-content/uploads/2025/06/Rectangle-2-1.webp';
 let quill, current = null, slugEdited = false;
 
 function toast(msg) { const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
@@ -185,6 +219,7 @@ function fill(p){
   $('f_featured_image_alt').value=p.featured_image_alt||''; $('f_author').value=p.author||'Raj Goodman Anand';
   $('f_focus_keyphrase').value=p.focus_keyphrase||''; $('f_canonical_url').value=p.canonical_url||'';
   $('f_robots').value=p.robots||DEFAULT_ROBOTS;
+  $('f_noindex').checked = /noindex/i.test(p.robots||DEFAULT_ROBOTS);
   quill.root.innerHTML = p.body_html||'';
   slugEdited = !!p.slug;
   refreshMeta();
@@ -194,14 +229,32 @@ function fill(p){
   $('deleteBtn').classList.toggle('hide', !p.id);
   $('publishBtn').classList.toggle('hide', pub);
 }
+function colorFor(len, min, max){ if(!len) return 'var(--mut)'; if(len<min) return '#b9770e'; if(len<=max) return '#1a7f37'; return '#b42318'; }
 function refreshMeta(){
   $('slugPreview').textContent = $('f_slug').value||'…';
-  $('c_seo').textContent = $('f_seo_title').value.length;
-  $('c_desc').textContent = $('f_meta_description').value.length;
+  const tl = $('f_seo_title').value.length, dl = $('f_meta_description').value.length;
+  $('c_seo').textContent = tl; $('c_seo').style.color = colorFor(tl, 50, 60);
+  $('c_desc').textContent = dl; $('c_desc').style.color = colorFor(dl, 120, 160);
+  updatePreview();
 }
-$('f_title').addEventListener('input', ()=>{ if(!slugEdited){ $('f_slug').value=slugify($('f_title').value); refreshMeta(); } });
+function updatePreview(){
+  const slug = $('f_slug').value.trim();
+  const title = $('f_seo_title').value.trim() || $('f_title').value.trim() || 'Untitled post';
+  const desc = $('f_meta_description').value.trim() || $('f_excerpt').value.trim() || '';
+  const url = $('f_canonical_url').value.trim() || ('https://rajgoodman.com/blog/' + slug + '/');
+  const img = $('f_featured_image').value.trim() || DEFAULT_OG_IMAGE;
+  $('pv_url').textContent = url.replace(/^https?:\/\//,'').replace(/\/+$/,'').replace(/\//g,' › ');
+  $('pv_title').textContent = title;
+  $('pv_desc').textContent = desc;
+  $('pv_img').src = img;
+  $('pv_stitle').textContent = title;
+  $('pv_sdesc').textContent = desc;
+}
+$('f_title').addEventListener('input', ()=>{ if(!slugEdited){ $('f_slug').value=slugify($('f_title').value); } refreshMeta(); });
 $('f_slug').addEventListener('input', ()=>{ slugEdited=true; $('f_slug').value=slugify($('f_slug').value); refreshMeta(); });
-['f_seo_title','f_meta_description'].forEach(id=>$(id).addEventListener('input',refreshMeta));
+['f_seo_title','f_meta_description','f_excerpt','f_featured_image','f_canonical_url'].forEach(id=>$(id).addEventListener('input',refreshMeta));
+$('f_noindex').addEventListener('change', ()=>{ $('f_robots').value = $('f_noindex').checked ? 'noindex, follow' : DEFAULT_ROBOTS; });
+$('f_robots').addEventListener('input', ()=>{ $('f_noindex').checked = /noindex/i.test($('f_robots').value); });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);
 
