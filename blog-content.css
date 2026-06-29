@@ -55,3 +55,29 @@
   overflow: auto; margin: 1.4rem 0; color: #f4efe6;
 }
 .post-body code, .ProseMirror code { font-family: 'JetBrains Mono', monospace; font-size: .92em; }
+
+/* FAQ accordion — native <details>/<summary> (works on the published page with no JS) */
+.post-body details, .ProseMirror details {
+  border: 1px solid rgba(244, 239, 230, .15); border-radius: 8px;
+  margin: .7rem 0; padding: .1rem 1.1rem; background: rgba(255, 255, 255, .03);
+}
+.post-body summary, .ProseMirror summary {
+  cursor: pointer; font-weight: 700; color: #f4efe6; padding: .75rem 1.6em .75rem 0;
+  list-style: none; position: relative; margin: 0;
+}
+.post-body summary::-webkit-details-marker, .ProseMirror summary::-webkit-details-marker { display: none; }
+.post-body summary::after, .ProseMirror summary::after {
+  content: "+"; position: absolute; right: 0; top: .65rem; color: #f3af00; font-size: 1.25em; font-weight: 700;
+}
+.post-body details[open] summary::after, .ProseMirror details[open] summary::after { content: "\2013"; }
+.post-body details > div, .ProseMirror details > div { padding: 0 0 .7rem; }
+.post-body details > div > :last-child, .ProseMirror details > div > :last-child { margin-bottom: 0; }
+
+/* Editor-only: the Details node renders as <div class="faq-item" data-type="details"> with a
+   toggle button + a hidden answer. Hide that button, show the answer while editing, card border. */
+.ProseMirror .faq-item[data-type="details"] {
+  border: 1px solid rgba(244, 239, 230, .15); border-radius: 8px;
+  margin: .7rem 0; padding: .3rem 1.1rem; background: rgba(255, 255, 255, .03);
+}
+.ProseMirror .faq-item[data-type="details"] > button { display: none; }
+.ProseMirror .faq-item[data-type="details"] [data-type="detailsContent"][hidden] { display: block; }
