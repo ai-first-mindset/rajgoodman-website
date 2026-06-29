@@ -127,6 +127,17 @@
     </div>
 
     <div class="card">
+      <h3 style="margin:0 0 4px">Social (OpenGraph / Twitter)</h3>
+      <p class="muted" style="margin:0 0 6px">Optional — how this post looks when shared. Leave blank to use the SEO fields / featured image.</p>
+      <label>Social title <span class="muted">(blank = SEO title)</span></label>
+      <input id="f_og_title" />
+      <label>Social description <span class="muted">(blank = meta description)</span></label>
+      <textarea id="f_og_description" rows="2"></textarea>
+      <label>Social image URL <span class="muted">(blank = featured image)</span></label>
+      <input id="f_og_image" placeholder="https://…" />
+    </div>
+
+    <div class="card">
       <h3 style="margin:0 0 12px">Search &amp; social preview</h3>
       <div class="muted" style="margin-bottom:6px">Google search result</div>
       <div class="serp">
@@ -143,6 +154,12 @@
           <div class="social-desc" id="pv_sdesc"></div>
         </div>
       </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px">SEO analysis</h3>
+      <p class="muted" style="margin:0 0 6px">Non-blocking checks against your focus keyphrase (Yoast-style). Editorial guidance only.</p>
+      <ul id="seoChecks" style="list-style:none;padding:0;margin:8px 0 0;font-size:13.5px"></ul>
     </div>
   </div>
 </div>
@@ -198,7 +215,7 @@ async function loadList() {
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-function ensureQuill(){ if(!quill){ quill = new Quill('#editor', { theme:'snow', modules:{ toolbar:[[{header:[2,3,false]}],['bold','italic','link','blockquote'],[{list:'ordered'},{list:'bullet'}],['clean']] } }); } }
+function ensureQuill(){ if(!quill){ quill = new Quill('#editor', { theme:'snow', modules:{ toolbar:[[{header:[2,3,false]}],['bold','italic','link','blockquote'],[{list:'ordered'},{list:'bullet'}],['clean']] } }); quill.on('text-change', runSeoChecks); } }
 
 async function openEditor(id) {
   ensureQuill();
@@ -220,6 +237,7 @@ function fill(p){
   $('f_focus_keyphrase').value=p.focus_keyphrase||''; $('f_canonical_url').value=p.canonical_url||'';
   $('f_robots').value=p.robots||DEFAULT_ROBOTS;
   $('f_noindex').checked = /noindex/i.test(p.robots||DEFAULT_ROBOTS);
+  $('f_og_title').value=p.og_title||''; $('f_og_description').value=p.og_description||''; $('f_og_image').value=p.og_image||'';
   quill.root.innerHTML = p.body_html||'';
   slugEdited = !!p.slug;
   refreshMeta();
@@ -236,23 +254,67 @@ function refreshMeta(){
   $('c_seo').textContent = tl; $('c_seo').style.color = colorFor(tl, 50, 60);
   $('c_desc').textContent = dl; $('c_desc').style.color = colorFor(dl, 120, 160);
   updatePreview();
+  runSeoChecks();
 }
 function updatePreview(){
   const slug = $('f_slug').value.trim();
-  const title = $('f_seo_title').value.trim() || $('f_title').value.trim() || 'Untitled post';
-  const desc = $('f_meta_description').value.trim() || $('f_excerpt').value.trim() || '';
+  const seoTitle = $('f_seo_title').value.trim() || $('f_title').value.trim() || 'Untitled post';
+  const seoDesc = $('f_meta_description').value.trim() || $('f_excerpt').value.trim() || '';
   const url = $('f_canonical_url').value.trim() || ('https://rajgoodman.com/blog/' + slug + '/');
-  const img = $('f_featured_image').value.trim() || DEFAULT_OG_IMAGE;
   $('pv_url').textContent = url.replace(/^https?:\/\//,'').replace(/\/+$/,'').replace(/\//g,' › ');
-  $('pv_title').textContent = title;
-  $('pv_desc').textContent = desc;
-  $('pv_img').src = img;
-  $('pv_stitle').textContent = title;
-  $('pv_sdesc').textContent = desc;
+  $('pv_title').textContent = seoTitle;
+  $('pv_desc').textContent = seoDesc;
+  // Social card honours per-post OG overrides, else the SEO fields / featured image.
+  $('pv_stitle').textContent = $('f_og_title').value.trim() || seoTitle;
+  $('pv_sdesc').textContent = $('f_og_description').value.trim() || seoDesc;
+  $('pv_img').src = $('f_og_image').value.trim() || $('f_featured_image').value.trim() || DEFAULT_OG_IMAGE;
+}
+function plainText(html){ const d=document.createElement('div'); d.innerHTML=html||''; return (d.textContent||'').replace(/\s+/g,' ').trim(); }
+function runSeoChecks(){
+  const ul = $('seoChecks'); if(!ul) return;
+  const kp = $('f_focus_keyphrase').value.trim().toLowerCase();
+  if(!kp){ ul.innerHTML = '<li class="muted" style="padding:3px 0">Set a focus keyphrase to see SEO checks.</li>'; return; }
+  const title = ($('f_seo_title').value.trim()||$('f_title').value.trim()).toLowerCase();
+  const slug = $('f_slug').value.trim().toLowerCase();
+  const meta = $('f_meta_description').value.trim().toLowerCase();
+  const html = quill ? quill.root.innerHTML : '';
+  const body = plainText(html).toLowerCase();
+  const words = body ? body.split(/\s+/).filter(Boolean) : [];
+  const firstPara = plainText((html.match(/<p[^>]*>[\s\S]*?<\/p>/i)||[''])[0]).toLowerCase();
+  const headings = (html.match(/<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>/gi)||[]).map(h=>plainText(h).toLowerCase());
+  const imgs = html.match(/<img\b[^>]*>/gi)||[];
+  const imgsNoAlt = imgs.filter(t=>!/\balt\s*=\s*["'][^"']+["']/i.test(t));
+  const links = (html.match(/<a\b[^>]*href=/gi)||[]).length;
+  const kpEsc = kp.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const occ = body ? (body.match(new RegExp(kpEsc,'g'))||[]).length : 0;
+  const density = words.length ? occ*kp.split(/\s+/).length/words.length*100 : 0;
+  const slugKp = kp.replace(/\s+/g,'-');
+
+  const C = [];
+  const good=(m)=>C.push({s:'good',m}), warn=(m)=>C.push({s:'warn',m}), bad=(m)=>C.push({s:'bad',m});
+  (title.includes(kp)?good:bad)('Keyphrase in SEO title');
+  (slug.includes(slugKp)?good:bad)('Keyphrase in URL slug');
+  (meta.includes(kp)?good:bad)('Keyphrase in meta description');
+  (firstPara.includes(kp)?good:warn)('Keyphrase in the first paragraph');
+  (headings.some(h=>h.includes(kp))?good:warn)('Keyphrase in a subheading (H2/H3)');
+  if(occ===0) bad('Keyphrase not used in the body');
+  else if(density<0.5) warn('Keyphrase density '+density.toFixed(1)+'% — a little low ('+occ+'×)');
+  else if(density>2.5) warn('Keyphrase density '+density.toFixed(1)+'% — possibly too high ('+occ+'×)');
+  else good('Keyphrase density '+density.toFixed(1)+'% ('+occ+'×)');
+  (words.length>=300?good:warn)('Content length: '+words.length+' words'+(words.length<300?' — aim for 300+':''));
+  (links>0?good:warn)(links+' link'+(links===1?'':'s')+' in the body');
+  if(imgs.length===0) warn('No images in the body');
+  else (imgsNoAlt.length===0?good:bad)((imgs.length-imgsNoAlt.length)+'/'+imgs.length+' body images have alt text');
+
+  const ng = C.filter(c=>c.s==='good').length;
+  const dot = s=>s==='good'?'#1a7f37':s==='warn'?'#b9770e':'#b42318';
+  ul.innerHTML = '<li style="padding:3px 0;font-weight:600">'+ng+'/'+C.length+' checks passing</li>' +
+    C.map(c=>'<li style="display:flex;gap:8px;align-items:flex-start;padding:3px 0"><span style="flex:0 0 auto;width:9px;height:9px;border-radius:50%;margin-top:5px;background:'+dot(c.s)+'"></span><span>'+esc(c.m)+'</span></li>').join('');
 }
 $('f_title').addEventListener('input', ()=>{ if(!slugEdited){ $('f_slug').value=slugify($('f_title').value); } refreshMeta(); });
 $('f_slug').addEventListener('input', ()=>{ slugEdited=true; $('f_slug').value=slugify($('f_slug').value); refreshMeta(); });
-['f_seo_title','f_meta_description','f_excerpt','f_featured_image','f_canonical_url'].forEach(id=>$(id).addEventListener('input',refreshMeta));
+['f_seo_title','f_meta_description','f_excerpt','f_featured_image','f_canonical_url','f_og_title','f_og_description','f_og_image'].forEach(id=>$(id).addEventListener('input',refreshMeta));
+$('f_focus_keyphrase').addEventListener('input', runSeoChecks);
 $('f_noindex').addEventListener('change', ()=>{ $('f_robots').value = $('f_noindex').checked ? 'noindex, follow' : DEFAULT_ROBOTS; });
 $('f_robots').addEventListener('input', ()=>{ $('f_noindex').checked = /noindex/i.test($('f_robots').value); });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
@@ -266,6 +328,7 @@ function collect(){
     featured_image:$('f_featured_image').value.trim()||null, featured_image_alt:$('f_featured_image_alt').value.trim()||null,
     author:$('f_author').value.trim()||'Raj Goodman Anand', canonical_url:$('f_canonical_url').value.trim()||null,
     robots:$('f_robots').value.trim()||DEFAULT_ROBOTS, focus_keyphrase:$('f_focus_keyphrase').value.trim()||null,
+    og_title:$('f_og_title').value.trim()||null, og_description:$('f_og_description').value.trim()||null, og_image:$('f_og_image').value.trim()||null,
   };
 }
 async function save(status){

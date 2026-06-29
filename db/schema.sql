@@ -16,11 +16,19 @@ create table if not exists posts (
   canonical_url       text,                          -- override; defaults to self
   robots              text not null default 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   focus_keyphrase     text,                          -- editorial only, never rendered
+  og_title            text,                          -- social override; falls back to seo_title/title
+  og_description      text,                          -- social override; falls back to meta_description/excerpt
+  og_image            text,                          -- social override; falls back to featured_image
   status              text not null default 'draft' check (status in ('draft','published')),
   published_at        timestamptz,                   -- set once on first publish
   modified_at         timestamptz not null default now(),
   created_at          timestamptz not null default now()
 );
+
+-- Additive migrations (safe to re-run on an existing table).
+alter table posts add column if not exists og_title text;
+alter table posts add column if not exists og_description text;
+alter table posts add column if not exists og_image text;
 
 create index if not exists posts_status_pub_idx on posts (status, published_at desc);
 create unique index if not exists posts_slug_idx on posts (slug);
