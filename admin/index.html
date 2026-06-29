@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Blog Admin — rajgoodman.com</title>
-<link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -34,11 +33,16 @@
   .pill { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600 }
   .pill.published { background:#e7f6ec; color:#1a7f37 } .pill.draft { background:#fdf3d8; color:#8a6d00 }
   .actions { display:flex; gap:8px; flex-wrap:wrap } .right { display:flex; gap:8px }
-  /* Editor surface mirrors the published article (dark theme) for WYSIWYG fidelity */
-  .ql-toolbar.ql-snow { border-color:var(--bd); border-radius:8px 8px 0 0; background:#fff }
-  .ql-container.ql-snow { border-color:var(--bd); border-radius:0 0 8px 8px; background:#201600 }
-  .ql-editor { min-height:340px; padding:24px 26px }
-  .ql-editor.ql-blank::before { color:rgba(244,239,230,.4); font-style:normal; left:26px; right:26px }
+  /* Editor toolbar (light) + content surface (dark, mirrors the published article) */
+  .tt-toolbar { display:flex; flex-wrap:wrap; gap:3px; padding:7px 8px; background:#fff; border:1px solid var(--bd); border-bottom:none; border-radius:8px 8px 0 0; position:sticky; top:53px; z-index:4 }
+  .tt-toolbar button { min-width:30px; padding:5px 9px; font-size:13px; line-height:1.1; border:1px solid transparent; background:transparent; border-radius:5px; color:#374151 }
+  .tt-toolbar button:hover { background:#f0f1f3 }
+  .tt-toolbar button.active { background:#e7eefc; color:#1a56db; border-color:#cdddfb }
+  .tt-toolbar .sep { width:1px; background:var(--bd); margin:3px 4px }
+  #editor { border:1px solid var(--bd); border-radius:0 0 8px 8px; background:#201600 }
+  .ProseMirror { min-height:340px; padding:24px 26px; outline:none }
+  .ProseMirror:focus { outline:none }
+  .ProseMirror p.is-editor-empty:first-child::before { content:attr(data-placeholder); color:rgba(244,239,230,.4); float:left; height:0; pointer-events:none }
   .hide { display:none } .toast { position:fixed; bottom:20px; right:20px; background:var(--ink); color:#fff; padding:11px 16px; border-radius:8px; opacity:0; transition:opacity .2s }
   .toast.show { opacity:1 } a.link { color:#1a56db; text-decoration:none }
   .login { max-width:360px; margin:12vh auto; }
@@ -106,6 +110,22 @@
       <label>Slug <span class="muted">— URL: /blog/<span id="slugPreview">…</span>/</span></label>
       <input id="f_slug" placeholder="post-slug" />
       <label>Body</label>
+      <div id="tt-toolbar" class="tt-toolbar">
+        <button type="button" data-cmd="h2" title="Heading 2">H2</button>
+        <button type="button" data-cmd="h3" title="Heading 3">H3</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+        <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+        <button type="button" data-cmd="link" title="Link">Link</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="bullet" title="Bulleted list">• List</button>
+        <button type="button" data-cmd="ordered" title="Numbered list">1. List</button>
+        <button type="button" data-cmd="quote" title="Quote">&ldquo;&rdquo;</button>
+        <button type="button" data-cmd="code" title="Code block">&lt;/&gt;</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="hr" title="Divider">―</button>
+        <button type="button" data-cmd="image" title="Insert image">Image</button>
+      </div>
       <div id="editor"></div>
     </div>
 
@@ -192,12 +212,12 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+<script src="/assets/tiptap.bundle.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 const DEFAULT_ROBOTS = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 const DEFAULT_OG_IMAGE = 'https://cdn.rajgoodman.com/wp-content/uploads/2025/06/Rectangle-2-1.webp';
-let quill, current = null, slugEdited = false;
+let editor, current = null, slugEdited = false;
 
 function toast(msg) { const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 function slugify(s){ return (s||'').toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); }
@@ -212,7 +232,7 @@ async function boot() {
   const s = await api('/api/admin/session/');
   if (s.status === 200) { showApp(); } else { $('login').classList.remove('hide'); }
 }
-function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); ensureQuill(); loadList(); }
+function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); loadList(); }
 
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -241,7 +261,59 @@ async function loadList() {
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-function ensureQuill(){ if(!quill){ quill = new Quill('#editor', { theme:'snow', modules:{ toolbar:{ container:[[{header:[2,3,false]}],['bold','italic','link','blockquote','code-block'],[{list:'ordered'},{list:'bullet'}],['image'],['clean']], handlers:{ image: quillImageHandler } } } }); quill.on('text-change', runSeoChecks); } }
+// Build (or rebuild) the editor with the post body baked in at construction —
+// ProseMirror renders initial content reliably on mount, whereas setContent run
+// in the click→openEditor flow does not populate the view.
+function mountEditor(html){
+  const { Editor, StarterKit, Link, Image, Placeholder } = window.TipTap;
+  if(editor){ editor.destroy(); editor = null; }
+  editor = new Editor({
+    element: $('editor'),
+    extensions: [
+      StarterKit.configure({ heading:{ levels:[2,3] } }),
+      Link.configure({ openOnClick:false, autolink:true, protocols:['http','https','mailto'], HTMLAttributes:{ rel:'noopener noreferrer', target:null } }),
+      Image.configure({ inline:false }),
+      Placeholder.configure({ placeholder:'Write your post…' }),
+    ],
+    content: html || '',
+    onUpdate: runSeoChecks,
+    onSelectionUpdate: updateToolbarActive,
+    onTransaction: updateToolbarActive,
+  });
+  updateToolbarActive();
+}
+function ttCmd(cmd){
+  if(!editor) return;
+  const c = editor.chain().focus();
+  if(cmd==='h2') c.toggleHeading({level:2}).run();
+  else if(cmd==='h3') c.toggleHeading({level:3}).run();
+  else if(cmd==='bold') c.toggleBold().run();
+  else if(cmd==='italic') c.toggleItalic().run();
+  else if(cmd==='bullet') c.toggleBulletList().run();
+  else if(cmd==='ordered') c.toggleOrderedList().run();
+  else if(cmd==='quote') c.toggleBlockquote().run();
+  else if(cmd==='code') c.toggleCodeBlock().run();
+  else if(cmd==='hr') c.setHorizontalRule().run();
+  else if(cmd==='link'){
+    const prev = editor.getAttributes('link').href || '';
+    const url = prompt('Link URL (leave blank to remove)', prev);
+    if(url===null) return;
+    if(url==='') editor.chain().focus().extendMarkRange('link').unsetLink().run();
+    else editor.chain().focus().extendMarkRange('link').setLink({ href:url }).run();
+  }
+  else if(cmd==='image') pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); editor.chain().focus().setImage({ src:url }).run(); toast('Image added'); }catch(e){ toast('Upload failed'); } });
+  updateToolbarActive();
+}
+function updateToolbarActive(){
+  if(!editor) return;
+  const a = {
+    h2:editor.isActive('heading',{level:2}), h3:editor.isActive('heading',{level:3}),
+    bold:editor.isActive('bold'), italic:editor.isActive('italic'), link:editor.isActive('link'),
+    bullet:editor.isActive('bulletList'), ordered:editor.isActive('orderedList'),
+    quote:editor.isActive('blockquote'), code:editor.isActive('codeBlock'),
+  };
+  document.querySelectorAll('#tt-toolbar button[data-cmd]').forEach(b=>b.classList.toggle('active', !!a[b.getAttribute('data-cmd')]));
+}
 
 // --- Image upload (signed URL → direct PUT to Supabase Storage) + media library ---
 async function uploadFile(file){
@@ -252,23 +324,6 @@ async function uploadFile(file){
   return sign.body.publicUrl;
 }
 function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i.accept='image/png,image/jpeg,image/webp,image/gif,image/svg+xml'; i.onchange=()=>{ if(i.files[0]) cb(i.files[0]); }; i.click(); }
-function quillImageHandler(){
-  pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); const r=quill.getSelection(true); quill.insertEmbed(r.index,'image',url,'user'); quill.setSelection(r.index+1); toast('Image added'); }catch(e){ toast('Upload failed'); } });
-}
-// Load post HTML into the editor. Uses Quill's converter + setContents (not
-// innerHTML) so inter-tag whitespace in migrated HTML doesn't become stray empty
-// paragraphs. Quill's converter can return an empty delta on its first call(s)
-// after init, so retry until it yields real content.
-function loadBody(html){
-  if(!html){ quill.setText(''); return; }
-  // Defer to a macrotask: Quill's converter returns an empty delta when called
-  // synchronously in the click→openEditor flow (before the just-shown editor has
-  // laid out); it works once a task boundary has passed.
-  setTimeout(() => {
-    quill.setContents(quill.clipboard.convert({ html }));
-    runSeoChecks();
-  }, 0);
-}
 let mediaPick = null;
 function openMedia(onPick){ mediaPick=onPick; $('mediaModal').style.display='flex'; loadMedia(); }
 function closeMedia(){ $('mediaModal').style.display='none'; mediaPick=null; }
@@ -283,10 +338,7 @@ async function loadMedia(){
 }
 
 async function openEditor(id) {
-  // Show the editor BEFORE creating Quill — a Quill initialised inside a
-  // display:none container won't render setContents.
   $('listView').classList.add('hide'); $('editView').classList.remove('hide');
-  ensureQuill();
   slugEdited = false;
   if (id) {
     const r = await api('/api/admin/posts/?id='+encodeURIComponent(id));
@@ -305,7 +357,7 @@ function fill(p){
   $('f_robots').value=p.robots||DEFAULT_ROBOTS;
   $('f_noindex').checked = /noindex/i.test(p.robots||DEFAULT_ROBOTS);
   $('f_og_title').value=p.og_title||''; $('f_og_description').value=p.og_description||''; $('f_og_image').value=p.og_image||'';
-  loadBody(p.body_html || '');
+  mountEditor(p.body_html || '');
   slugEdited = !!p.slug;
   refreshMeta();
   const pub = p.status==='published';
@@ -344,7 +396,7 @@ function runSeoChecks(){
   const title = ($('f_seo_title').value.trim()||$('f_title').value.trim()).toLowerCase();
   const slug = $('f_slug').value.trim().toLowerCase();
   const meta = $('f_meta_description').value.trim().toLowerCase();
-  const html = quill ? quill.root.innerHTML : '';
+  const html = editor ? editor.getHTML() : '';
   const body = plainText(html).toLowerCase();
   const words = body ? body.split(/\s+/).filter(Boolean) : [];
   const firstPara = plainText((html.match(/<p[^>]*>[\s\S]*?<\/p>/i)||[''])[0]).toLowerCase();
@@ -388,6 +440,7 @@ $('fiUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Upload
 $('fiLibrary').addEventListener('click', ()=> openMedia((url)=>{ $('f_featured_image').value=url; refreshMeta(); }));
 $('mediaClose').addEventListener('click', closeMedia);
 $('mediaModal').addEventListener('click', (e)=>{ if(e.target===$('mediaModal')) closeMedia(); });
+$('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[data-cmd]'); if(b) ttCmd(b.getAttribute('data-cmd')); });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);
 
@@ -395,7 +448,7 @@ function collect(){
   return {
     slug:$('f_slug').value.trim(), title:$('f_title').value.trim(),
     seo_title:$('f_seo_title').value.trim()||null, meta_description:$('f_meta_description').value.trim()||null,
-    excerpt:$('f_excerpt').value.trim()||null, body_html:quill.root.innerHTML,
+    excerpt:$('f_excerpt').value.trim()||null, body_html:(editor ? editor.getHTML() : ''),
     featured_image:$('f_featured_image').value.trim()||null, featured_image_alt:$('f_featured_image_alt').value.trim()||null,
     author:$('f_author').value.trim()||'Raj Goodman Anand', canonical_url:$('f_canonical_url').value.trim()||null,
     robots:$('f_robots').value.trim()||DEFAULT_ROBOTS, focus_keyphrase:$('f_focus_keyphrase').value.trim()||null,
