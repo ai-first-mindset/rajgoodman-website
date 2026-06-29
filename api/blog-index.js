@@ -8,12 +8,20 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
+function fmtDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
 function card(p) {
   const img = p.featured_image
     ? `<div class="th"><img src="${esc(p.featured_image)}" alt="${esc(p.featured_image_alt || p.title)}" loading="lazy"/></div>`
     : '';
+  const date = p.published_at
+    ? `<time datetime="${esc(p.published_at)}" style="display:block;font-size:.76rem;color:var(--tx-40);margin:0 0 8px">${esc(fmtDate(p.published_at))}</time>`
+    : '';
   const ex = p.excerpt ? `<p>${esc(p.excerpt)}</p>` : '';
-  return `<a class="post" href="/blog/${esc(p.slug)}/" data-reveal>${img}<div class="bd"><h3>${esc(p.title)}</h3>${ex}<span class="go">READ &#8594;</span></div></a>`;
+  return `<a class="post" href="/blog/${esc(p.slug)}/" data-reveal>${img}<div class="bd"><h3>${esc(p.title)}</h3>${date}${ex}<span class="go">READ &#8594;</span></div></a>`;
 }
 
 export default async function handler(req, res) {
