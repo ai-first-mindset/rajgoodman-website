@@ -1,7 +1,7 @@
 // SSR /blog/ index: full page chrome from the template, article grid populated
 // live from the DB. Served via the vercel.json rewrite (/blog/ -> here).
 
-import { listPublished } from './_blog-data.js';
+import { listPublished, getAllCategories } from './_blog-data.js';
 import { TEMPLATE } from './_blog-index-template.js';
 
 function esc(s) {
@@ -31,6 +31,13 @@ export default async function handler(req, res) {
     ? posts.map(card).join('\n')
     : '<p style="opacity:.7;grid-column:1/-1">No articles published yet — check back soon.</p>';
 
-  // Function replacement avoids $-pattern interpretation in the grid HTML.
-  return res.status(200).send(TEMPLATE.replace('{{POSTS}}', () => grid));
+  let cats = [];
+  try { cats = await getAllCategories(); } catch (e) { /* noop */ }
+  const catRow = cats.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;align-items:center"><span style="color:var(--tx-40);font-size:.74rem;text-transform:uppercase;letter-spacing:.12em">Browse</span>${cats.map((c) => `<a href="/blog/category/${c.slug}/" style="font-size:.84rem;color:var(--tx-60);border:1px solid var(--line);padding:5px 13px;border-radius:20px;text-decoration:none">${esc(c.name)}</a>`).join('')}</div>`
+    : '';
+
+  // Function replacement avoids $-pattern interpretation in the HTML.
+  const withCats = TEMPLATE.replace('<div class="blog-grid">{{POSTS}}</div>', () => `${catRow}<div class="blog-grid">{{POSTS}}</div>`);
+  return res.status(200).send(withCats.replace('{{POSTS}}', () => grid));
 }

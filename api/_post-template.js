@@ -9,6 +9,9 @@ const PERSON_ID = `${SITE}/#raj`;        // matches the site-wide Person node (s
 const WEBSITE_ID = `${SITE}/#website`;
 const SAME_AS = ['https://www.linkedin.com/in/rajanand/', 'https://x.com/RajAnand'];
 
+function catSlug(name) {
+  return String(name == null ? '' : name).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -97,6 +100,7 @@ export function renderPost(post, recent = []) {
       {
         '@type': 'Article', '@id': articleId, isPartOf: { '@id': webpageId },
         author: { '@id': PERSON_ID }, publisher: { '@id': PERSON_ID },
+        articleSection: (post.categories && post.categories.length) ? post.categories : undefined,
         headline: post.title, description: desc, datePublished: published, dateModified: modified,
         mainEntityOfPage: { '@id': webpageId }, image: { '@id': imageId }, inLanguage: 'en-US',
       },
@@ -150,7 +154,8 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
   <article class="wrap" style="max-width:760px;padding-top:120px;padding-bottom:80px">
     <a href="/blog/" style="opacity:.7;text-decoration:none">&larr; All articles</a>
     <h1 style="margin:18px 0 10px">${esc(post.title)}</h1>
-    <div style="opacity:.7;margin-bottom:28px">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</div>
+    <div style="opacity:.7;margin-bottom:18px">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</div>
+    ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${post.body_html || ''}</div>
   </article>

@@ -40,7 +40,23 @@ export async function getPublishedByPrevSlug(slug) {
 
 export async function listPublished() {
   if (!configured) return SEED.filter((p) => p.status === 'published');
-  return sb('posts?status=eq.published&select=slug,title,excerpt,featured_image,published_at,modified_at&order=published_at.desc');
+  return sb('posts?status=eq.published&select=slug,title,excerpt,featured_image,categories,published_at,modified_at&order=published_at.desc');
+}
+
+// Category helpers. Categories are stored as display names (text[]) on each post;
+// the URL slug is derived from the name.
+export function catSlug(name) {
+  return String(name == null ? '' : name).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+export async function getAllCategories() {
+  const posts = await listPublished();
+  const map = new Map();
+  posts.forEach((p) => (p.categories || []).forEach((c) => { const s = catSlug(c); if (s && !map.has(s)) map.set(s, c); }));
+  return [...map.entries()].map(([slug, name]) => ({ slug, name })).sort((a, b) => a.name.localeCompare(b.name));
+}
+export async function listByCategory(slug) {
+  const posts = await listPublished();
+  return posts.filter((p) => (p.categories || []).some((c) => catSlug(c) === slug));
 }
 
 export const dataSource = configured ? 'supabase' : 'seed';

@@ -9,7 +9,7 @@ const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_R
 
 const ALLOWED = ['slug', 'title', 'seo_title', 'meta_description', 'excerpt', 'body_html',
   'featured_image', 'featured_image_alt', 'author', 'canonical_url', 'robots', 'focus_keyphrase',
-  'og_title', 'og_description', 'og_image',
+  'og_title', 'og_description', 'og_image', 'categories',
   'status', 'published_at'];
 
 function headers(extra) {
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       const id = getId(req);
       const path = id
         ? `posts?id=eq.${encodeURIComponent(id)}&limit=1`
-        : 'posts?select=id,slug,title,status,published_at,modified_at&order=modified_at.desc';
+        : 'posts?select=id,slug,title,status,categories,published_at,modified_at&order=modified_at.desc';
       const r = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: headers() });
       const data = await r.json();
       return res.status(200).json({ ok: true, posts: id ? (data[0] || null) : data });

@@ -20,6 +20,7 @@ create table if not exists posts (
   og_description      text,                          -- social override; falls back to meta_description/excerpt
   og_image            text,                          -- social override; falls back to featured_image
   prev_slugs          text[] not null default '{}',  -- former slugs → 301 redirect to current
+  categories          text[] not null default '{}',  -- display names; archive at /blog/category/{slug}/
   status              text not null default 'draft' check (status in ('draft','published')),
   published_at        timestamptz,                   -- set once on first publish
   modified_at         timestamptz not null default now(),
@@ -31,10 +32,12 @@ alter table posts add column if not exists og_title text;
 alter table posts add column if not exists og_description text;
 alter table posts add column if not exists og_image text;
 alter table posts add column if not exists prev_slugs text[] not null default '{}';
+alter table posts add column if not exists categories text[] not null default '{}';
 
 create index if not exists posts_status_pub_idx on posts (status, published_at desc);
 create unique index if not exists posts_slug_idx on posts (slug);
 create index if not exists posts_prev_slugs_idx on posts using gin (prev_slugs);
+create index if not exists posts_categories_idx on posts using gin (categories);
 
 -- Storage bucket for blog image uploads (public read; service role writes).
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

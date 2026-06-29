@@ -2,7 +2,7 @@
 //   /sitemap_index.xml -> /post-sitemap.xml (DB) + /page-sitemap.xml (static)
 // Wired via rewrites in vercel.json. Posts come from the published set in the DB.
 
-import { listPublished } from './_blog-data.js';
+import { listPublished, getAllCategories } from './_blog-data.js';
 
 const SITE = 'https://rajgoodman.com';
 
@@ -37,8 +37,12 @@ export default async function handler(req, res) {
       const items = posts.map((p) => urlTag(`${SITE}/blog/${p.slug}/`, (p.modified_at || p.published_at || '').slice(0, 10)));
       return res.status(200).send(doc(items.join('\n')));
     }
+    if (kind === 'categories') {
+      const cats = await getAllCategories();
+      return res.status(200).send(doc(cats.map((c) => urlTag(`${SITE}/blog/category/${c.slug}/`)).join('\n')));
+    }
     // default: sitemap index
-    const subs = [`${SITE}/post-sitemap.xml`, `${SITE}/page-sitemap.xml`]
+    const subs = [`${SITE}/post-sitemap.xml`, `${SITE}/page-sitemap.xml`, `${SITE}/category-sitemap.xml`]
       .map((loc) => `<sitemap><loc>${loc}</loc></sitemap>`).join('\n');
     return res.status(200).send(doc(subs, 'sitemapindex'));
   } catch (err) {
