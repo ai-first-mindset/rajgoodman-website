@@ -19,6 +19,7 @@ create table if not exists posts (
   og_title            text,                          -- social override; falls back to seo_title/title
   og_description      text,                          -- social override; falls back to meta_description/excerpt
   og_image            text,                          -- social override; falls back to featured_image
+  prev_slugs          text[] not null default '{}',  -- former slugs → 301 redirect to current
   status              text not null default 'draft' check (status in ('draft','published')),
   published_at        timestamptz,                   -- set once on first publish
   modified_at         timestamptz not null default now(),
@@ -29,9 +30,17 @@ create table if not exists posts (
 alter table posts add column if not exists og_title text;
 alter table posts add column if not exists og_description text;
 alter table posts add column if not exists og_image text;
+alter table posts add column if not exists prev_slugs text[] not null default '{}';
 
 create index if not exists posts_status_pub_idx on posts (status, published_at desc);
 create unique index if not exists posts_slug_idx on posts (slug);
+create index if not exists posts_prev_slugs_idx on posts using gin (prev_slugs);
+
+-- Storage bucket for blog image uploads (public read; service role writes).
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('blog-media', 'blog-media', true, 10485760,
+  array['image/png','image/jpeg','image/webp','image/gif','image/svg+xml'])
+on conflict (id) do nothing;
 
 -- keep modified_at fresh on every update
 create or replace function set_modified_at() returns trigger as $$

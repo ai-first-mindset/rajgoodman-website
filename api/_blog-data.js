@@ -29,6 +29,15 @@ export async function getPostBySlugAnyStatus(slug) {
   return rows[0] || null;
 }
 
+// Find a published post whose previous slug matches (for 301 redirects after a
+// slug change). Returns the post's current slug, or null.
+export async function getPublishedByPrevSlug(slug) {
+  if (!configured) return null;
+  const filter = encodeURIComponent(`{${slug}}`);
+  const rows = await sb(`posts?status=eq.published&prev_slugs=cs.${filter}&select=slug&limit=1`);
+  return rows[0] || null;
+}
+
 export async function listPublished() {
   if (!configured) return SEED.filter((p) => p.status === 'published');
   return sb('posts?status=eq.published&select=slug,title,excerpt,featured_image,published_at,modified_at&order=published_at.desc');

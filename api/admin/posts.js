@@ -20,6 +20,18 @@ function pick(body) {
   for (const k of ALLOWED) if (k in body && body[k] !== undefined) row[k] = body[k];
   return row;
 }
+// Best-effort sanitiser for admin-authored HTML: strip <script>/<style>, inline
+// event handlers, and javascript:/vbscript: URLs. Body comes from Quill (already
+// format-constrained), so this is defence-in-depth.
+function sanitizeHtml(html) {
+  if (typeof html !== 'string') return html;
+  return html
+    .replace(/<\s*script\b[\s\S]*?<\/\s*script\s*>/gi, '')
+    .replace(/<\s*script\b[^>]*>/gi, '')
+    .replace(/<\s*style\b[\s\S]*?<\/\s*style\s*>/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src)\s*=\s*("|')\s*(?:javascript|vbscript):[^"']*\2/gi, '$1=$2#$2');
+}
 function getId(req) {
   let id = req.query && req.query.id;
   if (!id && req.url) { try { id = new URL(req.url, 'http://x').searchParams.get('id'); } catch (e) { /* noop */ } }
@@ -48,6 +60,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       if (!body.title || !body.slug) return res.status(422).json({ ok: false, error: 'title-and-slug-required' });
       const row = pick(body);
+      if ('body_html' in row) row.body_html = sanitizeHtml(row.body_html);
       const r = await fetch(`${SB_URL}/rest/v1/posts`, {
         method: 'POST', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
       });
@@ -58,11 +71,20 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       if (!body.id) return res.status(422).json({ ok: false, error: 'id-required' });
       const row = pick(body);
-      // Set published_at once, the first time a post becomes published.
-      if (body.status === 'published') {
-        const cur = await fetch(`${SB_URL}/rest/v1/posts?id=eq.${encodeURIComponent(body.id)}&select=published_at`, { headers: headers() });
+      if ('body_html' in row) row.body_html = sanitizeHtml(row.body_html);
+      // Look up the current row when we may need to set published_at, or record a
+      // slug change so the old URL can 301 to the new one.
+      if (body.status === 'published' || body.slug) {
+        const cur = await fetch(`${SB_URL}/rest/v1/posts?id=eq.${encodeURIComponent(body.id)}&select=published_at,slug,prev_slugs`, { headers: headers() });
         const curRow = (await cur.json())[0];
-        if (curRow && !curRow.published_at) row.published_at = new Date().toISOString();
+        if (curRow) {
+          if (body.status === 'published' && !curRow.published_at) row.published_at = new Date().toISOString();
+          if (body.slug && curRow.slug && body.slug !== curRow.slug) {
+            const set = new Set([...(curRow.prev_slugs || []), curRow.slug]);
+            set.delete(body.slug);
+            row.prev_slugs = [...set];
+          }
+        }
       }
       const r = await fetch(`${SB_URL}/rest/v1/posts?id=eq.${encodeURIComponent(body.id)}`, {
         method: 'PATCH', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
