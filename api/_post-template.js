@@ -4,7 +4,7 @@
 const SITE = 'https://rajgoodman.com';
 const SITE_NAME = 'Raj Goodman';
 const TWITTER = '@RajAnand';
-const DEFAULT_OG_IMAGE = 'https://cdn.rajgoodman.com/wp-content/uploads/2025/06/Rectangle-2-1.webp';
+const DEFAULT_OG_IMAGE = 'https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/wp-content/uploads/2025/06/Rectangle-2-1.webp';
 const PERSON_ID = `${SITE}/#raj`;        // matches the site-wide Person node (see index.html)
 const WEBSITE_ID = `${SITE}/#website`;
 const SAME_AS = ['https://www.linkedin.com/in/rajanand/', 'https://x.com/RajAnand'];
