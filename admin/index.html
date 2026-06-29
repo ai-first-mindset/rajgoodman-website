@@ -65,11 +65,25 @@
 <div id="login" class="login hide">
   <div class="card">
     <h1 style="margin-top:0">Blog Admin</h1>
-    <p class="muted">Enter the admin password to continue.</p>
+    <p class="muted">Sign in to continue.</p>
     <form id="loginForm">
+      <input id="email" type="email" placeholder="Email" autocomplete="username" style="margin-bottom:10px" />
       <input id="pw" type="password" placeholder="Password" autocomplete="current-password" />
       <button class="primary" style="margin-top:12px;width:100%" type="submit">Sign in</button>
-      <p id="loginErr" class="muted hide" style="color:#b42318;margin-top:10px">Incorrect password.</p>
+      <p id="loginErr" class="muted hide" style="color:#b42318;margin-top:10px">Incorrect email or password.</p>
+    </form>
+  </div>
+</div>
+
+<!-- SET PASSWORD (invite link) -->
+<div id="setpw" class="login hide">
+  <div class="card">
+    <h1 style="margin-top:0">Choose a password</h1>
+    <p class="muted">Welcome — set a password to activate your account.</p>
+    <form id="setpwForm">
+      <input id="newpw" type="password" placeholder="New password (min 8 characters)" autocomplete="new-password" minlength="8" />
+      <button class="primary" style="margin-top:12px;width:100%" type="submit">Set password &amp; sign in</button>
+      <p id="setpwErr" class="muted hide" style="color:#b42318;margin-top:10px"></p>
     </form>
   </div>
 </div>
@@ -79,10 +93,32 @@
   <header class="bar">
     <h1>Blog Admin <span class="sub">— rajgoodman.com</span></h1>
     <div class="right">
+      <span id="whoami" class="sub" style="margin-right:8px"></span>
+      <button id="usersBtn" class="hide">Users</button>
       <button id="newBtn">+ New post</button>
       <button id="logoutBtn">Log out</button>
     </div>
   </header>
+
+  <!-- USERS (admin only) -->
+  <div id="usersView" class="wrap hide">
+    <div class="actions" style="justify-content:space-between;margin-bottom:16px">
+      <button id="usersBackBtn">&larr; Back to posts</button>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Invite a user</h2>
+      <form id="inviteForm" class="actions" style="flex-wrap:wrap;align-items:flex-end;gap:10px">
+        <div style="flex:1;min-width:220px"><label>Email</label><input id="inv_email" type="email" placeholder="name@company.com" /></div>
+        <div><label>Role</label><select id="inv_role"><option value="editor">Editor</option><option value="admin">Admin</option></select></div>
+        <button class="primary" type="submit">Send invite</button>
+      </form>
+      <p id="inviteMsg" class="muted hide" style="margin-top:10px"></p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2 style="margin-top:0">Users</h2>
+      <table id="usersTable"><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Last sign-in</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
 
   <!-- LIST -->
   <div id="listView" class="wrap">
@@ -264,21 +300,97 @@ async function api(path, opts={}) {
   return { status:r.status, ok:r.ok, body };
 }
 
-async function boot() {
-  const s = await api('/api/admin/session/');
-  if (s.status === 200) { showApp(); } else { $('login').classList.remove('hide'); }
+let ME = null;            // { email, role }
+let INVITE = null;        // { access_token, refresh_token } parsed from the invite link hash
+
+// Invite/recovery links return with tokens in the URL hash (#access_token=…&type=invite…).
+function parseHash(){
+  const h = (location.hash || '').replace(/^#/, '');
+  if (!h) return null;
+  const p = new URLSearchParams(h);
+  const at = p.get('access_token');
+  if (!at) return null;
+  return { access_token: at, refresh_token: p.get('refresh_token'), type: p.get('type') };
 }
-function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); loadList(); }
+
+async function boot() {
+  INVITE = parseHash();
+  if (INVITE) {
+    history.replaceState(null, '', location.pathname);   // strip tokens from the URL bar
+    $('setpw').classList.remove('hide');
+    return;
+  }
+  const s = await api('/api/admin/session/');
+  if (s.status === 200 && s.body && s.body.ok) { ME = s.body; showApp(); }
+  else { $('login').classList.remove('hide'); }
+}
+function showApp(){
+  $('login').classList.add('hide'); $('setpw').classList.add('hide');
+  $('app').classList.remove('hide');
+  $('whoami').textContent = ME ? `${ME.email} · ${ME.role}` : '';
+  $('usersBtn').classList.toggle('hide', !ME || ME.role !== 'admin');
+  loadList();
+}
 
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const r = await api('/api/admin/login/', { method:'POST', body: JSON.stringify({ password: $('pw').value }) });
-  if (r.ok) { $('loginErr').classList.add('hide'); showApp(); } else { $('loginErr').classList.remove('hide'); }
+  const r = await api('/api/admin/login/', { method:'POST', body: JSON.stringify({ email: $('email').value.trim(), password: $('pw').value }) });
+  if (r.ok && r.body && r.body.ok) { $('loginErr').classList.add('hide'); ME = r.body; showApp(); }
+  else { $('loginErr').classList.remove('hide'); }
+});
+$('setpwForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('setpwErr'); err.classList.add('hide');
+  const pw = $('newpw').value;
+  if (pw.length < 8) { err.textContent='Password must be at least 8 characters.'; err.classList.remove('hide'); return; }
+  const r = await api('/api/admin/set-password/', { method:'POST', body: JSON.stringify({ ...INVITE, password: pw }) });
+  if (r.ok && r.body && r.body.ok) {
+    const s = await api('/api/admin/session/');
+    if (s.status === 200 && s.body && s.body.ok) { ME = s.body; showApp(); }
+    else { $('setpw').classList.add('hide'); $('login').classList.remove('hide'); }
+  } else { err.textContent = 'Could not set password — the invite link may have expired.'; err.classList.remove('hide'); }
 });
 $('logoutBtn').addEventListener('click', async () => { await api('/api/admin/session/', { method:'DELETE' }); location.reload(); });
 
+// ---- Users panel (admin only) ----
+$('usersBtn').addEventListener('click', showUsers);
+$('usersBackBtn').addEventListener('click', loadList);
+async function showUsers(){
+  $('listView').classList.add('hide'); $('editView').classList.add('hide');
+  $('usersView').classList.remove('hide');
+  const r = await api('/api/admin/users/');
+  const tb = $('usersTable').querySelector('tbody'); tb.innerHTML='';
+  const users = (r.body && r.body.users) || [];
+  users.forEach(u => {
+    const tr = document.createElement('tr');
+    const last = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : '—';
+    const status = u.confirmed ? 'active' : 'invited';
+    const delBtn = (u.email === (ME&&ME.email)) ? '' : `<button class="danger" data-del="${u.id}" data-email="${esc(u.email)}">Remove</button>`;
+    tr.innerHTML = `<td>${esc(u.email)}</td><td>${esc(u.role)}</td><td class="muted">${status}</td><td class="muted">${last}</td><td>${delBtn}</td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm(`Remove ${b.dataset.email}? They will lose access immediately.`)) return;
+    const r = await api('/api/admin/users/', { method:'DELETE', body: JSON.stringify({ id: b.dataset.del }) });
+    if (r.ok) showUsers(); else toast('Could not remove user');
+  }));
+}
+$('inviteForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('inviteMsg'); msg.classList.add('hide');
+  const email = $('inv_email').value.trim();
+  if (!email) return;
+  const r = await api('/api/admin/users/', { method:'POST', body: JSON.stringify({ email, role: $('inv_role').value }) });
+  if (r.ok && r.body && r.body.ok) {
+    msg.textContent = `Invite sent to ${email}.`; msg.style.color=''; msg.classList.remove('hide');
+    $('inv_email').value=''; showUsers();
+  } else {
+    msg.textContent = 'Invite failed' + (r.body && r.body.detail ? ': ' + r.body.detail : '.'); msg.style.color='#b42318'; msg.classList.remove('hide');
+  }
+});
+
 async function loadList() {
-  $('editView').classList.add('hide'); $('listView').classList.remove('hide');
+  $('editView').classList.add('hide'); $('usersView').classList.add('hide'); $('listView').classList.remove('hide');
   const r = await api('/api/admin/posts/');
   const tb = $('postsTable').querySelector('tbody'); tb.innerHTML='';
   const posts = (r.body && r.body.posts) || [];

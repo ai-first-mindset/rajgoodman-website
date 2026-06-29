@@ -3,7 +3,7 @@
 
 import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug, listPublished } from './_blog-data.js';
 import { renderPost, renderNotFound } from './_post-template.js';
-import { isAuthed } from './_auth.js';
+import { getAuthedUser } from './_auth.js';
 
 export default async function handler(req, res) {
   let raw = req.query && req.query.slug;
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   try {
     post = await getPostBySlug(slug);
     // Authed admins can preview an unpublished draft (never cached, noindex).
-    if (!post && isAuthed(req)) {
+    if (!post && (await getAuthedUser(req))) {
       post = await getPostBySlugAnyStatus(slug);
       preview = Boolean(post);
     }
