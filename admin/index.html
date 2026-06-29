@@ -6,6 +6,10 @@
 <meta name="robots" content="noindex, nofollow" />
 <title>Blog Admin — rajgoodman.com</title>
 <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/blog-content.css" />
 <style>
   :root { --bd:#e3e6ea; --mut:#6b7280; --acc:#f3af00; --ink:#1f2933; }
   * { box-sizing:border-box }
@@ -30,7 +34,11 @@
   .pill { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600 }
   .pill.published { background:#e7f6ec; color:#1a7f37 } .pill.draft { background:#fdf3d8; color:#8a6d00 }
   .actions { display:flex; gap:8px; flex-wrap:wrap } .right { display:flex; gap:8px }
-  #editor { background:#fff } .ql-container { min-height:280px; font-size:15px }
+  /* Editor surface mirrors the published article (dark theme) for WYSIWYG fidelity */
+  .ql-toolbar.ql-snow { border-color:var(--bd); border-radius:8px 8px 0 0; background:#fff }
+  .ql-container.ql-snow { border-color:var(--bd); border-radius:0 0 8px 8px; background:#201600 }
+  .ql-editor { min-height:340px; padding:24px 26px }
+  .ql-editor.ql-blank::before { color:rgba(244,239,230,.4); font-style:normal; left:26px; right:26px }
   .hide { display:none } .toast { position:fixed; bottom:20px; right:20px; background:var(--ink); color:#fff; padding:11px 16px; border-radius:8px; opacity:0; transition:opacity .2s }
   .toast.show { opacity:1 } a.link { color:#1a56db; text-decoration:none }
   .login { max-width:360px; margin:12vh auto; }
@@ -171,7 +179,7 @@
   </div>
 </div>
 
-<div id="mediaModal" class="hide" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px">
+<div id="mediaModal" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;align-items:center;justify-content:center;padding:20px">
   <div class="card" style="width:min(760px,94vw);max-height:82vh;overflow:auto;margin:0">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h3 style="margin:0">Media library</h3>
@@ -248,8 +256,8 @@ function quillImageHandler(){
   pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); const r=quill.getSelection(true); quill.insertEmbed(r.index,'image',url,'user'); quill.setSelection(r.index+1); toast('Image added'); }catch(e){ toast('Upload failed'); } });
 }
 let mediaPick = null;
-function openMedia(onPick){ mediaPick=onPick; $('mediaModal').classList.remove('hide'); loadMedia(); }
-function closeMedia(){ $('mediaModal').classList.add('hide'); mediaPick=null; }
+function openMedia(onPick){ mediaPick=onPick; $('mediaModal').style.display='flex'; loadMedia(); }
+function closeMedia(){ $('mediaModal').style.display='none'; mediaPick=null; }
 async function loadMedia(){
   const grid=$('mediaGrid'); grid.innerHTML='<p class="muted">Loading…</p>';
   const r=await api('/api/admin/media/'); const files=(r.body&&r.body.files)||[];
