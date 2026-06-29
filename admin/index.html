@@ -128,6 +128,7 @@
         <button type="button" data-cmd="faq" title="FAQ item (collapsible Q&amp;A)">FAQ</button>
         <button type="button" data-cmd="video" title="Embed a YouTube video">Video</button>
         <button type="button" data-cmd="cta" title="Insert a call-to-action">CTA</button>
+        <button type="button" data-cmd="form" title="Insert a form (Turnstile-protected)">Form</button>
       </div>
       <div id="tt-videobar" style="display:none;gap:8px;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
         <input id="tt-videourl" placeholder="Paste a YouTube URL, then Embed…" style="flex:1" />
@@ -150,6 +151,13 @@
         <input id="cta-t" placeholder="Supporting text" />
         <input id="cta-u" placeholder="Button link (e.g. /#work or https://…)" />
         <div style="display:flex;gap:8px"><button type="button" id="cta-insert" class="primary">Insert CTA</button><button type="button" id="cta-cancel">Cancel</button></div>
+      </div>
+      <div id="tt-formbar" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;padding:10px;background:#fff;border:1px solid var(--bd);border-bottom:none">
+        <span class="muted">Insert form:</span>
+        <button type="button" class="form-preset" data-kind="contact">Contact form</button>
+        <button type="button" class="form-preset" data-kind="newsletter">Newsletter signup</button>
+        <span class="muted">&mdash; Turnstile-protected; submits to Raj&rsquo;s DealDesk / EmailOctopus</span>
+        <button type="button" id="form-cancel" style="margin-left:auto">Cancel</button>
       </div>
       <div id="editor"></div>
     </div>
@@ -321,6 +329,31 @@ function insertCTA(h,t,l,u){
   editor.chain().focus().insertContent([{ type:'cta', attrs:{ heading:h||'', text:t||'', label:l||'Get in touch', url:u||'/#work' } }, { type:'paragraph' }]).run();
   $('tt-ctabar').style.display='none'; ['cta-h','cta-t','cta-l','cta-u'].forEach(id=>$(id).value='');
 }
+
+// Form block node (atom): renders the site's real contact/newsletter form markup
+// (data-form + data-turnstile). On the published page, common.js auto-wires it +
+// loads Turnstile. Submits to /api/contact/ (DealDesk) or /api/subscribe/ (EmailOctopus).
+const FORM_HTML = {
+  contact: '<form data-form="contact" class="post-form"><div class="row2"><div class="fld"><label>Name *</label><input name="name" required placeholder="Your name"></div><div class="fld"><label>Email Address *</label><input name="email" type="email" required placeholder="you@company.com"></div></div><div class="fld"><label>Services *</label><select name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select></div><div class="fld"><label>Message *</label><textarea name="message" required placeholder="Tell Raj about your goals…"></textarea></div><div data-turnstile style="margin:6px 0 18px"></div><button class="btn btn-y" type="submit">Send message <span class="ar">→</span></button></form>',
+  newsletter: '<form data-form="newsletter" class="post-form"><div class="row2"><div class="fld"><input name="firstName" required placeholder="First Name"></div><div class="fld"><input name="lastName" required placeholder="Last Name"></div></div><div class="fld"><input name="email" type="email" required placeholder="Email"></div><div data-turnstile style="margin:6px 0 18px"></div><button class="btn btn-y" type="submit">Join the Newsletter <span class="ar">→</span></button></form>',
+};
+let _formNode;
+function formNode(){
+  if(_formNode) return _formNode;
+  const { Node } = window.TipTap;
+  _formNode = Node.create({
+    name:'leadform', group:'block', atom:true, selectable:true, draggable:true,
+    addAttributes(){ return { kind:{ default:'contact', parseHTML:el=>el.getAttribute('data-form')||'contact' } }; },
+    parseHTML(){ return [{ tag:'form[data-form]' }]; },
+    renderHTML({ node }){ const d=document.createElement('div'); d.innerHTML=FORM_HTML[node.attrs.kind]||FORM_HTML.contact; return d.firstElementChild; },
+  });
+  return _formNode;
+}
+function insertForm(kind){
+  if(!editor) return;
+  editor.chain().focus().insertContent([{ type:'leadform', attrs:{ kind } }, { type:'paragraph' }]).run();
+  $('tt-formbar').style.display='none';
+}
 function mountEditor(html){
   const { Editor, StarterKit, Link, Image, Placeholder, Details, DetailsSummary, DetailsContent, Youtube } = window.TipTap;
   if(editor){ editor.destroy(); editor = null; }
@@ -336,6 +369,7 @@ function mountEditor(html){
       DetailsContent,
       Youtube.configure({ controls:true, nocookie:true, width:640, height:360 }),
       ctaNode(),
+      formNode(),
     ],
     content: html || '',
     onUpdate: runSeoChecks,
@@ -367,6 +401,7 @@ function ttCmd(cmd){
   else if(cmd==='faq') c.setDetails().run();
   else if(cmd==='video'){ const bar=$('tt-videobar'); bar.style.display='flex'; const inp=$('tt-videourl'); inp.value=''; inp.focus(); return; }
   else if(cmd==='cta'){ const bar=$('tt-ctabar'); bar.style.display='flex'; $('cta-h').focus(); return; }
+  else if(cmd==='form'){ $('tt-formbar').style.display='flex'; return; }
   updateToolbarActive();
 }
 function updateToolbarActive(){
@@ -513,6 +548,8 @@ $('tt-videocancel').addEventListener('click', ()=>{ $('tt-videobar').style.displ
 $('tt-ctabar').addEventListener('click', e=>{ const p=e.target.closest('.cta-preset'); if(p) insertCTA(p.dataset.h,p.dataset.t,p.dataset.l,p.dataset.u); });
 $('cta-insert').addEventListener('click', ()=> insertCTA($('cta-h').value.trim(),$('cta-t').value.trim(),$('cta-l').value.trim(),$('cta-u').value.trim()));
 $('cta-cancel').addEventListener('click', ()=>{ $('tt-ctabar').style.display='none'; });
+$('tt-formbar').addEventListener('click', e=>{ const p=e.target.closest('.form-preset'); if(p) insertForm(p.dataset.kind); });
+$('form-cancel').addEventListener('click', ()=>{ $('tt-formbar').style.display='none'; });
 $('tt-videourl').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); embedVideo(); } });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);

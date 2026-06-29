@@ -105,3 +105,15 @@
   padding: .85em 1.5em; border-radius: 4px; text-decoration: none;
 }
 .post-body .post-cta-btn:hover, .ProseMirror .post-cta-btn:hover { background: #d99c00; }
+
+/* Form block. The published page styles it via site.css (.row2/.fld/.btn); the
+   editor (no site.css) needs its own preview styling. */
+.post-body form.post-form, .ProseMirror form.post-form { margin: 1.8rem 0; }
+.ProseMirror form.post-form { border: 1px dashed rgba(244, 239, 230, .25); border-radius: 10px; padding: 18px 20px; }
+.ProseMirror form.post-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ProseMirror form.post-form .fld { margin-bottom: 12px; }
+.ProseMirror form.post-form label { display: block; color: #f4efe6; font-size: .8rem; font-weight: 600; margin: 0 0 4px; }
+.ProseMirror form.post-form input, .ProseMirror form.post-form select, .ProseMirror form.post-form textarea {
+  width: 100%; padding: 9px 11px; border: 1px solid rgba(244, 239, 230, .2); border-radius: 6px; background: #fff; color: #1f2933; font: inherit;
+}
+.ProseMirror form.post-form button { margin-top: 6px; background: #f3af00; color: #140e04; font-weight: 700; border: 0; padding: .7em 1.3em; border-radius: 4px; }
