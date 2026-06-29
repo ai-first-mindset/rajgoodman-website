@@ -107,6 +107,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/blog-content.css" />
 </head>
 <body data-page="blog">
 <main>
