@@ -10,21 +10,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/blog-content.css" />
 <style>
-  :root { --bd:#e3e6ea; --mut:#6b7280; --acc:#f3af00; --ink:#1f2933; }
+  :root { --bd:#c3c4c7; --mut:#646970; --acc:#3858e9; --acc-d:#2145e6; --acc-dd:#183ad6; --ink:#1d2327; }
   * { box-sizing:border-box }
-  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:#f6f7f9 }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; font-size:13px; line-height:1.4; color:var(--ink); background:#f0f0f1 }
   header.bar { display:flex; align-items:center; justify-content:space-between; padding:14px 22px; background:#fff; border-bottom:1px solid var(--bd); position:sticky; top:0; z-index:5 }
   header.bar h1 { font-size:16px; margin:0 } header.bar .sub { color:var(--mut); font-weight:400 }
   .wrap { max-width:980px; margin:0 auto; padding:24px 22px }
-  button { font:inherit; cursor:pointer; border:1px solid var(--bd); background:#fff; border-radius:7px; padding:8px 14px }
-  button.primary { background:var(--ink); color:#fff; border-color:var(--ink) }
-  button.accent { background:var(--acc); border-color:var(--acc); font-weight:600 }
-  button.danger { color:#b42318; border-color:#f0c2bd }
+  /* WordPress 7 button system: secondary = indigo outline, primary = indigo fill */
+  button { font:inherit; cursor:pointer; display:inline-block; font-size:13px; font-weight:500; line-height:2.30769231; min-height:32px; padding:0 12px; border:1px solid var(--acc); border-radius:2px; background:transparent; color:var(--acc); white-space:nowrap; transition:background .1s,border-color .1s,color .1s }
+  button:hover { background:rgba(56,88,233,.04); border-color:var(--acc-dd); color:var(--acc-dd) }
+  button:focus { box-shadow:0 0 0 1.5px var(--acc); outline:1px solid transparent }
+  button.primary, button.accent { background:var(--acc); border-color:var(--acc); color:#fff; font-weight:600 }
+  button.primary:hover, button.accent:hover { background:var(--acc-d); border-color:var(--acc-d); color:#fff }
+  button.danger { color:#b32d2e; border-color:#b32d2e; background:transparent } button.danger:hover { background:#b32d2e; border-color:#b32d2e; color:#fff }
   button:disabled { opacity:.5; cursor:default }
-  input, textarea, select { width:100%; padding:9px 11px; border:1px solid var(--bd); border-radius:7px; font:inherit; background:#fff }
-  label { display:block; font-size:12.5px; font-weight:600; color:#374151; margin:14px 0 5px }
+  input, textarea, select { width:100%; font:inherit; font-size:14px; padding:0 12px; min-height:36px; border:1px solid #949494; border-radius:2px; background:#fff; color:#1e1e1e }
+  textarea { padding:8px 12px; min-height:64px; line-height:1.5 }
+  input:focus, textarea:focus, select:focus { border-color:var(--acc); box-shadow:0 0 0 1.5px var(--acc); outline:2px solid transparent }
+  input[type="checkbox"], input[type="radio"] { width:auto; min-height:0; padding:0 }
+  label { display:block; font-size:13px; font-weight:600; color:var(--ink); margin:14px 0 5px }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:16px }
-  .card { background:#fff; border:1px solid var(--bd); border-radius:10px; padding:18px 20px; margin-bottom:18px }
+  .card { background:#fff; border:1px solid var(--bd); border-radius:4px; padding:16px 18px; margin-bottom:20px; box-shadow:0 1px 1px rgba(0,0,0,.04) }
   .muted { color:var(--mut); font-size:12px } .count { float:right; font-weight:400 }
   table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--bd); border-radius:10px; overflow:hidden }
   th, td { text-align:left; padding:11px 14px; border-bottom:1px solid var(--bd); font-size:14px }
@@ -32,7 +38,7 @@
   tr:last-child td { border-bottom:0 }
   .pill { font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600 }
   .pill.published { background:#e7f6ec; color:#1a7f37 } .pill.draft { background:#fdf3d8; color:#8a6d00 }
-  .actions { display:flex; gap:8px; flex-wrap:wrap } .right { display:flex; gap:8px }
+  .actions { display:flex; gap:8px; flex-wrap:wrap } .right { display:flex; gap:8px; align-items:center }
   /* Editor toolbar (light) + content surface (dark, mirrors the published article) */
   .tt-toolbar { display:flex; flex-wrap:wrap; gap:3px; padding:7px 8px; background:#fff; border:1px solid var(--bd); border-bottom:none; border-radius:8px 8px 0 0; position:sticky; top:53px; z-index:4 }
   .tt-toolbar button { min-width:30px; padding:5px 9px; font-size:13px; line-height:1.1; border:1px solid transparent; background:transparent; border-radius:5px; color:#374151 }
@@ -57,6 +63,55 @@
   .social-domain { font-size:12px; color:var(--mut) }
   .social-title { font-weight:600; font-size:15px; margin:2px 0; color:var(--ink) }
   .social-desc { font-size:13px; color:var(--mut); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+  /* Media library */
+  .media-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px }
+  .media-toolbar .left { display:flex; align-items:center; gap:12px }
+  .media-toolbar h2 { margin:0; font-size:18px } .media-toolbar .count { color:var(--mut); font-weight:400; font-size:13px }
+  .media-search { width:230px; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 10px center; padding-left:32px }
+  .media-drop { border:2px dashed var(--bd); border-radius:12px; padding:14px; transition:border-color .15s, background .15s }
+  .media-drop.drag { border-color:var(--acc); background:#eef1fe }
+  .media-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px }
+  /* WordPress-style square tiles: image only, inset shadow + inner border, inset-ring selection */
+  .media-tile { position:relative; aspect-ratio:1/1; border:0; padding:0; cursor:pointer; background:#f0f0f1; border-radius:2px; overflow:hidden;
+                box-shadow: inset 0 0 15px rgba(0,0,0,.1), inset 0 0 0 1px rgba(0,0,0,.05); transition:box-shadow .12s }
+  .media-tile img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block }
+  .media-tile::after { content:""; position:absolute; inset:0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); pointer-events:none }
+  .media-tile:hover { box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px rgba(0,0,0,.12) }
+  .media-tile.selected { box-shadow: inset 0 0 0 5px #fff, inset 0 0 0 7px var(--acc) }
+  .media-tile .check { position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%; background:var(--acc); color:#fff;
+                       display:none; align-items:center; justify-content:center; font-size:14px; font-weight:800; z-index:2;
+                       box-shadow:0 0 0 1px #fff, 0 0 0 2px rgba(0,0,0,.15) }
+  .media-tile.selected .check { display:flex }
+  .media-tile .noalt { position:absolute; left:6px; bottom:6px; font-size:10px; font-weight:600; letter-spacing:.03em; z-index:2;
+                       background:rgba(180,35,24,.92); color:#fff; padding:2px 6px; border-radius:3px }
+  /* details sidebar — WP "Attachment details" */
+  .media-detail { background:#f6f7f7 !important; border-color:#dcdcde !important }
+  .media-detail .preview { width:100%; border-radius:3px; background:#f0f0f1; display:block; margin-bottom:12px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1) }
+  .media-detail h4 { text-transform:uppercase; font-size:12px; font-weight:600; color:#646970; margin:16px 0 8px; letter-spacing:.02em }
+  .media-detail .info { font-size:12px; color:#646970; line-height:1.7 }
+  .media-detail .info b { color:#1d2327; font-weight:600 }
+  .media-detail label { color:#1d2327 }
+  .media-empty, .media-loading { color:var(--mut); padding:30px 4px; text-align:center }
+  /* wp-admin shell */
+  #wpbar { position:fixed; top:0; left:0; right:0; height:40px; background:#1d2327; color:#c3c4c7; display:flex; align-items:center; justify-content:space-between; padding:0 16px; z-index:30; font-size:13px }
+  #wpbar .brand { color:#fff; font-weight:600 }
+  #wpbar a { color:#72aee6; text-decoration:none } #wpbar a:hover { color:#9ec2e6 }
+  #adminmenu { position:fixed; top:40px; bottom:0; left:0; width:160px; background:#1d2327; padding-top:6px; z-index:25; overflow:hidden; transition:width .14s ease }
+  #adminmenu .item { display:flex; align-items:center; gap:11px; padding:11px 14px; color:#c3c4c7; font-size:14px; line-height:1; white-space:nowrap; cursor:pointer; border-left:4px solid transparent; user-select:none }
+  #adminmenu .item:hover { color:#72aee6; background:#2c3338 }
+  #adminmenu .item.current { color:#fff; background:var(--acc); border-left-color:#a7c1ff; font-weight:600 }
+  #adminmenu .item svg { width:18px; height:18px; flex:0 0 auto }
+  #adminmenu .item .label { transition:opacity .1s }
+  #adminmenu .collapse { position:absolute; bottom:0; left:0; right:0; color:#a7aaad; border-top:1px solid #2c3338 }
+  #wpbody { margin:40px 0 0 160px; min-height:calc(100vh - 40px); transition:margin .14s ease }
+  #app.folded #adminmenu { width:46px } #app.folded #adminmenu .label { opacity:0; pointer-events:none }
+  #app.folded #wpbody { margin-left:46px }
+  #wpbody .wrap { max-width:1180px; margin:0; padding:22px 24px }
+  .wp-heading { font-size:23px; font-weight:400; color:#1d2327; margin:0 0 18px }
+  .card h2, .card h3 { font-size:14px; font-weight:600; color:var(--ink) }
+  .glance { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px }
+  .glance .stat { border:1px solid var(--bd); border-radius:10px; padding:16px; background:#fff }
+  .glance .stat .n { font-size:26px; font-weight:700; color:#1d2327; line-height:1 } .glance .stat .l { color:var(--mut); font-size:13px; margin-top:5px }
 </style>
 </head>
 <body>
@@ -91,15 +146,35 @@
 
 <!-- APP -->
 <div id="app" class="hide">
-  <header class="bar">
-    <h1>Blog Admin <span class="sub">— rajgoodman.com</span></h1>
-    <div class="right">
-      <span id="whoami" class="sub" style="margin-right:8px"></span>
-      <button id="usersBtn" class="hide">Users</button>
-      <button id="newBtn">+ New post</button>
-      <button id="logoutBtn">Log out</button>
+  <div id="wpbar">
+    <span class="brand">rajgoodman.com</span>
+    <span class="acct">Howdy, <span id="whoami"></span> · <a href="#" id="logoutBtn">Log out</a></span>
+  </div>
+  <nav id="adminmenu">
+    <div class="item" id="navDashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="label">Dashboard</span></div>
+    <div class="item" id="navPosts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span class="label">Posts</span></div>
+    <div class="item" id="mediaBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="label">Media</span></div>
+    <div class="item" id="navLinkedin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg><span class="label">LinkedIn</span></div>
+    <div class="item hide" id="usersBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="label">Users</span></div>
+    <div class="item collapse" id="collapseBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="label">Collapse menu</span></div>
+  </nav>
+  <div id="wpbody">
+
+  <!-- DASHBOARD -->
+  <div id="dashboardView" class="wrap">
+    <h1 class="wp-heading">Dashboard</h1>
+    <div class="card">
+      <h3 style="margin-top:0">At a Glance</h3>
+      <div id="glance" class="glance"></div>
     </div>
-  </header>
+    <div class="card">
+      <h3 style="margin-top:0">Quick actions</h3>
+      <div class="actions">
+        <button id="dashNew" class="primary">Write a new post</button>
+        <button id="dashMedia">Manage media</button>
+      </div>
+    </div>
+  </div>
 
   <!-- USERS (admin only) -->
   <div id="usersView" class="wrap hide">
@@ -121,8 +196,60 @@
     </div>
   </div>
 
+  <!-- MEDIA LIBRARY -->
+  <div id="mediaView" class="wrap hide">
+    <div class="media-toolbar">
+      <div class="left">
+        <button id="mediaBackBtn">&larr; Back to posts</button>
+        <h2>Media library <span id="mediaCount" class="count"></span></h2>
+      </div>
+      <div class="actions" style="align-items:center">
+        <input id="mediaSearch" class="media-search" placeholder="Search filename or alt…" />
+        <button id="mediaUploadBtn" class="primary">Upload</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
+      <div id="mediaDrop" class="media-drop">
+        <p id="mediaViewLoading" class="media-loading">Loading…</p>
+        <p id="mediaViewEmpty" class="media-empty hide">No media yet — drag an image here or use Upload.</p>
+        <div id="mediaViewGrid" class="media-grid"></div>
+      </div>
+      <div id="mediaDetail" class="card media-detail hide" style="margin:0;position:sticky;top:74px"></div>
+    </div>
+  </div>
+
+  <!-- LINKEDIN -->
+  <div id="linkedinView" class="wrap hide">
+    <div class="media-toolbar">
+      <div class="left"><h1 class="wp-heading" style="margin:0">LinkedIn posts</h1></div>
+      <button id="liAddBtn" class="primary">Add post</button>
+    </div>
+    <p class="muted" style="margin:-8px 0 16px">The first 4 marked &ldquo;Show on homepage&rdquo; appear in the site&rsquo;s &ldquo;On LinkedIn&rdquo; grid, in this order.</p>
+    <div id="liForm" class="card hide">
+      <label style="margin-top:0">LinkedIn post URL</label>
+      <div style="display:flex;gap:8px"><input id="li_url" placeholder="https://www.linkedin.com/posts/&hellip;" /><button type="button" id="liFetch">Fetch title</button></div>
+      <label>Title</label><input id="li_title" />
+      <div class="row">
+        <div>
+          <label>Thumbnail</label>
+          <input id="li_image" placeholder="/assets/&hellip; or https://&hellip;" />
+          <div class="actions" style="margin-top:6px"><button type="button" id="liUpload">Upload</button><button type="button" id="liLibrary">Library</button></div>
+        </div>
+        <div>
+          <label>Preview</label>
+          <div style="width:110px;aspect-ratio:1/1;background:#f0f0f1;border:1px solid var(--bd);border-radius:4px;overflow:hidden"><img id="li_preview" alt="" style="width:100%;height:100%;object-fit:cover" /></div>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin-top:14px;cursor:pointer"><input type="checkbox" id="li_visible" checked style="width:auto;margin:0" /> Show on homepage</label>
+      <div class="actions" style="margin-top:14px"><button type="button" id="liSave" class="primary">Save</button><button type="button" id="liCancel">Cancel</button></div>
+    </div>
+    <table id="liTable"><thead><tr><th style="width:56px"></th><th>Title</th><th>Homepage</th><th>Order</th><th></th></tr></thead><tbody></tbody></table>
+    <p id="liEmpty" class="muted hide" style="margin-top:14px">No LinkedIn posts yet — Add one.</p>
+  </div>
+
   <!-- LIST -->
-  <div id="listView" class="wrap">
+  <div id="listView" class="wrap hide">
+    <div class="media-toolbar"><div class="left"><h1 class="wp-heading" style="margin:0">Posts</h1></div><button id="newBtn" class="primary">Add New</button></div>
     <table id="postsTable"><thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Modified</th><th></th></tr></thead><tbody></tbody></table>
     <p id="emptyMsg" class="muted hide" style="margin-top:16px">No posts yet — create one.</p>
   </div>
@@ -270,13 +397,17 @@
       <ul id="seoChecks" style="list-style:none;padding:0;margin:8px 0 0;font-size:13.5px"></ul>
     </div>
   </div>
+  </div>
 </div>
 
 <div id="mediaModal" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;align-items:center;justify-content:center;padding:20px">
   <div class="card" style="width:min(760px,94vw);max-height:82vh;overflow:auto;margin:0">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <h3 style="margin:0">Media library</h3>
-      <button type="button" id="mediaClose">Close</button>
+      <div class="actions" style="align-items:center">
+        <button type="button" id="mediaModalUpload" class="primary">Upload new</button>
+        <button type="button" id="mediaClose">Close</button>
+      </div>
     </div>
     <p id="mediaEmpty" class="muted hide" style="margin:14px 0 0">No uploads yet — use Upload to add one.</p>
     <div id="mediaGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px"></div>
@@ -339,9 +470,27 @@ async function boot() {
 function showApp(){
   $('login').classList.add('hide'); $('setpw').classList.add('hide');
   $('app').classList.remove('hide');
-  $('whoami').textContent = ME ? `${ME.email} · ${ME.role}` : '';
+  $('whoami').textContent = ME ? ME.email : '';
   $('usersBtn').classList.toggle('hide', !ME || ME.role !== 'admin');
-  loadList();
+  try{ if(localStorage.getItem('wpfold')) $('app').classList.add('folded'); }catch(e){}
+  showDashboard();
+}
+function setActiveMenu(id){ document.querySelectorAll('#adminmenu .item').forEach(a=>a.classList.toggle('current', a.id===id)); }
+function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView'].forEach(v=>$(v).classList.add('hide')); }
+async function showDashboard(){
+  hideViews();
+  $('dashboardView').classList.remove('hide'); setActiveMenu('navDashboard');
+  const g=$('glance'); g.innerHTML='<p class="muted">Loading…</p>';
+  // Post counts are a fast DB query — render those at once; fill the slower
+  // media (bucket walk) and users counts in as they resolve, without blocking.
+  const pr=await api('/api/admin/posts/'); const posts=(pr.body&&pr.body.posts)||[];
+  const pub=posts.filter(p=>p.status==='published').length;
+  const stats=[['Published',pub],['Drafts',posts.length-pub],['Media','…']];
+  const usersIdx = (ME&&ME.role==='admin') ? stats.push(['Users','…'])-1 : -1;
+  const render=()=>{ g.innerHTML=stats.map(s=>'<div class="stat"><div class="n">'+s[1]+'</div><div class="l">'+s[0]+'</div></div>').join(''); };
+  render();
+  fetchMedia().then(m=>{ stats[2][1]=m.length; render(); });
+  if(usersIdx>=0) api('/api/admin/users/').then(ur=>{ stats[usersIdx][1]=((ur.body&&ur.body.users)||[]).length; render(); });
 }
 
 $('loginForm').addEventListener('submit', async (e) => {
@@ -362,14 +511,14 @@ $('setpwForm').addEventListener('submit', async (e) => {
     else { $('setpw').classList.add('hide'); $('login').classList.remove('hide'); }
   } else { err.textContent = 'Could not set password — the invite link may have expired.'; err.classList.remove('hide'); }
 });
-$('logoutBtn').addEventListener('click', async () => { await api('/api/admin/session/', { method:'DELETE' }); location.reload(); });
+$('logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); await api('/api/admin/session/', { method:'DELETE' }); location.reload(); });
 
 // ---- Users panel (admin only) ----
 $('usersBtn').addEventListener('click', showUsers);
 $('usersBackBtn').addEventListener('click', loadList);
 async function showUsers(){
-  $('listView').classList.add('hide'); $('editView').classList.add('hide');
-  $('usersView').classList.remove('hide');
+  hideViews();
+  $('usersView').classList.remove('hide'); setActiveMenu('usersBtn');
   const r = await api('/api/admin/users/');
   const tb = $('usersTable').querySelector('tbody'); tb.innerHTML='';
   const users = (r.body && r.body.users) || [];
@@ -402,7 +551,7 @@ $('inviteForm').addEventListener('submit', async (e) => {
 });
 
 async function loadList() {
-  $('editView').classList.add('hide'); $('usersView').classList.add('hide'); $('listView').classList.remove('hide');
+  hideViews(); $('listView').classList.remove('hide'); setActiveMenu('navPosts');
   const r = await api('/api/admin/posts/');
   const tb = $('postsTable').querySelector('tbody'); tb.innerHTML='';
   const posts = (r.body && r.body.posts) || [];
@@ -521,7 +670,7 @@ function ttCmd(cmd){
     if(url==='') editor.chain().focus().extendMarkRange('link').unsetLink().run();
     else editor.chain().focus().extendMarkRange('link').setLink({ href:url }).run();
   }
-  else if(cmd==='image') pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); editor.chain().focus().setImage({ src:url }).run(); toast('Image added'); }catch(e){ toast('Upload failed'); } });
+  else if(cmd==='image') openMedia((url,f)=>{ const at={ src:url }; if(f&&f.alt) at.alt=f.alt; editor.chain().focus().setImage(at).run(); });
   else if(cmd==='faq') c.setDetails().run();
   else if(cmd==='video'){ const bar=$('tt-videobar'); bar.style.display='flex'; const inp=$('tt-videourl'); inp.value=''; inp.focus(); return; }
   else if(cmd==='cta'){ const bar=$('tt-ctabar'); bar.style.display='flex'; $('cta-h').focus(); return; }
@@ -548,21 +697,142 @@ async function uploadFile(file){
   return sign.body.publicUrl;
 }
 function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i.accept='image/png,image/jpeg,image/webp,image/gif,image/svg+xml'; i.onchange=()=>{ if(i.files[0]) cb(i.files[0]); }; i.click(); }
+// Shared media list (recursive bucket list + alt/caption/title metadata).
+// Cached after first load so switching panes is instant; pass force=true after uploads.
+let MEDIA = [], MEDIA_LOADED = false;
+async function fetchMedia(force){ if(MEDIA_LOADED && !force) return MEDIA; const r=await api('/api/admin/media/'); MEDIA=(r.body&&r.body.files)||[]; MEDIA_LOADED=true; return MEDIA; }
+
+// --- In-editor picker modal: choose an existing image (or upload), then onPick(url, file) ---
 let mediaPick = null;
 function openMedia(onPick){ mediaPick=onPick; $('mediaModal').style.display='flex'; loadMedia(); }
 function closeMedia(){ $('mediaModal').style.display='none'; mediaPick=null; }
 async function loadMedia(){
   const grid=$('mediaGrid'); grid.innerHTML='<p class="muted">Loading…</p>';
-  const r=await api('/api/admin/media/'); const files=(r.body&&r.body.files)||[];
+  const files=await fetchMedia();
   $('mediaEmpty').classList.toggle('hide', files.length>0); grid.innerHTML='';
-  files.forEach(f=>{ const b=document.createElement('button'); b.type='button'; b.title=f.name;
+  files.forEach(f=>{ const b=document.createElement('button'); b.type='button'; b.title=f.alt?f.name+' — '+f.alt:f.name;
     b.style.cssText='padding:0;border:1px solid var(--bd);border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#eef0f2;cursor:pointer';
-    b.innerHTML='<img src="'+esc(f.url)+'" alt="'+esc(f.name)+'" style="width:100%;height:100%;object-fit:cover" />';
-    b.addEventListener('click',()=>{ if(mediaPick) mediaPick(f.url); closeMedia(); }); grid.appendChild(b); });
+    b.innerHTML='<img src="'+esc(f.url)+'" alt="'+esc(f.alt||f.name)+'" style="width:100%;height:100%;object-fit:cover" />';
+    b.addEventListener('click',()=>{ if(mediaPick) mediaPick(f.url, f); closeMedia(); }); grid.appendChild(b); });
 }
 
+// --- Standalone Media Library view (nav: Media) ---
+let mediaSelected = null;
+function showMedia(){
+  hideViews();
+  $('mediaView').classList.remove('hide'); setActiveMenu('mediaBtn');
+  loadMediaLibrary();
+}
+async function loadMediaLibrary(){
+  $('mediaViewLoading').classList.remove('hide'); $('mediaViewEmpty').classList.add('hide');
+  $('mediaViewGrid').innerHTML=''; $('mediaDetail').classList.add('hide'); mediaSelected=null;
+  await fetchMedia();
+  $('mediaViewLoading').classList.add('hide');
+  renderMediaLibrary();
+}
+function renderMediaLibrary(){
+  const q=($('mediaSearch').value||'').toLowerCase().trim();
+  const files=MEDIA.filter(f=>!q||f.name.toLowerCase().includes(q)||(f.alt||'').toLowerCase().includes(q));
+  $('mediaCount').textContent = MEDIA.length ? '· '+files.length+(q?' of '+MEDIA.length:'')+' item'+(files.length===1?'':'s') : '';
+  $('mediaViewEmpty').classList.toggle('hide', MEDIA.length>0);
+  const grid=$('mediaViewGrid'); grid.innerHTML='';
+  files.forEach(f=>{ const b=document.createElement('button'); b.type='button'; b.title=f.name;
+    b.className='media-tile'+(mediaSelected&&mediaSelected.path===f.path?' selected':'');
+    b.innerHTML='<img src="'+esc(f.url)+'" alt="'+esc(f.alt||f.name)+'" loading="lazy" />'
+      +'<span class="check">✓</span>'+(f.alt?'':'<span class="noalt">NO ALT</span>');
+    b.addEventListener('click',()=>showMediaDetail(f)); grid.appendChild(b); });
+}
+function fmtSize(n){ if(!n) return '—'; const u=['B','KB','MB']; let i=0,v=n; while(v>=1024&&i<u.length-1){v/=1024;i++;} return (v<10&&i>0?v.toFixed(1):Math.round(v))+' '+u[i]; }
+function fmtDate(s){ if(!s) return '—'; const d=new Date(s); return isNaN(d)?'—':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); }
+function extOf(name){ const m=(name||'').match(/\.([a-z0-9]+)$/i); return m?m[1].toUpperCase():'—'; }
+function showMediaDetail(f){
+  mediaSelected=f; renderMediaLibrary();
+  const isAdmin = ME && ME.role==='admin';
+  const d=$('mediaDetail'); d.classList.remove('hide');
+  d.innerHTML =
+    '<img class="preview" id="mdImg" src="'+esc(f.url)+'" alt="'+esc(f.alt||f.name)+'" />'
+    + '<div class="info" style="word-break:break-all"><b>'+esc(f.name)+'</b></div>'
+    + '<div class="info">'+extOf(f.name)+' · <span id="mdDims">…</span> · '+fmtSize(f.size)+'</div>'
+    + '<div class="info">Uploaded '+fmtDate(f.created_at)+'</div>'
+    + '<button type="button" id="mdCopy" style="width:100%;margin:10px 0 2px">Copy URL</button>'
+    + '<h4>Details</h4>'
+    + '<label style="margin-top:0">Alt text</label><textarea id="mdAlt" rows="2"></textarea>'
+    + '<label>Title</label><input id="mdTitle" />'
+    + '<label>Caption</label><input id="mdCaption" />'
+    + '<button type="button" id="mdSave" class="primary" style="width:100%;margin-top:12px">Save details</button>'
+    + (isAdmin?'<button type="button" id="mdDelete" class="danger" style="width:100%;margin-top:8px">Delete permanently</button>':'');
+  $('mdAlt').value=f.alt||''; $('mdCaption').value=f.caption||''; $('mdTitle').value=f.title||'';
+  const _img=$('mdImg'), setDims=()=>{ if(_img.naturalWidth) $('mdDims').textContent=_img.naturalWidth+'×'+_img.naturalHeight; };
+  if(_img.complete) setDims(); else _img.addEventListener('load', setDims);
+  $('mdCopy').addEventListener('click',()=>{ navigator.clipboard.writeText(f.url).then(()=>toast('URL copied'),()=>toast('Copy failed')); });
+  $('mdSave').addEventListener('click',async()=>{
+    const patch={ path:f.path, alt:$('mdAlt').value.trim(), caption:$('mdCaption').value.trim(), title:$('mdTitle').value.trim() };
+    const r=await api('/api/admin/media/',{ method:'PATCH', body:JSON.stringify(patch) });
+    if(r.ok){ Object.assign(f,patch); toast('Saved'); renderMediaLibrary(); }
+    else toast('Save failed'+((r.body&&r.body.error)?' — '+r.body.error:''));
+  });
+  if(isAdmin) $('mdDelete').addEventListener('click',()=>deleteMedia(f));
+}
+async function deleteMedia(f, force){
+  if(!force && !confirm('Delete '+f.name+' permanently?')) return;
+  const r=await api('/api/admin/media/',{ method:'DELETE', body:JSON.stringify({ path:f.path, force:!!force }) });
+  if(r.status===409 && r.body && r.body.posts){
+    const list=r.body.posts.map(p=>'• '+p.title).join('\n');
+    if(confirm('This image is used in '+r.body.posts.length+' post(s):\n\n'+list+'\n\nDelete anyway? Those posts will show a broken image.')) return deleteMedia(f, true);
+    return;
+  }
+  if(r.ok){ toast('Deleted'); MEDIA=MEDIA.filter(x=>x.path!==f.path); $('mediaDetail').classList.add('hide'); mediaSelected=null; renderMediaLibrary(); }
+  else toast('Delete failed');
+}
+
+// ---- LinkedIn posts manager ----
+let LINKEDIN=[], liEditing=null;
+function showLinkedin(){ hideViews(); $('linkedinView').classList.remove('hide'); setActiveMenu('navLinkedin'); loadLinkedin(); }
+async function loadLinkedin(){
+  liCloseForm();
+  const r=await api('/api/admin/linkedin/'); LINKEDIN=(r.body&&r.body.posts)||[];
+  const tb=$('liTable').querySelector('tbody'); tb.innerHTML='';
+  $('liEmpty').classList.toggle('hide', LINKEDIN.length>0);
+  $('liTable').classList.toggle('hide', LINKEDIN.length===0);
+  LINKEDIN.forEach((p,i)=>{ const tr=document.createElement('tr');
+    tr.innerHTML='<td><div style="width:44px;height:44px;border-radius:4px;overflow:hidden;background:#f0f0f1"><img src="'+esc(p.image_url||'')+'" alt="" style="width:100%;height:100%;object-fit:cover" /></div></td>'
+      +'<td><div style="font-weight:600">'+esc(p.title||'(untitled)')+'</div><a class="link" href="'+esc(p.url)+'" target="_blank" rel="noopener" style="font-size:12px;word-break:break-all">'+esc(p.url)+'</a></td>'
+      +'<td><button type="button" data-vis="'+p.id+'" class="'+(p.visible?'primary':'')+'" style="min-height:26px;padding:0 10px">'+(p.visible?'On':'Off')+'</button></td>'
+      +'<td style="white-space:nowrap"><button type="button" data-up="'+p.id+'" '+(i===0?'disabled':'')+' style="min-height:26px;padding:0 9px">&uarr;</button> <button type="button" data-down="'+p.id+'" '+(i===LINKEDIN.length-1?'disabled':'')+' style="min-height:26px;padding:0 9px">&darr;</button></td>'
+      +'<td class="actions"><button type="button" data-edit="'+p.id+'">Edit</button><button type="button" data-del="'+p.id+'" class="danger">Delete</button></td>';
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('[data-vis]').forEach(b=>b.addEventListener('click',()=>liToggle(b.dataset.vis)));
+  tb.querySelectorAll('[data-up]').forEach(b=>b.addEventListener('click',()=>liMove(b.dataset.up,-1)));
+  tb.querySelectorAll('[data-down]').forEach(b=>b.addEventListener('click',()=>liMove(b.dataset.down,1)));
+  tb.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>liOpenForm(LINKEDIN.find(x=>String(x.id)===b.dataset.edit))));
+  tb.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>liDelete(b.dataset.del)));
+}
+function liOpenForm(p){ liEditing=p||null; $('liForm').classList.remove('hide');
+  $('li_url').value=p?p.url:''; $('li_title').value=p?(p.title||''):''; $('li_image').value=p?(p.image_url||''):''; $('li_visible').checked=p?!!p.visible:true; liPreview(); $('li_url').focus(); }
+function liCloseForm(){ $('liForm').classList.add('hide'); liEditing=null; }
+function liPreview(){ $('li_preview').src=$('li_image').value.trim()||''; }
+async function liFetchMeta(){ const url=$('li_url').value.trim(); if(!url){ toast('Paste a URL first'); return; } toast('Fetching…');
+  const r=await api('/api/admin/fetch-meta/?url='+encodeURIComponent(url));
+  if(r.ok&&r.body&&r.body.title){ $('li_title').value=r.body.title; toast('Title fetched'); } else toast('Could not fetch title'); }
+async function liSave(){ const row={ url:$('li_url').value.trim(), title:$('li_title').value.trim(), image_url:$('li_image').value.trim(), visible:$('li_visible').checked };
+  if(!row.url){ toast('URL is required'); return; }
+  let r;
+  if(liEditing){ row.id=liEditing.id; r=await api('/api/admin/linkedin/',{method:'PATCH',body:JSON.stringify(row)}); }
+  else { row.sort_order=LINKEDIN.reduce((m,p)=>Math.max(m,p.sort_order||0),0)+1; r=await api('/api/admin/linkedin/',{method:'POST',body:JSON.stringify(row)}); }
+  if(r.ok){ toast('Saved'); loadLinkedin(); } else toast('Save failed'+((r.body&&r.body.detail)?': '+r.body.detail:'')); }
+async function liToggle(id){ const p=LINKEDIN.find(x=>String(x.id)===String(id)); if(!p) return;
+  const r=await api('/api/admin/linkedin/',{method:'PATCH',body:JSON.stringify({id:p.id,visible:!p.visible})}); if(r.ok) loadLinkedin(); }
+async function liMove(id,dir){ const i=LINKEDIN.findIndex(x=>String(x.id)===String(id)); const j=i+dir; if(i<0||j<0||j>=LINKEDIN.length) return;
+  const a=LINKEDIN[i], b=LINKEDIN[j];
+  await api('/api/admin/linkedin/',{method:'PATCH',body:JSON.stringify({id:a.id,sort_order:b.sort_order})});
+  await api('/api/admin/linkedin/',{method:'PATCH',body:JSON.stringify({id:b.id,sort_order:a.sort_order})});
+  loadLinkedin(); }
+async function liDelete(id){ if(!confirm('Delete this LinkedIn post?')) return;
+  const r=await api('/api/admin/linkedin/',{method:'DELETE',body:JSON.stringify({id})}); if(r.ok){ toast('Deleted'); loadLinkedin(); } else toast('Delete failed'); }
+
 async function openEditor(id) {
-  $('listView').classList.add('hide'); $('editView').classList.remove('hide');
+  hideViews(); $('editView').classList.remove('hide'); setActiveMenu('navPosts');
   slugEdited = false;
   if (id) {
     const r = await api('/api/admin/posts/?id='+encodeURIComponent(id));
@@ -661,10 +931,42 @@ $('f_slug').addEventListener('input', ()=>{ slugEdited=true; $('f_slug').value=s
 $('f_focus_keyphrase').addEventListener('input', runSeoChecks);
 $('f_noindex').addEventListener('change', ()=>{ $('f_robots').value = $('f_noindex').checked ? 'noindex, follow' : DEFAULT_ROBOTS; });
 $('f_robots').addEventListener('input', ()=>{ $('f_noindex').checked = /noindex/i.test($('f_robots').value); });
-$('fiUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); $('f_featured_image').value=url; refreshMeta(); toast('Uploaded'); }catch(e){ toast('Upload failed'); } }));
-$('fiLibrary').addEventListener('click', ()=> openMedia((url)=>{ $('f_featured_image').value=url; refreshMeta(); }));
+$('fiUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); $('f_featured_image').value=url; refreshMeta(); MEDIA_LOADED=false; toast('Uploaded'); }catch(e){ toast('Upload failed'); } }));
+$('fiLibrary').addEventListener('click', ()=> openMedia((url,f)=>{ $('f_featured_image').value=url; if(f&&f.alt&&!$('f_featured_image_alt').value) $('f_featured_image_alt').value=f.alt; refreshMeta(); }));
 $('mediaClose').addEventListener('click', closeMedia);
 $('mediaModal').addEventListener('click', (e)=>{ if(e.target===$('mediaModal')) closeMedia(); });
+$('mediaModalUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Uploading…'); try{ await uploadFile(f); MEDIA_LOADED=false; toast('Uploaded'); loadMedia(); }catch(e){ toast('Upload failed'); } }));
+// Sidebar nav + collapse + dashboard
+$('navDashboard').addEventListener('click', showDashboard);
+$('navPosts').addEventListener('click', loadList);
+$('navLinkedin').addEventListener('click', showLinkedin);
+$('dashNew').addEventListener('click', ()=>openEditor(null));
+$('dashMedia').addEventListener('click', showMedia);
+$('liAddBtn').addEventListener('click', ()=>liOpenForm(null));
+$('liCancel').addEventListener('click', liCloseForm);
+$('liFetch').addEventListener('click', liFetchMeta);
+$('liSave').addEventListener('click', liSave);
+$('li_image').addEventListener('input', liPreview);
+$('liUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Uploading…'); try{ const url=await uploadFile(f); $('li_image').value=url; liPreview(); MEDIA_LOADED=false; toast('Uploaded'); }catch(e){ toast('Upload failed'); } }));
+$('liLibrary').addEventListener('click', ()=> openMedia((url)=>{ $('li_image').value=url; liPreview(); }));
+$('collapseBtn').addEventListener('click', ()=>{ const f=$('app').classList.toggle('folded'); try{ localStorage.setItem('wpfold', f?'1':''); }catch(e){} });
+// Media Library view
+$('mediaBtn').addEventListener('click', showMedia);
+$('mediaBackBtn').addEventListener('click', loadList);
+$('mediaSearch').addEventListener('input', renderMediaLibrary);
+$('mediaUploadBtn').addEventListener('click', ()=> pickFile(async (f)=>{ toast('Uploading…'); try{ await uploadFile(f); MEDIA_LOADED=false; toast('Uploaded'); loadMediaLibrary(); }catch(e){ toast('Upload failed'); } }));
+// drag-and-drop upload onto the library
+const _mediaDrop=$('mediaDrop');
+['dragover','dragenter'].forEach(ev=>_mediaDrop.addEventListener(ev,e=>{ e.preventDefault(); _mediaDrop.classList.add('drag'); }));
+_mediaDrop.addEventListener('dragleave',e=>{ if(!_mediaDrop.contains(e.relatedTarget)) _mediaDrop.classList.remove('drag'); });
+_mediaDrop.addEventListener('drop', async e=>{
+  e.preventDefault(); _mediaDrop.classList.remove('drag');
+  const files=[...((e.dataTransfer&&e.dataTransfer.files)||[])].filter(f=>/^image\//.test(f.type));
+  if(!files.length) return;
+  toast('Uploading '+files.length+' file'+(files.length>1?'s':'')+'…');
+  for(const f of files){ try{ await uploadFile(f); }catch(err){} }
+  MEDIA_LOADED=false; toast('Uploaded'); loadMediaLibrary();
+});
 $('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[data-cmd]'); if(b) ttCmd(b.getAttribute('data-cmd')); });
 function embedVideo(){ const url=$('tt-videourl').value.trim(); if(url && editor) editor.commands.setYoutubeVideo({ src:url }); $('tt-videobar').style.display='none'; $('tt-videourl').value=''; }
 $('tt-videoembed').addEventListener('click', embedVideo);

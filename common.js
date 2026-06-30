@@ -261,6 +261,24 @@
     }
   }
 
+  /* ---- LinkedIn widget: replace the static fallback cards with managed posts.
+     Progressive enhancement — if the API is empty or unreachable, the hard-coded
+     cards in the page stay. Injected cards omit data-reveal so they're visible
+     immediately (the reveal observer has already run by the time this resolves). */
+  function initLinkedIn() {
+    var grid = document.querySelector('[data-li-grid]');
+    if (!grid) return;
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    fetch('/api/linkedin/').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.posts || !d.posts.length) return;
+      grid.innerHTML = d.posts.slice(0, 4).map(function (p) {
+        return '<a class="li-card" href="' + esc(p.url) + '" target="_blank" rel="noopener">' +
+          '<img src="' + esc(p.image_url) + '" alt="' + esc(p.title || 'Raj Goodman LinkedIn post') + '" />' +
+          '<span class="tag">in &middot; Raj Anand</span></a>';
+      }).join('');
+    }).catch(function () { /* keep the static fallback */ });
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -269,6 +287,7 @@
     initParallax();
     initVideoLightbox();
     initForms();
+    initLinkedIn();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

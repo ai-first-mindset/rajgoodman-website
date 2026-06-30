@@ -45,6 +45,43 @@ values ('blog-media', 'blog-media', true, 10485760,
   array['image/png','image/jpeg','image/webp','image/gif','image/svg+xml'])
 on conflict (id) do nothing;
 
+-- Media library metadata: an optional overlay keyed by the storage object path.
+-- The bucket is the source of truth for which files exist; this table only adds
+-- alt/caption/title. Files with no row here simply have empty metadata.
+create table if not exists media (
+  path        text primary key,   -- storage object path within blog-media
+  alt         text,
+  caption     text,
+  title       text,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+-- Admin-managed only; functions use service_role (bypasses RLS). No anon access.
+alter table media enable row level security;
+
+-- LinkedIn posts shown in the homepage "On LinkedIn" widget. Managed in the
+-- admin (top-level "LinkedIn"); the public /api/linkedin returns the first 4
+-- visible rows by sort_order. Functions use service_role; no anon access.
+create table if not exists linkedin_posts (
+  id          uuid primary key default gen_random_uuid(),
+  url         text unique not null,
+  title       text,
+  image_url   text,                          -- thumbnail (Media Library / asset path)
+  visible     boolean not null default true, -- show in the homepage widget
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now()
+);
+create index if not exists linkedin_posts_order_idx on linkedin_posts (visible, sort_order);
+alter table linkedin_posts enable row level security;
+
+-- Seed with the four cards currently hard-coded in index.html (idempotent).
+insert into linkedin_posts (url, title, image_url, sort_order) values
+  ('https://www.linkedin.com/posts/rajanand_5-people-who-prove-you-need-an-ai-readiness-activity-7377326083894886400-HLlS/', '5 People Who Prove You Need an AI Readiness Assessment', '/assets/1748005613860.webp', 1),
+  ('https://www.linkedin.com/posts/rajanand_aitalentshortage-aitalent-fractionalcaio-activity-7379500493443751936-W4ua/', 'The AI talent shortage and the fractional CAIO', '/assets/1748305267974.webp', 2),
+  ('https://www.linkedin.com/posts/rajanand_inside-autonomous-ai-how-decisions-happen-activity-7382399516739735552-BDzn/', 'Inside autonomous AI: how decisions happen', '/assets/1748610490704.webp', 3),
+  ('https://www.linkedin.com/posts/rajanand_your-ai-strategy-changes-with-your-location-activity-7381312426392084480-2NYd/', 'Your AI strategy changes with your location', '/assets/1748886274361.webp', 4)
+on conflict (url) do nothing;
+
 -- keep modified_at fresh on every update
 create or replace function set_modified_at() returns trigger as $$
 begin new.modified_at = now(); return new; end; $$ language plpgsql;
