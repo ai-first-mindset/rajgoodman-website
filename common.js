@@ -268,14 +268,25 @@
   function initLinkedIn() {
     var grid = document.querySelector('[data-li-grid]');
     if (!grid) return;
-    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
     fetch('/api/linkedin/').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
-      if (!d || !d.posts || !d.posts.length) return;
-      grid.innerHTML = d.posts.slice(0, 4).map(function (p) {
-        return '<a class="li-card" href="' + esc(p.url) + '" target="_blank" rel="noopener">' +
-          '<img src="' + esc(p.image_url) + '" alt="' + esc(p.title || 'Raj Goodman LinkedIn post') + '" />' +
-          '<span class="tag">in &middot; Raj Anand</span></a>';
-      }).join('');
+      if (!d || !d.posts || !d.posts.length) return; // keep the static fallback cards
+      var posts = d.posts.slice(0, 4);
+      var cards = [].slice.call(grid.querySelectorAll('.li-card'));
+      // Update existing cards in place so their layout + reveal state are untouched;
+      // only append/remove if the managed count differs from the hard-coded one.
+      posts.forEach(function (p, i) {
+        var a = cards[i];
+        if (!a) {
+          a = document.createElement('a');
+          a.className = 'li-card'; a.target = '_blank'; a.rel = 'noopener';
+          a.innerHTML = '<img/><span class="tag">in &middot; Raj Anand</span>';
+          grid.appendChild(a); a.classList.add('is-in');
+        }
+        a.href = p.url || '#';
+        var img = a.querySelector('img');
+        if (img) { img.src = p.image_url || ''; img.alt = p.title || 'Raj Goodman LinkedIn post'; }
+      });
+      for (var j = posts.length; j < cards.length; j++) { cards[j].parentNode.removeChild(cards[j]); }
     }).catch(function () { /* keep the static fallback */ });
   }
 
