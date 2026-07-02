@@ -12,6 +12,9 @@ const BUCKET = 'blog-media';
 function sbHeaders(extra) {
   return { apikey: SB_KEY, authorization: `Bearer ${SB_KEY}`, 'content-type': 'application/json', ...extra };
 }
+// Storage object DELETE must NOT carry a JSON content-type: the storage server
+// (Fastify) rejects a bodyless `application/json` request with 400. Auth only.
+const authOnly = () => ({ apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` });
 const publicUrl = (path) => `${SB_URL}/storage/v1/object/public/${BUCKET}/${path}`;
 const encPath = (path) => path.split('/').map(encodeURIComponent).join('/');
 
@@ -146,7 +149,7 @@ export default async function handler(req, res) {
       };
       await carryMeta(oldPath, newPath);
       // Old file last, once nothing points at it anymore. Best-effort.
-      await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(oldPath)}`, { method: 'DELETE', headers: sbHeaders() });
+      await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(oldPath)}`, { method: 'DELETE', headers: authOnly() });
       return res.status(200).json({ ok: true, url: newUrl, counts });
     }
 
@@ -170,7 +173,7 @@ export default async function handler(req, res) {
         const posts = await usedIn(body.path);
         if (posts.length) return res.status(409).json({ ok: false, error: 'in-use', posts });
       }
-      const del = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(body.path)}`, { method: 'DELETE', headers: sbHeaders() });
+      const del = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(body.path)}`, { method: 'DELETE', headers: authOnly() });
       if (!del.ok) return res.status(502).json({ ok: false, error: 'delete-failed', detail: await del.text() });
       await fetch(`${SB_URL}/rest/v1/media?path=eq.${encodeURIComponent(body.path)}`, { method: 'DELETE', headers: sbHeaders() });
       return res.status(200).json({ ok: true });
