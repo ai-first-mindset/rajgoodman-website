@@ -755,6 +755,7 @@ function showMediaDetail(f){
     + '<div class="info">'+extOf(f.name)+' · <span id="mdDims">…</span> · '+fmtSize(f.size)+'</div>'
     + '<div class="info">Uploaded '+fmtDate(f.created_at)+'</div>'
     + '<button type="button" id="mdCopy" style="width:100%;margin:10px 0 2px">Copy URL</button>'
+    + (isAdmin?'<button type="button" id="mdReplace" style="width:100%;margin:6px 0 2px">Replace image&hellip;</button>':'')
     + '<h4>Details</h4>'
     + '<label style="margin-top:0">Alt text</label><textarea id="mdAlt" rows="2"></textarea>'
     + '<label>Title</label><input id="mdTitle" />'
@@ -771,7 +772,24 @@ function showMediaDetail(f){
     if(r.ok){ Object.assign(f,patch); toast('Saved'); renderMediaLibrary(); }
     else toast('Save failed'+((r.body&&r.body.error)?' — '+r.body.error:''));
   });
+  if(isAdmin) $('mdReplace').addEventListener('click',()=>replaceMedia(f));
   if(isAdmin) $('mdDelete').addEventListener('click',()=>deleteMedia(f));
+}
+// Replace an image everywhere: upload the new file, then repoint all references
+// to it (same as re-cropping and having every post/widget follow the latest).
+async function replaceMedia(f){
+  pickFile(async(file)=>{
+    let newUrl;
+    try{ toast('Uploading…'); newUrl=await uploadFile(file); }
+    catch(e){ return toast('Upload failed'); }
+    const newPath=newUrl.split('/blog-media/').pop();
+    const r=await api('/api/admin/media/',{ method:'POST', body:JSON.stringify({ action:'replace', oldPath:f.path, newPath }) });
+    if(r.ok){
+      const c=r.body.counts||{}; const n=(c.linkedin||0)+(c.posts||0);
+      toast('Replaced'+(n?' — updated '+n+' reference'+(n===1?'':'s'):''));
+      MEDIA_LOADED=false; await loadMediaLibrary();
+    } else toast('Replace failed'+((r.body&&r.body.error)?' — '+r.body.error:''));
+  });
 }
 async function deleteMedia(f, force){
   if(!force && !confirm('Delete '+f.name+' permanently?')) return;

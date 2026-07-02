@@ -60,6 +60,57 @@ async function usedIn(path) {
   return await r.json();
 }
 
+// --- Replace helpers: repoint every reference from one URL to another so a
+// re-uploaded (e.g. cropped) image takes over everywhere, then the old file
+// can be removed. Keeps the reference the source of truth — no stale duplicate.
+async function repointExact(table, col, oldUrl, newUrl) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(oldUrl)}`, {
+    method: 'PATCH', headers: sbHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify({ [col]: newUrl }),
+  });
+  if (!r.ok) return 0;
+  const rows = await r.json();
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
+// Blog posts store the full public URL inside body_html / featured_image /
+// og_image; swap every occurrence (string replace, not a column overwrite).
+async function repointPosts(path, oldUrl, newUrl) {
+  const needle = `*${path}*`;
+  const cond = `body_html.ilike.${needle},featured_image.ilike.${needle},og_image.ilike.${needle}`;
+  const r = await fetch(`${SB_URL}/rest/v1/posts?select=id,body_html,featured_image,og_image&or=(${cond})`, { headers: sbHeaders() });
+  if (!r.ok) return 0;
+  const posts = await r.json();
+  let n = 0;
+  for (const p of posts) {
+    const patch = {};
+    for (const col of ['body_html', 'featured_image', 'og_image']) {
+      if (p[col] && p[col].includes(oldUrl)) patch[col] = p[col].split(oldUrl).join(newUrl);
+    }
+    if (!Object.keys(patch).length) continue;
+    const u = await fetch(`${SB_URL}/rest/v1/posts?id=eq.${encodeURIComponent(p.id)}`, {
+      method: 'PATCH', headers: sbHeaders({ Prefer: 'return=minimal' }), body: JSON.stringify(patch),
+    });
+    if (u.ok) n++;
+  }
+  return n;
+}
+
+// Carry the alt/caption/title metadata onto the new path, then drop the old row.
+async function carryMeta(oldPath, newPath) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/media?path=eq.${encodeURIComponent(oldPath)}&select=alt,caption,title`, { headers: sbHeaders() });
+    const m = (r.ok ? await r.json() : [])[0];
+    if (m && (m.alt || m.caption || m.title)) {
+      await fetch(`${SB_URL}/rest/v1/media?on_conflict=path`, {
+        method: 'POST', headers: sbHeaders({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify({ path: newPath, alt: m.alt || null, caption: m.caption || null, title: m.title || null, updated_at: new Date().toISOString() }),
+      });
+    }
+    await fetch(`${SB_URL}/rest/v1/media?path=eq.${encodeURIComponent(oldPath)}`, { method: 'DELETE', headers: sbHeaders() });
+  } catch (e) { /* metadata is best-effort */ }
+}
+
 export default async function handler(req, res) {
   const user = await requireUser(req, res);
   if (!user) return;
@@ -79,6 +130,25 @@ export default async function handler(req, res) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
     body = body || {};
+
+    // Replace an image in place: point every reference at the newly-uploaded
+    // file, then delete the old object. The browser uploads the replacement via
+    // /api/admin/upload first (bypasses the body-size limit), then calls this.
+    if (req.method === 'POST' && body.action === 'replace') {
+      if (roleOf(user) !== 'admin') return res.status(403).json({ ok: false, error: 'forbidden' });
+      const { oldPath, newPath } = body;
+      if (!oldPath || !newPath) return res.status(422).json({ ok: false, error: 'paths-required' });
+      if (oldPath === newPath) return res.status(422).json({ ok: false, error: 'same-path' });
+      const oldUrl = publicUrl(oldPath), newUrl = publicUrl(newPath);
+      const counts = {
+        linkedin: await repointExact('linkedin_posts', 'image_url', oldUrl, newUrl),
+        posts: await repointPosts(oldPath, oldUrl, newUrl),
+      };
+      await carryMeta(oldPath, newPath);
+      // Old file last, once nothing points at it anymore. Best-effort.
+      await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(oldPath)}`, { method: 'DELETE', headers: sbHeaders() });
+      return res.status(200).json({ ok: true, url: newUrl, counts });
+    }
 
     if (req.method === 'PATCH') {
       if (!body.path) return res.status(422).json({ ok: false, error: 'path-required' });
@@ -106,7 +176,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    res.setHeader('Allow', 'GET, PATCH, DELETE');
+    res.setHeader('Allow', 'GET, POST, PATCH, DELETE');
     return res.status(405).json({ ok: false, error: 'method-not-allowed' });
   } catch (err) {
     console.error('admin/media error', err);

@@ -13,7 +13,9 @@ export default async function handler(req, res) {
       headers: { apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` },
     });
     if (!r.ok) return res.status(200).json({ ok: true, posts: [] });
-    res.setHeader('cache-control', 'public, max-age=60, s-maxage=300');
+    // Short edge cache so admin edits (new/cropped images, reordering) show up
+    // within ~1 min; stale-while-revalidate keeps it fast without long staleness.
+    res.setHeader('cache-control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({ ok: true, posts: await r.json() });
   } catch (e) {
     return res.status(200).json({ ok: true, posts: [] });
