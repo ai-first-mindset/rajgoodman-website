@@ -4,6 +4,7 @@
 //   DELETE — admin-only; refuses if the file is used in a post (unless force:true)
 
 import { requireUser, roleOf } from '../_auth.js';
+import { cleanupIfOrphan } from '../_media.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -149,7 +150,7 @@ export default async function handler(req, res) {
       };
       await carryMeta(oldPath, newPath);
       // Old file last, once nothing points at it anymore. Best-effort.
-      await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(oldPath)}`, { method: 'DELETE', headers: authOnly() });
+      await cleanupIfOrphan(oldUrl);
       return res.status(200).json({ ok: true, url: newUrl, counts });
     }
 

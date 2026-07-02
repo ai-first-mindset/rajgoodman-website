@@ -2,6 +2,7 @@
 // PATCH update / DELETE (admin-only). Uses the Supabase secret key via PostgREST.
 
 import { requireUser, roleOf } from '../_auth.js';
+import { cleanupIfOrphan } from '../_media.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -43,18 +44,31 @@ export default async function handler(req, res) {
 
     if (req.method === 'PATCH') {
       if (!body.id) return res.status(422).json({ ok: false, error: 'id-required' });
+      const row = pick(body);
+      // If the image is changing, capture the current one so the old file can
+      // be cleaned up (same as the media library's Replace) once it's orphaned.
+      let oldImage = null;
+      if ('image_url' in row) {
+        const cur = await fetch(`${SB_URL}/rest/v1/linkedin_posts?id=eq.${encodeURIComponent(body.id)}&select=image_url`, { headers: headers() });
+        if (cur.ok) oldImage = ((await cur.json())[0] || {}).image_url || null;
+      }
       const r = await fetch(`${SB_URL}/rest/v1/linkedin_posts?id=eq.${encodeURIComponent(body.id)}`, {
-        method: 'PATCH', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(pick(body)),
+        method: 'PATCH', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
       });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'update-failed', detail: await r.text() });
-      return res.status(200).json({ ok: true, post: (await r.json())[0] });
+      const post = (await r.json())[0];
+      if (oldImage && post && oldImage !== post.image_url) await cleanupIfOrphan(oldImage);
+      return res.status(200).json({ ok: true, post });
     }
 
     if (req.method === 'DELETE') {
       if (roleOf(user) !== 'admin') return res.status(403).json({ ok: false, error: 'forbidden' });
       if (!body.id) return res.status(422).json({ ok: false, error: 'id-required' });
+      const cur = await fetch(`${SB_URL}/rest/v1/linkedin_posts?id=eq.${encodeURIComponent(body.id)}&select=image_url`, { headers: headers() });
+      const oldImage = cur.ok ? (((await cur.json())[0] || {}).image_url || null) : null;
       const r = await fetch(`${SB_URL}/rest/v1/linkedin_posts?id=eq.${encodeURIComponent(body.id)}`, { method: 'DELETE', headers: headers() });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'delete-failed' });
+      if (oldImage) await cleanupIfOrphan(oldImage);
       return res.status(200).json({ ok: true });
     }
 
