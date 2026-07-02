@@ -35,13 +35,8 @@
     }
   ];
 
-  // ---- gtag / dataLayer bootstrap (works before GTM is installed) ----
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { window.dataLayer.push(arguments); }
-  window.gtag = window.gtag || gtag;
-
   // Consent Mode v2 DEFAULT: deny everything storable until the user chooses.
-  gtag('consent', 'default', {
+  var DEFAULT_CONSENT = {
     ad_storage: 'denied',
     ad_user_data: 'denied',
     ad_personalization: 'denied',
@@ -49,25 +44,38 @@
     functionality_storage: 'granted',
     security_storage: 'granted',
     wait_for_update: 500
-  });
+  };
 
-  // Inject our stylesheet as early as possible (once).
-  if (!document.querySelector('link[data-cc-css]')) {
-    var css = document.createElement('link');
-    css.rel = 'stylesheet'; css.href = CSS_HREF; css.setAttribute('data-cc-css', '');
-    (document.head || document.documentElement).appendChild(css);
+  function gtag() { window.dataLayer.push(arguments); }
+
+  // ---- pure helpers (unit-tested) ----
+
+  // Map a category choice ({analytics, marketing}) to the Consent Mode v2
+  // storage signals gtag expects.
+  function consentToSignals(consent) {
+    var update = {};
+    Object.keys(SIGNALS).forEach(function (cat) {
+      var state = consent[cat] ? 'granted' : 'denied';
+      SIGNALS[cat].forEach(function (sig) { update[sig] = state; });
+    });
+    return update;
+  }
+
+  // Parse/validate a stored record. Returns the record, or null if missing,
+  // corrupt, from an older policy version, or older than MAX_AGE_DAYS.
+  function validateStored(raw, now) {
+    try {
+      if (!raw) return null;
+      var v = JSON.parse(raw);
+      if (v.version !== POLICY_VERSION) return null;
+      if (now - v.ts > MAX_AGE_DAYS * 864e5) return null;
+      return v;
+    } catch (e) { return null; }
   }
 
   // ---- storage ----
   function load() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      var v = JSON.parse(raw);
-      if (v.version !== POLICY_VERSION) return null;
-      if (Date.now() - v.ts > MAX_AGE_DAYS * 864e5) return null;
-      return v;
-    } catch (e) { return null; }
+    return validateStored(localStorage.getItem(STORAGE_KEY), Date.now());
   }
   function save(consent) {
     try {
@@ -79,12 +87,7 @@
 
   // ---- apply choice to Consent Mode ----
   function applyConsent(consent) {
-    var update = {};
-    Object.keys(SIGNALS).forEach(function (cat) {
-      var state = consent[cat] ? 'granted' : 'denied';
-      SIGNALS[cat].forEach(function (sig) { update[sig] = state; });
-    });
-    gtag('consent', 'update', update);
+    gtag('consent', 'update', consentToSignals(consent));
     window.dataLayer.push({ event: 'cookie_consent_update', consent: consent });
   }
 
@@ -210,12 +213,6 @@
     bot.appendChild(link);
   }
 
-  // Public hook (footer link, or a manual "manage cookies" trigger).
-  window.RGCookieConsent = {
-    open: openPanel,
-    reset: function () { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
-  };
-
   // ---- init ----
   function init() {
     injectFooterLink();
@@ -223,6 +220,34 @@
     if (stored && stored.consent) { applyConsent(stored.consent); }
     else { showBanner(); }
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+
+  // Browser bootstrap: set Consent Mode defaults + inject assets, then init.
+  function boot() {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || gtag;
+    gtag('consent', 'default', DEFAULT_CONSENT);
+
+    // Inject our stylesheet as early as possible (once).
+    if (!document.querySelector('link[data-cc-css]')) {
+      var css = document.createElement('link');
+      css.rel = 'stylesheet'; css.href = CSS_HREF; css.setAttribute('data-cc-css', '');
+      (document.head || document.documentElement).appendChild(css);
+    }
+
+    // Public hook (footer link, or a manual "manage cookies" trigger).
+    window.RGCookieConsent = {
+      open: openPanel,
+      reset: function () { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+    };
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
+
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') boot();
+
+  // Expose pure helpers for unit tests (Node/CommonJS only; no-op in the browser).
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { DEFAULT_CONSENT: DEFAULT_CONSENT, consentToSignals: consentToSignals, validateStored: validateStored, POLICY_VERSION: POLICY_VERSION, MAX_AGE_DAYS: MAX_AGE_DAYS };
+  }
 })();
