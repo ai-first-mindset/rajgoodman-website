@@ -12,12 +12,18 @@ export default async function handler(req, res) {
     const r = await fetch(`${SB_URL}/rest/v1/linkedin_posts?select=url,title,image_url&visible=eq.true&order=sort_order.asc&limit=4`, {
       headers: { apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` },
     });
-    if (!r.ok) return res.status(200).json({ ok: true, posts: [] });
+    if (!r.ok) {
+      // Fail-soft is deliberate (homepage keeps its fallback cards) — but log,
+      // or a DB outage silently freezes the widget with no way to notice.
+      console.error('linkedin: DB query failed', r.status, (await r.text()).slice(0, 200));
+      return res.status(200).json({ ok: true, posts: [] });
+    }
     // Short edge cache so admin edits (new/cropped images, reordering) show up
     // within ~1 min; stale-while-revalidate keeps it fast without long staleness.
     res.setHeader('cache-control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({ ok: true, posts: await r.json() });
   } catch (e) {
+    console.error('linkedin: fetch threw', e);
     return res.status(200).json({ ok: true, posts: [] });
   }
 }

@@ -3,7 +3,7 @@
 // the function still verifies the human and accepts the submission gracefully.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
-import { readBody } from './_body.js';
+import { readBody, isValidEmail } from './_body.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -22,6 +22,9 @@ export default async function handler(req, res) {
   // 2) Basic field validation
   if (!name || !email || !message) {
     return res.status(422).json({ ok: false, error: 'missing-fields' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(422).json({ ok: false, error: 'invalid-email' });
   }
 
   // 3) Forward to DealDesk intake (server-to-server, x-api-key). Gated on BOTH

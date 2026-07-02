@@ -29,15 +29,23 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
 
   let posts = [];
+  let dbFailed = false;
   try {
     posts = await listPublished();
   } catch (err) {
     console.error('blog-index failed', err);
+    dbFailed = true;
+    // Don't pin a wrong "no articles" page to the edge cache for 5 minutes,
+    // and tell crawlers to retry rather than indexing an empty blog.
+    res.setHeader('Cache-Control', 'no-store');
+    res.statusCode = 503;
   }
 
-  const grid = posts.length
-    ? posts.map(card).join('\n')
-    : '<p style="opacity:.7;grid-column:1/-1">No articles published yet — check back soon.</p>';
+  const grid = dbFailed
+    ? '<p style="opacity:.7;grid-column:1/-1">Articles are temporarily unavailable — please try again in a moment.</p>'
+    : posts.length
+      ? posts.map(card).join('\n')
+      : '<p style="opacity:.7;grid-column:1/-1">No articles published yet — check back soon.</p>';
 
   let cats = [];
   try { cats = await getAllCategories(); } catch (e) { /* noop */ }
@@ -47,5 +55,5 @@ export default async function handler(req, res) {
 
   // Function replacement avoids $-pattern interpretation in the HTML.
   const withCats = TEMPLATE.replace('<div class="blog-grid">{{POSTS}}</div>', () => `${catRow}<div class="blog-grid">{{POSTS}}</div>`);
-  return res.status(200).send(withCats.replace('{{POSTS}}', () => grid));
+  return res.status(dbFailed ? 503 : 200).send(withCats.replace('{{POSTS}}', () => grid));
 }

@@ -12,3 +12,9 @@ export function readBody(req) {
   }
   return (body && typeof body === 'object') ? body : {};
 }
+
+// Pragmatic email shape check (something@something.tld) — catches typos and
+// garbage before they bounce off DealDesk/EmailOctopus as opaque 5xx errors.
+export function isValidEmail(email) {
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}

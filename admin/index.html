@@ -696,7 +696,7 @@ async function uploadFile(file){
   if(!put.ok) throw new Error('put-failed');
   return sign.body.publicUrl;
 }
-function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i.accept='image/png,image/jpeg,image/webp,image/gif,image/svg+xml'; i.onchange=()=>{ if(i.files[0]) cb(i.files[0]); }; i.click(); }
+function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i.accept='image/png,image/jpeg,image/webp,image/gif'; i.onchange=()=>{ if(i.files[0]) cb(i.files[0]); }; i.click(); }
 // Shared media list (recursive bucket list + alt/caption/title metadata).
 // Cached after first load so switching panes is instant; pass force=true after uploads.
 let MEDIA = [], MEDIA_LOADED = false;

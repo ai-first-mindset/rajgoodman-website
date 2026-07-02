@@ -3,7 +3,7 @@
 // + EMAILOCTOPUS_LIST_ID so it degrades gracefully if either is missing.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
-import { readBody } from './_body.js';
+import { readBody, isValidEmail } from './_body.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -20,6 +20,9 @@ export default async function handler(req, res) {
 
   if (!email) {
     return res.status(422).json({ ok: false, error: 'missing-fields' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(422).json({ ok: false, error: 'invalid-email' });
   }
 
   // Add to EmailOctopus (v1.6). Re-subscribing an existing email is treated as

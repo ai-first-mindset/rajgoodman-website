@@ -8,7 +8,9 @@ import { readBody } from '../_body.js';
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const BUCKET = 'blog-media';
-const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' };
+// No SVG: it can embed scripts, and editor uploads shouldn't need it. The
+// site's own SVGs live in /assets/, committed through code review.
+const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
 
 function safeName(n) {
   return (n || 'image').toLowerCase().replace(/\.[a-z0-9]+$/, '')

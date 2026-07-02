@@ -4,7 +4,7 @@
 // Run: node --test 'tests/**/*.test.js'
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readBody } from '../api/_body.js';
+import { readBody, isValidEmail } from '../api/_body.js';
 
 test('malformed JSON (throwing body getter) yields {} instead of crashing', () => {
   const req = {};
@@ -28,4 +28,15 @@ test('missing/null/non-object bodies yield {}', () => {
   assert.deepEqual(readBody({ body: undefined }), {});
   assert.deepEqual(readBody({ body: null }), {});
   assert.deepEqual(readBody({ body: 42 }), {});
+});
+
+test('isValidEmail accepts normal addresses (including trims)', () => {
+  assert.ok(isValidEmail('raj@goodmanlantern.com'));
+  assert.ok(isValidEmail('first.last+tag@sub.example.co'));
+  assert.ok(isValidEmail('  padded@example.com  '));
+});
+
+test('isValidEmail rejects garbage that would bounce downstream', () => {
+  ['', 'bad', 'no@tld', 'sp ace@x.com', '@x.com', 'a@.com', 'a@b.c', null, undefined, 42]
+    .forEach((v) => assert.equal(isValidEmail(v), false, String(v)));
 });

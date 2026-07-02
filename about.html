@@ -334,13 +334,13 @@
       <div class="work-form">
         <form data-form="contact">
           <div class="row2">
-            <div class="fld"><label>Name *</label><input name="name" required placeholder="Your name" /></div>
-            <div class="fld"><label>Email Address *</label><input name="email" type="email" required placeholder="you@company.com" /></div>
+            <div class="fld"><label for="cf-name">Name *</label><input id="cf-name" autocomplete="name" name="name" required placeholder="Your name" /></div>
+            <div class="fld"><label for="cf-email">Email Address *</label><input id="cf-email" autocomplete="email" name="email" type="email" required placeholder="you@company.com" /></div>
           </div>
-          <div class="fld"><label>Services *</label>
-            <select name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
+          <div class="fld"><label for="cf-service">Services *</label>
+            <select id="cf-service" name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
           </div>
-          <div class="fld"><label>Message *</label><textarea name="message" required placeholder="Tell Raj about your event or goals…"></textarea></div>
+          <div class="fld"><label for="cf-message">Message *</label><textarea id="cf-message" name="message" required placeholder="Tell Raj about your event or goals…"></textarea></div>
           <div class="fld captcha-mock" aria-hidden="true" style="display:flex;align-items:center;gap:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:4px;padding:14px 16px;max-width:330px">
             <span style="width:24px;height:24px;border:2px solid var(--tx-40);border-radius:4px;flex:none"></span>
             <span style="font-family:var(--mono);font-size:.82rem;color:var(--tx-60)">I'm not a robot</span>

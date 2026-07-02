@@ -49,7 +49,7 @@ function page(name, slug, posts) {
     <div class="crumbs"><a href="/">Home</a><span class="sep">/</span><a href="/blog/">Blog</a><span class="sep">/</span><span>${esc(name)}</span></div>
     <span class="eyebrow"><span class="live"></span>Category</span>
     <h1>${esc(name)}</h1>
-    <p class="lede">${posts.length} article${posts.length === 1 ? '' : 's'} on ${esc(name)}.</p>
+    <p class="lede">${posts.length ? `${posts.length} article${posts.length === 1 ? '' : 's'} on ${esc(name)}.` : 'No articles in this category yet — browse all articles below.'}</p>
   </div>
 </header>
 <section class="sec" style="padding-top:30px">
@@ -76,8 +76,11 @@ export default async function handler(req, res) {
   catch (err) { console.error('render-category failed', err); res.setHeader('Cache-Control', 'no-store'); return res.status(500).send(renderNotFound()); }
 
   if (!posts.length) {
+    // Category-flavored empty state (not the post "Article not found" page):
+    // same layout, honest copy, 404 so crawlers don't index an empty archive.
+    const pretty = slug.replace(/-/g, ' ').replace(/\b[a-z]/g, (c) => c.toUpperCase());
     res.setHeader('Cache-Control', 'public, s-maxage=60');
-    return res.status(404).send(renderNotFound());
+    return res.status(404).send(page(pretty, slug, []));
   }
   const name = posts[0].categories.find((c) => catSlug(c) === slug) || slug;
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');

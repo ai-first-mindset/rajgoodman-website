@@ -159,13 +159,13 @@
       <div class="work-form">
         <form data-form="contact">
           <div class="row2">
-            <div class="fld"><label>Name *</label><input name="name" required placeholder="Your name" /></div>
-            <div class="fld"><label>Email Address *</label><input name="email" type="email" required placeholder="you@company.com" /></div>
+            <div class="fld"><label for="cf-name">Name *</label><input id="cf-name" autocomplete="name" name="name" required placeholder="Your name" /></div>
+            <div class="fld"><label for="cf-email">Email Address *</label><input id="cf-email" autocomplete="email" name="email" type="email" required placeholder="you@company.com" /></div>
           </div>
-          <div class="fld"><label>Services *</label>
-            <select name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
+          <div class="fld"><label for="cf-service">Services *</label>
+            <select id="cf-service" name="service" required><option value="">— Please choose an option —</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
           </div>
-          <div class="fld"><label>Message *</label><textarea name="message" required placeholder="Tell us about your publication or show…"></textarea></div>
+          <div class="fld"><label for="cf-message">Message *</label><textarea id="cf-message" name="message" required placeholder="Tell us about your publication or show…"></textarea></div>
           <div data-turnstile style="margin:6px 0 18px"></div>
           <button class="btn btn-y" type="submit">Send message <span class="ar">→</span></button>
         </form>
