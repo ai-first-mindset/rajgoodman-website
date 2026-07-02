@@ -4,6 +4,7 @@
 //   DELETE — admin-only; refuses if the file is used in a post (unless force:true)
 
 import { requireUser, roleOf } from '../_auth.js';
+import { readBody } from '../_body.js';
 import { cleanupIfOrphan } from '../_media.js';
 
 const SB_URL = process.env.SUPABASE_URL;
@@ -131,9 +132,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, files });
     }
 
-    let body = req.body;
-    if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-    body = body || {};
+    const body = readBody(req);
 
     // Replace an image in place: point every reference at the newly-uploaded
     // file, then delete the old object. The browser uploads the replacement via

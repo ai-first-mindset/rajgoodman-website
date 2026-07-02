@@ -204,6 +204,20 @@
     s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad';
     s.async = true;
     s.defer = true;
+    // If the script never loads (ad blocker, network), the widget can't render
+    // and no token can ever exist — say so instead of leaving a dead form.
+    s.onerror = function () {
+      forms.forEach(function (form) {
+        form._tsBlocked = true;
+        var mount = form.querySelector('[data-turnstile]');
+        if (mount) {
+          mount.innerHTML = '<p style="font-size:.84rem;color:var(--tx-60,#999);border:1px solid var(--line,#444);border-radius:4px;padding:.7em .9em;margin:0">'
+            + 'The verification step couldn’t load — it may be blocked by a browser extension. '
+            + 'Please allow challenges.cloudflare.com, or email '
+            + '<a href="mailto:raj@goodmanlantern.com" style="color:var(--yellow,#f3af00)">raj@goodmanlantern.com</a> directly.</p>';
+        }
+      });
+    };
     document.head.appendChild(s);
 
     forms.forEach(function (form) {
@@ -214,6 +228,10 @@
         if (!endpoint) return;
 
         var btn = form.querySelector('.btn');
+        if (form._tsBlocked) {
+          setBtn(btn, 'Verification blocked — please email us', false);
+          return;
+        }
         var token = window.turnstile && form._tsWidgetId != null
           ? window.turnstile.getResponse(form._tsWidgetId) : '';
         if (!token) {

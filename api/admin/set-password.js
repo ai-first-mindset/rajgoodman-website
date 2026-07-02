@@ -2,6 +2,7 @@
 // URL hash. They choose a password here: we PUT it with their invite access token,
 // then set our httpOnly cookies so they're logged in.
 import { setAuthCookies } from '../_auth.js';
+import { readBody } from '../_body.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -9,9 +10,7 @@ const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_R
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false }); }
 
-  let body = req.body;
-  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-  body = body || {};
+  const body = readBody(req);
   const { access_token, refresh_token, password } = body;
   if (!access_token || !password) return res.status(422).json({ ok: false, error: 'token-and-password-required' });
   if (String(password).length < 8) return res.status(422).json({ ok: false, error: 'password-too-short' });

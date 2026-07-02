@@ -2,6 +2,7 @@
 // PATCH update / DELETE (admin-only). Uses the Supabase secret key via PostgREST.
 
 import { requireUser, roleOf } from '../_auth.js';
+import { readBody } from '../_body.js';
 import { cleanupIfOrphan } from '../_media.js';
 
 const SB_URL = process.env.SUPABASE_URL;
@@ -29,9 +30,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, posts: await r.json() });
     }
 
-    let body = req.body;
-    if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-    body = body || {};
+    const body = readBody(req);
 
     if (req.method === 'POST') {
       if (!body.url) return res.status(422).json({ ok: false, error: 'url-required' });

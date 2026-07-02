@@ -1,5 +1,6 @@
 // POST {email, password} -> Supabase password grant -> httpOnly token cookies.
 import { setAuthCookies, roleOf } from '../_auth.js';
+import { readBody } from '../_body.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -7,9 +8,7 @@ const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_R
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false }); }
 
-  let body = req.body;
-  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-  body = body || {};
+  const body = readBody(req);
   const email = (body.email || '').trim();
   const password = body.password || '';
   if (!email || !password) return res.status(422).json({ ok: false, error: 'email-and-password-required' });

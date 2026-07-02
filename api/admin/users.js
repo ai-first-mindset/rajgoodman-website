@@ -3,6 +3,7 @@
 //   POST   {email, role}   -> invite (sends email) + set app_metadata.role
 //   DELETE {id}            -> remove user
 import { requireAdmin } from '../_auth.js';
+import { readBody } from '../_body.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -33,9 +34,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, users });
   }
 
-  let body = req.body;
-  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-  body = body || {};
+  const body = readBody(req);
 
   if (req.method === 'POST') {
     const email = (body.email || '').trim().toLowerCase();

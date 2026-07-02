@@ -3,6 +3,7 @@
 // + EMAILOCTOPUS_LIST_ID so it degrades gracefully if either is missing.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
+import { readBody } from './_body.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'method-not-allowed' });
   }
 
-  const { token, firstName, lastName, email } = req.body || {};
+  const { token, firstName, lastName, email } = readBody(req);
 
   const verdict = await verifyTurnstile(token, clientIp(req));
   if (!verdict.ok) {
@@ -50,8 +51,11 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'subscribe-unreachable' });
     }
   } else {
-    console.warn('EmailOctopus not configured (need EMAILOCTOPUS_API_KEY + EMAILOCTOPUS_LIST_ID); signup not stored:', { email });
+    // Signup reaches nobody in this state — same loud-config treatment as
+    // /api/contact so a missing env var is visible, not a silent drop.
+    console.error('CONFIG ERROR: EmailOctopus not configured (need EMAILOCTOPUS_API_KEY + EMAILOCTOPUS_LIST_ID); signup NOT stored:', { email });
+    return res.status(200).json({ ok: true, stored: false });
   }
 
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, stored: true });
 }

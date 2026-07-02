@@ -3,6 +3,7 @@
 // to that URL (bypassing the serverless body-size limit), then uses publicUrl.
 
 import { requireUser } from '../_auth.js';
+import { readBody } from '../_body.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -19,9 +20,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method-not-allowed' }); }
   if (!SB_URL || !SB_KEY) return res.status(500).json({ ok: false, error: 'storage-not-configured' });
 
-  let body = req.body;
-  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-  body = body || {};
+  const body = readBody(req);
 
   const ext = EXT[body.contentType];
   if (!ext) return res.status(415).json({ ok: false, error: 'unsupported-type' });

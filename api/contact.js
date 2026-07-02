@@ -3,6 +3,7 @@
 // the function still verifies the human and accepts the submission gracefully.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
+import { readBody } from './_body.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'method-not-allowed' });
   }
 
-  const { token, name, email, service, message, source_page } = req.body || {};
+  const { token, name, email, service, message, source_page } = readBody(req);
 
   // 1) Human verification
   const verdict = await verifyTurnstile(token, clientIp(req));
@@ -48,9 +49,12 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'dealdesk-unreachable' });
     }
   } else {
-    // Not fully wired yet — log so submissions aren't lost during the gap.
-    console.warn('DealDesk not configured (need DEALDESK_ENDPOINT + DEALDESK_API_KEY); lead not forwarded:', { name, email, service });
+    // Lead reaches nobody in this state — log at error level so a missing env
+    // var after a deploy/cutover is visible in monitoring, and mark the
+    // response so it's detectable from outside (the form UI ignores extras).
+    console.error('CONFIG ERROR: DealDesk not configured (need DEALDESK_ENDPOINT + DEALDESK_API_KEY); lead NOT forwarded:', { name, email, service });
+    return res.status(200).json({ ok: true, forwarded: false });
   }
 
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, forwarded: true });
 }

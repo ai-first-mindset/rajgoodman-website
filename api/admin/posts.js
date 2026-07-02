@@ -3,6 +3,7 @@
 // (incl. publish bookkeeping) / DELETE.
 
 import { requireUser } from '../_auth.js';
+import { readBody } from '../_body.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -53,9 +54,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, posts: id ? (data[0] || null) : data });
     }
 
-    let body = req.body;
-    if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
-    body = body || {};
+    const body = readBody(req);
 
     if (req.method === 'POST') {
       if (!body.title || !body.slug) return res.status(422).json({ ok: false, error: 'title-and-slug-required' });
