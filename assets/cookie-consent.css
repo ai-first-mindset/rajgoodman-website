@@ -1,0 +1,109 @@
+/* Cookie consent — banner (layer 1) + preferences panel (layer 2).
+   Styled to the site theme tokens (site.css :root). Self-contained; only
+   assumes --panel / --tx / --yellow etc. exist on the page. */
+
+.cc-hide { display: none !important; }
+
+/* ---- Layer 1: banner (bottom-left card, clears the .switcher on the right) ---- */
+.cc-banner {
+  position: fixed; left: 16px; bottom: 16px; z-index: 200;
+  width: min(440px, calc(100vw - 32px));
+  background: var(--panel, #34270f);
+  border: 1px solid var(--line, rgba(244,239,230,.12));
+  border-radius: 8px;
+  padding: 20px 20px 18px;
+  box-shadow: 0 18px 50px -12px rgba(0,0,0,.6);
+  font-family: var(--ff, system-ui, sans-serif);
+  color: var(--tx, #f4efe6);
+}
+.cc-banner h2 {
+  font-size: 1.02rem; font-weight: 800; margin: 0 0 .5rem;
+  letter-spacing: -0.01em;
+}
+.cc-banner p {
+  font-size: .86rem; line-height: 1.55; color: var(--tx-60, rgba(244,239,230,.62));
+  margin: 0 0 14px;
+}
+.cc-banner a { color: var(--yellow, #f3af00); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Button row — Reject given equal prominence to Accept (GDPR). */
+.cc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cc-actions .cc-btn { flex: 1 1 auto; justify-content: center; }
+.cc-btn {
+  display: inline-flex; align-items: center; gap: .5em; justify-content: center;
+  font-family: var(--ff, system-ui, sans-serif); font-weight: 700; font-size: .88rem;
+  padding: .72em 1.1em; border-radius: 4px; border: 1px solid transparent;
+  cursor: pointer; transition: transform .2s, background .2s, color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.cc-btn:hover { transform: translateY(-2px); }
+.cc-btn:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(72,167,203,.35); }
+.cc-btn-y   { background: var(--yellow, #f3af00); color: var(--ink, #140e04); }
+.cc-btn-y:hover { background: var(--yellow-d, #d99c00); }
+.cc-btn-line { background: transparent; border-color: var(--line, rgba(244,239,230,.12)); color: var(--tx, #f4efe6); }
+.cc-btn-line:hover { border-color: var(--blue-l, #48a7cb); color: #fff; }
+.cc-btn-ghost { background: transparent; color: var(--tx-60, rgba(244,239,230,.62)); padding-left: .4em; padding-right: .4em; flex: 0 0 auto; }
+.cc-btn-ghost:hover { color: var(--tx, #f4efe6); transform: none; text-decoration: underline; }
+
+/* ---- Layer 2: preferences panel (centered modal) ---- */
+.cc-overlay {
+  position: fixed; inset: 0; z-index: 210;
+  background: rgba(20,14,4,.6); backdrop-filter: blur(3px);
+  display: grid; place-items: center; padding: 20px;
+}
+.cc-panel {
+  width: min(560px, 100%); max-height: 86vh; overflow: auto;
+  background: var(--bg-2, #2a1d08);
+  border: 1px solid var(--line, rgba(244,239,230,.12));
+  border-radius: 10px; padding: 26px 26px 22px;
+  font-family: var(--ff, system-ui, sans-serif); color: var(--tx, #f4efe6);
+  box-shadow: 0 24px 70px -16px rgba(0,0,0,.7);
+}
+.cc-panel h2 { font-size: 1.25rem; font-weight: 800; margin: 0 0 .4rem; letter-spacing: -0.01em; }
+.cc-panel > p { font-size: .88rem; line-height: 1.55; color: var(--tx-60, rgba(244,239,230,.62)); margin: 0 0 18px; }
+.cc-panel > p a { color: var(--yellow, #f3af00); text-decoration: underline; text-underline-offset: 2px; }
+
+.cc-cat {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 16px;
+  padding: 16px 0; border-top: 1px solid var(--line-2, rgba(244,239,230,.07));
+}
+.cc-cat:first-of-type { border-top: 0; }
+.cc-cat h3 { grid-column: 1; font-size: .96rem; font-weight: 700; margin: 0; }
+.cc-cat p  { grid-column: 1; font-size: .82rem; line-height: 1.5; color: var(--tx-60, rgba(244,239,230,.62)); margin: .35rem 0 0; }
+.cc-cat .cc-switch-wrap { grid-column: 2; grid-row: 1 / span 2; align-self: start; }
+.cc-tag {
+  font-family: var(--mono, monospace); font-size: .68rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tx-40, rgba(244,239,230,.4));
+}
+
+/* Toggle switch */
+.cc-switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+.cc-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.cc-track {
+  position: absolute; inset: 0; border-radius: 999px;
+  background: var(--line, rgba(244,239,230,.14)); transition: background .2s; pointer-events: none;
+}
+.cc-track::before {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--tx, #f4efe6); transition: transform .2s;
+}
+.cc-switch input:checked + .cc-track { background: var(--yellow, #f3af00); }
+.cc-switch input:checked + .cc-track::before { transform: translateX(20px); background: var(--ink, #140e04); }
+.cc-switch input:focus-visible + .cc-track { box-shadow: 0 0 0 3px rgba(72,167,203,.35); }
+.cc-switch input:disabled { cursor: not-allowed; }
+.cc-switch input:disabled + .cc-track { opacity: .65; }
+
+.cc-panel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.cc-panel-actions .cc-btn { flex: 1 1 auto; }
+
+/* Footer "Cookie settings" link (injected into .f-bot) */
+.f-bot .cc-open {
+  font-family: var(--mono, monospace); font-size: .74rem; color: var(--tx-40, rgba(244,239,230,.4));
+  cursor: pointer; background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px;
+  transition: color .2s;
+}
+.f-bot .cc-open:hover { color: var(--tx, #f4efe6); }
+
+@media (max-width: 520px) {
+  .cc-banner { left: 8px; right: 8px; bottom: 8px; width: auto; }
+}
