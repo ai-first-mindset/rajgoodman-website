@@ -121,6 +121,7 @@ export function renderPost(post, recent = []) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="/assets/cookie-consent.js"></script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}" />
 <meta name="robots" content="${esc(post.robots || 'index, follow')}" />
