@@ -3,10 +3,16 @@
   "trailingSlash": true,
   "regions": ["sin1"],
   "redirects": [
-    { "source": "/blog/author/:slug/", "destination": "/blog/", "statusCode": 301 }
+    { "source": "/blog/author/:slug/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/page/:n/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/category/:slug/page/:n/", "destination": "/blog/category/:slug/", "statusCode": 301 },
+    { "source": "/author-sitemap.xml", "destination": "/sitemap_index.xml", "statusCode": 301 },
+    { "source": "/wp-content/uploads/:path*", "destination": "https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/wp-content/uploads/:path*", "statusCode": 301 }
   ],
   "rewrites": [
     { "source": "/blog/", "destination": "/api/blog-index/" },
+    { "source": "/feed/", "destination": "/api/feed/" },
+    { "source": "/blog/feed/", "destination": "/api/feed/" },
     { "source": "/blog/category/:slug/", "destination": "/api/render-category/?slug=:slug" },
     { "source": "/blog/:slug/", "destination": "/api/render-post/?slug=:slug" },
     { "source": "/sitemap_index.xml", "destination": "/api/sitemap/?kind=index" },

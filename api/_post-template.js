@@ -122,6 +122,9 @@ export function renderPost(post, recent = []) {
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script src="/assets/cookie-consent.js"></script>
+<link rel="icon" href="/assets/favicon-32.png" sizes="32x32" />
+<link rel="icon" href="/assets/favicon-192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}" />
 <meta name="robots" content="${esc(post.robots || 'index, follow')}" />

@@ -40,3 +40,9 @@ CI runs the same command on every push to `main` and every pull request
   Supabase media URL (repo-hardcoded, post bodies/featured/og, LinkedIn
   cards, ebook registry) resolves live. Network checks skip with
   SKIP_NET_TESTS=1; DB checks self-skip without .env secrets (e.g. CI).
+- `parity-surfaces.test.js` — cutover parity surfaces: favicon files exist
+  and every page/template links them; vercel.json keeps the WP-era URL
+  surface alive (hotlinked /wp-content/uploads → Supabase, /blog/page/N and
+  author-sitemap redirects, /feed/ + /blog/feed/ rewrites); page sitemap
+  includes privacy-policy; the RSS generator escapes and structures items
+  correctly; homepage JSON-LD carries Organization + ContactPoint.

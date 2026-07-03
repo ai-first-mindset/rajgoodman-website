@@ -11,7 +11,7 @@ const PAGES = ['/', '/about/', '/ai-business-consultant/', '/keynote-speaker/',
   '/ai-for-business-leaders/', '/ai-trainer/', '/events/', '/media/',
   '/ai-training-for-executives/', '/blog/', '/testimonials/', '/eo-ypo-leadership/',
   '/fractional-chief-ai-officer/', '/organizational-transformation-consultant/',
-  '/workshops/tech-workshop/'];
+  '/workshops/tech-workshop/', '/privacy-policy/'];
 
 function urlTag(loc, lastmod) {
   return `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;

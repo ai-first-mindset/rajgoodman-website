@@ -39,6 +39,9 @@ function page(name, slug, posts) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
+<link rel="icon" href="/assets/favicon-32.png" sizes="32x32" />
+<link rel="icon" href="/assets/favicon-192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 </head>
 <body data-page="blog">
 <div class="bg-grid"></div>
