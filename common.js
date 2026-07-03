@@ -311,6 +311,128 @@
     }).catch(function () { /* keep the static fallback */ });
   }
 
+  /* ---- Gated downloads: [data-download="<asset>"] opens a modal form.
+     Human verification + lead capture happen in /api/download/, which alone
+     knows the file URLs — nothing downloadable is exposed in the markup. */
+  function initDownloads() {
+    var triggers = [].slice.call(document.querySelectorAll('[data-download]'));
+    if (triggers.length === 0) return;
+
+    var overlay = null, tsWidget = null, currentAsset = '';
+
+    function buildModal() {
+      var css = document.createElement('style');
+      css.textContent =
+        '.dlm-overlay{position:fixed;inset:0;z-index:220;background:rgba(20,14,4,.65);backdrop-filter:blur(3px);display:grid;place-items:center;padding:20px}' +
+        '.dlm{width:min(440px,100%);background:var(--bg-2,#2a1d08);border:1px solid var(--line,rgba(244,239,230,.12));border-radius:10px;padding:26px;color:var(--tx,#f4efe6);font-family:var(--ff,system-ui,sans-serif);box-shadow:0 24px 70px -16px rgba(0,0,0,.7);position:relative}' +
+        '.dlm h3{font-size:1.15rem;font-weight:800;margin:0 2em .35rem 0}' +
+        '.dlm .dlm-asset{font-size:.86rem;color:var(--tx-60,rgba(244,239,230,.62));margin:0 0 16px}' +
+        '.dlm label{display:block;font-size:.82rem;font-weight:600;margin:12px 0 6px}' +
+        '.dlm input{width:100%;font-family:inherit;font-size:.96rem;padding:.82em 1em;border:1px solid var(--line,rgba(244,239,230,.12));border-radius:4px;background:var(--bg,#201600);color:var(--tx,#f4efe6)}' +
+        '.dlm input:focus{outline:0;border-color:var(--blue-l,#48a7cb)}' +
+        '.dlm .dlm-close{position:absolute;top:14px;right:14px;background:none;border:0;color:var(--tx-60,rgba(244,239,230,.62));font-size:1.3rem;line-height:1;cursor:pointer;padding:4px}' +
+        '.dlm .dlm-close:hover{color:var(--tx,#f4efe6)}' +
+        '.dlm .btn{width:100%;justify-content:center;margin-top:16px}' +
+        '.dlm .dlm-note{font-size:.8rem;color:var(--tx-60,rgba(244,239,230,.62));margin-top:12px}' +
+        '.dlm .dlm-success a.btn{text-decoration:none}';
+      document.head.appendChild(css);
+
+      overlay = document.createElement('div');
+      overlay.className = 'dlm-overlay';
+      overlay.innerHTML =
+        '<div class="dlm" role="dialog" aria-modal="true" aria-labelledby="dlm-title">' +
+          '<button type="button" class="dlm-close" aria-label="Close">&times;</button>' +
+          '<form class="dlm-form">' +
+            '<h3 id="dlm-title">Get the eBook</h3>' +
+            '<p class="dlm-asset"></p>' +
+            '<label for="dlm-name">Name *</label><input id="dlm-name" name="name" autocomplete="name" required placeholder="Your name" />' +
+            '<label for="dlm-email">Email Address *</label><input id="dlm-email" name="email" type="email" autocomplete="email" required placeholder="you@company.com" />' +
+            '<div data-turnstile style="margin:14px 0 0"></div>' +
+            '<button class="btn btn-y" type="submit">Get the eBook <span class="ar">&rarr;</span></button>' +
+          '</form>' +
+          '<div class="dlm-success" style="display:none"></div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+      overlay.querySelector('.dlm-close').addEventListener('click', close);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.style.display !== 'none') close(); });
+
+      overlay.querySelector('.dlm-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var form = e.target;
+        var btn = form.querySelector('.btn');
+        if (!window.turnstile || tsWidget == null) { setLabel(btn, 'Verification blocked — please email us'); return; }
+        var token = window.turnstile.getResponse(tsWidget);
+        if (!token) { setLabel(btn, 'Please complete the verification'); return; }
+
+        setLabel(btn, 'Preparing your download…'); btn.disabled = true;
+        fetch('/api/download/', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            name: form.querySelector('#dlm-name').value.trim(),
+            email: form.querySelector('#dlm-email').value.trim(),
+            asset: currentAsset,
+            source_page: location.host + location.pathname,
+          }),
+        })
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
+          .then(function (res) {
+            if (res.ok) { showSuccess(res.j); }
+            else { setLabel(btn, 'Something went wrong — try again'); btn.disabled = false; window.turnstile.reset(tsWidget); }
+          })
+          .catch(function () { setLabel(btn, 'Network error — try again'); btn.disabled = false; window.turnstile.reset(tsWidget); });
+      });
+    }
+
+    function setLabel(btn, text) {
+      var ar = btn.querySelector('.ar');
+      btn.textContent = text;
+      if (ar) { btn.appendChild(document.createTextNode(' ')); btn.appendChild(ar); }
+    }
+
+    function showSuccess(j) {
+      var box = overlay.querySelector('.dlm-success');
+      overlay.querySelector('.dlm-form').style.display = 'none';
+      box.innerHTML =
+        '<h3>Your download is ready</h3>' +
+        '<p class="dlm-asset">' + (j.title || 'Your eBook') + '</p>' +
+        '<a class="btn btn-y" href="' + j.url + '" target="_blank" rel="noopener">Download eBook <span class="ar">&rarr;</span></a>' +
+        (j.pending ? '<p class="dlm-note">We’ve also sent you a confirmation email — confirm to get Raj’s newsletter.</p>' : '');
+      box.style.display = 'block';
+      // Open immediately as well — the button remains as a fallback.
+      window.open(j.url, '_blank', 'noopener');
+    }
+
+    function open(asset, title) {
+      currentAsset = asset;
+      if (!overlay) buildModal();
+      overlay.querySelector('.dlm-asset').textContent = title;
+      overlay.querySelector('.dlm-form').style.display = '';
+      overlay.querySelector('.dlm-success').style.display = 'none';
+      var btn = overlay.querySelector('.dlm-form .btn');
+      setLabel(btn, 'Get the eBook'); btn.disabled = false;
+      overlay.style.display = 'grid';
+      if (window.turnstile) {
+        if (tsWidget == null) tsWidget = window.turnstile.render(overlay.querySelector('[data-turnstile]'), { sitekey: TURNSTILE_SITEKEY, theme: 'dark' });
+        else window.turnstile.reset(tsWidget);
+      }
+      overlay.querySelector('#dlm-name').focus();
+    }
+    function close() { if (overlay) overlay.style.display = 'none'; }
+
+    triggers.forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        var card = el.closest ? el.closest('.book') : null;
+        var title = card && card.querySelector('h3') ? card.querySelector('h3').textContent : '';
+        open(el.getAttribute('data-download'), title);
+      });
+    });
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -320,6 +442,7 @@
     initVideoLightbox();
     initForms();
     initLinkedIn();
+    initDownloads();
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
