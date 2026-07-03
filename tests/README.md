@@ -34,3 +34,9 @@ CI runs the same command on every push to `main` and every pull request
   per asset, verification gating (unticked + ad-blocked), exact submit
   payload, in-page unlock + auto-open, double-opt-in pending note, server and
   network error recovery, close/reopen behavior, multi-book pages.
+- `media-migration.test.js` — WordPress→Supabase media parity: no reference
+  to the doomed WP hosts anywhere (repo pages/templates AND every post in the
+  DB, drafts included), every referenced /assets/ file exists, and every
+  Supabase media URL (repo-hardcoded, post bodies/featured/og, LinkedIn
+  cards, ebook registry) resolves live. Network checks skip with
+  SKIP_NET_TESTS=1; DB checks self-skip without .env secrets (e.g. CI).
