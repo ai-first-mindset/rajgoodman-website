@@ -31,6 +31,10 @@ export default async function handler(req, res) {
   const listId = process.env.EMAILOCTOPUS_LIST_ID;
   if (apiKey && listId) {
     try {
+      // No explicit `status`: EmailOctopus then follows the LIST setting —
+      // PENDING (double opt-in confirmation email sent by EO) when double
+      // opt-in is enabled on the list, SUBSCRIBED otherwise. Toggling double
+      // opt-in in the EO dashboard therefore needs no code change.
       const resp = await fetch(`https://emailoctopus.com/api/1.6/lists/${listId}/contacts`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -38,17 +42,19 @@ export default async function handler(req, res) {
           api_key: apiKey,
           email_address: email,
           fields: { FirstName: firstName || '', LastName: lastName || '' },
-          status: 'SUBSCRIBED',
         }),
       });
+      const body = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        const body = await resp.json().catch(() => ({}));
         const code = body && body.error && body.error.code;
         if (code !== 'MEMBER_EXISTS_WITH_EMAIL_ADDRESS') {
           console.error('EmailOctopus subscribe failed', resp.status, code, body);
           return res.status(502).json({ ok: false, error: 'subscribe-error' });
         }
       }
+      // Tell the form whether a confirmation step is pending so it can show
+      // "check your inbox" instead of claiming the signup is complete.
+      return res.status(200).json({ ok: true, stored: true, pending: body.status === 'PENDING' });
     } catch (err) {
       console.error('EmailOctopus subscribe threw', err);
       return res.status(502).json({ ok: false, error: 'subscribe-unreachable' });
@@ -59,6 +65,4 @@ export default async function handler(req, res) {
     console.error('CONFIG ERROR: EmailOctopus not configured (need EMAILOCTOPUS_API_KEY + EMAILOCTOPUS_LIST_ID); signup NOT stored:', { email });
     return res.status(200).json({ ok: true, stored: false });
   }
-
-  return res.status(200).json({ ok: true, stored: true });
 }

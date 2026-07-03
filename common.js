@@ -252,10 +252,13 @@
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(payload),
         })
-          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return r.ok && j.ok; }); })
-          .then(function (ok) {
-            if (ok) {
-              setBtn(btn, type === 'newsletter' ? 'Thanks — you\'re subscribed' : 'Thank you — we\'ll be in touch', true);
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, pending: !!j.pending }; }); })
+          .then(function (result) {
+            if (result.ok) {
+              var doneMsg = type === 'newsletter'
+                ? (result.pending ? 'Almost done — check your inbox to confirm' : 'Thanks — you\'re subscribed')
+                : 'Thank you — we\'ll be in touch';
+              setBtn(btn, doneMsg, true);
               [].slice.call(form.querySelectorAll('input,select,textarea,button')).forEach(function (el) { el.disabled = true; });
             } else {
               setBtn(btn, 'Something went wrong — try again', false);
