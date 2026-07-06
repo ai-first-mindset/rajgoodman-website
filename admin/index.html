@@ -112,6 +112,15 @@
   .glance { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px }
   .glance .stat { border:1px solid var(--bd); border-radius:10px; padding:16px; background:#fff }
   .glance .stat .n { font-size:26px; font-weight:700; color:#1d2327; line-height:1 } .glance .stat .l { color:var(--mut); font-size:13px; margin-top:5px }
+  /* Coverage tab */
+  .cov td.num { text-align:right; font-family:ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums; width:86px }
+  .cov .b-good { background:#e2f3e2 } .cov .b-warn { background:#fdf0d3 } .cov .b-serious { background:#fbe6dd } .cov .b-critical { background:#f8dfdf }
+  .cov .b-none { background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(0,0,0,.07) 5px 6px); color:var(--mut) }
+  .cov td.grp { background:#f6f7f7; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--mut); font-weight:600 }
+  .cov .file { font-family:ui-monospace,Consolas,monospace; font-size:12.5px }
+  .cov .note { color:var(--mut); font-size:12px }
+  .cov-legend { display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--mut); margin:0 0 12px }
+  .cov-legend .sw { display:inline-block; width:12px; height:12px; border-radius:3px; border:1px solid var(--bd); vertical-align:-2px; margin-right:5px }
 </style>
 </head>
 <body>
@@ -155,6 +164,7 @@
     <div class="item" id="navPosts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span class="label">Posts</span></div>
     <div class="item" id="mediaBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="label">Media</span></div>
     <div class="item" id="navLinkedin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg><span class="label">LinkedIn</span></div>
+    <div class="item" id="navCoverage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="label">Coverage</span></div>
     <div class="item hide" id="usersBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="label">Users</span></div>
     <div class="item collapse" id="collapseBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="label">Collapse menu</span></div>
   </nav>
@@ -245,6 +255,29 @@
     </div>
     <table id="liTable"><thead><tr><th style="width:56px"></th><th>Title</th><th>Homepage</th><th>Order</th><th></th></tr></thead><tbody></tbody></table>
     <p id="liEmpty" class="muted hide" style="margin-top:14px">No LinkedIn posts yet — Add one.</p>
+  </div>
+
+  <!-- COVERAGE (static snapshot; see tests/README.md to regenerate) -->
+  <div id="coverageView" class="wrap hide">
+    <h1 class="wp-heading">Test coverage</h1>
+    <div class="card">
+      <h3 style="margin-top:0">At a glance <span class="muted" style="font-weight:400;font-size:13px">— suite run 6 July 2026, <code>node --test --experimental-test-coverage</code></span></h3>
+      <div class="glance" id="covGlance"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Per-file heatmap</h3>
+      <p class="muted" style="margin:4px 0 12px">Hatched cells mean the file is never imported by any test — real gaps, not 0% rounding. The vendored <code>tiptap.bundle.js</code> is excluded by policy.</p>
+      <div class="cov-legend">
+        <span><span class="sw" style="background:#e2f3e2"></span>&ge;90% strong</span>
+        <span><span class="sw" style="background:#fdf0d3"></span>70&ndash;89% adequate</span>
+        <span><span class="sw" style="background:#fbe6dd"></span>40&ndash;69% thin</span>
+        <span><span class="sw" style="background:#f8dfdf"></span>&lt;40% poor</span>
+        <span><span class="sw" style="background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(0,0,0,.07) 5px 6px)"></span>not exercised</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cov" id="covTable" style="min-width:640px"><thead><tr><th>File</th><th style="text-align:right">Lines</th><th style="text-align:right">Branch</th><th style="text-align:right">Funcs</th><th>Covered by / notes</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
   </div>
 
   <!-- LIST -->
@@ -484,7 +517,7 @@ function showApp(){
   showDashboard();
 }
 function setActiveMenu(id){ document.querySelectorAll('#adminmenu .item').forEach(a=>a.classList.toggle('current', a.id===id)); }
-function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView'].forEach(v=>$(v).classList.add('hide')); }
+function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView','coverageView'].forEach(v=>$(v).classList.add('hide')); }
 async function showDashboard(){
   hideViews();
   $('dashboardView').classList.remove('hide'); setActiveMenu('navDashboard');
@@ -990,6 +1023,66 @@ $('mediaModalUpload').addEventListener('click', ()=> pickFile(async (f)=>{ toast
 $('navDashboard').addEventListener('click', showDashboard);
 $('navPosts').addEventListener('click', loadList);
 $('navLinkedin').addEventListener('click', showLinkedin);
+$('navCoverage').addEventListener('click', showCoverage);
+
+// --- Test-coverage snapshot (from `node --test --experimental-test-coverage`,
+//     2026-07-06; static — re-run the suite and update COVERAGE to refresh) ---
+const COVERAGE = {
+  stats: [['141','Tests'],['136','Passed'],['5','Env-gated skips'],['16','Suites'],['74.7%','Lines, instrumented'],['11','Files not exercised']],
+  files: [
+    { g:'Public API (serverless)' },
+    { f:'api/contact.js',        l:100,  b:95,   fn:100,  n:'contact-api' },
+    { f:'api/subscribe.js',      l:100,  b:100,  fn:50,   n:'subscribe-api' },
+    { f:'api/download.js',       l:94.7, b:84.2, fn:50,   n:'download-api · uncovered: EO catch logging' },
+    { f:'api/linkedin.js',       l:100,  b:77.8, fn:100,  n:'linkedin-api' },
+    { f:'api/blog-index.js',     l:100,  b:80,   fn:87.5, n:'render-handlers' },
+    { f:'api/render-post.js',    l:100,  b:81,   fn:100,  n:'render-handlers' },
+    { f:'api/render-category.js',l:100,  b:59.1, fn:85.7, n:'render-handlers · card variants unexercised' },
+    { f:'api/feed.js',           l:77.1, b:92.9, fn:83.3, n:'parity-surfaces · uncovered: handler wrapper' },
+    { f:'api/sitemap.js',        none:true, n:'route checked textually in parity tests only' },
+    { g:'Admin API (auth-gated)' },
+    { f:'api/admin/posts.js',      l:97.2, b:80.4, fn:100, n:'admin-posts-api · uncovered: catch-all 500' },
+    { f:'api/admin/fetch-meta.js', l:54.3, b:100,  fn:40,  n:'fetch-meta · extraction only, handler unexercised' },
+    { f:'api/admin/login.js', none:true, n:'' }, { f:'api/admin/session.js', none:true, n:'' },
+    { f:'api/admin/set-password.js', none:true, n:'' }, { f:'api/admin/users.js', none:true, n:'' },
+    { f:'api/admin/media.js', none:true, n:'' }, { f:'api/admin/upload.js', none:true, n:'' },
+    { f:'api/admin/linkedin.js', none:true, n:'' },
+    { g:'Shared helpers' },
+    { f:'api/_body.js',        l:100,  b:100,  fn:100,  n:'read-body' },
+    { f:'api/_turnstile.js',   l:100,  b:100,  fn:100,  n:'turnstile' },
+    { f:'api/_auth.js',        l:93.3, b:81.3, fn:90,   n:'admin-posts-api · uncovered: clearAuthCookies' },
+    { f:'api/_blog-data.js',   l:100,  b:70,   fn:76.5, n:'render-handlers · seed fallback path unexercised' },
+    { f:'api/_post-template.js', l:92.5, b:51.7, fn:81.8, n:'post-template, parity-surfaces · FAQ extraction partial' },
+    { f:'api/_blog-index-template.js', l:100, b:100, fn:100, n:'via blog-index' },
+    { f:'api/_media.js', none:true, n:'media-library listing glue' },
+    { g:'Front-end' },
+    { f:'common.js',                l:42.3, b:87.3, fn:67.7, n:'linkedin-widget, download-modal · forms/nav/reveal untested' },
+    { f:'assets/cookie-consent.js', l:45.9, b:88.2, fn:25,   n:'cookie-consent · banner DOM + GTM wiring untested' },
+    { f:'chrome.js', none:true, n:'nav/footer chrome injection' },
+    { f:'admin/index.html (app)', partial:true, n:'admin-editor · category picker + alt bar only; rest untested' },
+    { g:'Scripts' },
+    { f:'scripts/sync-linkedin-fallback.mjs', none:true, n:'LinkedIn fallback-card generator' },
+  ],
+};
+let covRendered=false;
+function renderCoverage(){
+  if(covRendered) return; covRendered=true;
+  $('covGlance').innerHTML = COVERAGE.stats.map(s=>'<div class="stat"><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('');
+  const band=v=>v>=90?'b-good':v>=70?'b-warn':v>=40?'b-serious':'b-critical';
+  const fmt=v=>(Math.round(v*10)/10)+'%';
+  const tb=$('covTable').querySelector('tbody');
+  COVERAGE.files.forEach(r=>{
+    const tr=document.createElement('tr');
+    if(r.g){ tr.innerHTML='<td class="grp" colspan="5">'+r.g+'</td>'; tb.appendChild(tr); return; }
+    let cells;
+    if(r.none) cells='<td class="num b-none" colspan="3" title="Never imported by any test — no unit coverage">not exercised</td>';
+    else if(r.partial) cells='<td class="num b-none" colspan="3" title="Inline script: not instrumentable; newest features tested via extraction">not instrumentable</td>';
+    else cells=['l','b','fn'].map(k=>'<td class="num '+band(r[k])+'">'+fmt(r[k])+'</td>').join('');
+    tr.innerHTML='<td class="file">'+esc(r.f)+'</td>'+cells+'<td class="note">'+(r.n||'&mdash;')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function showCoverage(){ hideViews(); $('coverageView').classList.remove('hide'); setActiveMenu('navCoverage'); renderCoverage(); }
 $('dashNew').addEventListener('click', ()=>openEditor(null));
 $('dashMedia').addEventListener('click', showMedia);
 $('liAddBtn').addEventListener('click', ()=>liOpenForm(null));
