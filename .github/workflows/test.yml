@@ -33,10 +33,10 @@ jobs:
         run: node scripts/update-coverage.mjs
       - name: Commit the refreshed snapshot if it changed
         run: |
-          if ! git diff --quiet admin/index.html; then
+          if ! git diff --quiet -- admin/index.html admin/admin.js; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add admin/index.html
+            git add admin/index.html admin/admin.js
             git commit -m "Auto-update admin coverage snapshot [skip ci]"
             git push
           else

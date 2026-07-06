@@ -14,7 +14,8 @@ import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ADMIN = join(ROOT, 'admin', 'index.html');
+const ADMIN_HTML = join(ROOT, 'admin', 'index.html'); // card header run date
+const ADMIN_JS = join(ROOT, 'admin', 'admin.js');     // generated COVERAGE block
 const LCOV = join(ROOT, 'coverage.lcov');
 
 // Hand-maintained annotations; anything unlisted gets a sensible fallback.
@@ -37,6 +38,7 @@ const NOTES = {
   'api/_post-template.js': 'post-template, parity-surfaces',
   'api/_blog-index-template.js': 'via blog-index',
   'api/_media.js': 'media-library listing glue',
+  'admin/admin.js': 'admin-editor · picker/alt-bar/helpers; view flows untested',
   'common.js': 'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)',
   'assets/cookie-consent.js': 'cookie-consent (helpers), cookie-consent-dom (banner/panel)',
   'chrome.js': 'chrome · nav/footer injection smoke',
@@ -83,7 +85,7 @@ const groups = [
   ['Public API (serverless)', js('api').filter((f) => !f.includes('/_'))],
   ['Admin API (auth-gated)', js('api/admin')],
   ['Shared helpers', js('api').filter((f) => f.includes('/_'))],
-  ['Front-end', ['common.js', 'chrome.js', 'assets/cookie-consent.js']],
+  ['Front-end', ['common.js', 'chrome.js', 'assets/cookie-consent.js', 'admin/admin.js']],
   ['Scripts', js('scripts', '.mjs')],
 ];
 
@@ -104,9 +106,6 @@ for (const [g, files] of groups) {
       rows.push(`    { f:'${q(f)}', l:${c.l}, b:${c.b}, fn:${c.fn}, n:'${q(note)}' },`);
     }
   }
-  if (g === 'Front-end') {
-    rows.push(`    { f:'admin/index.html (app)', partial:true, n:'admin-editor · category picker + alt bar only; rest untested' },`);
-  }
 }
 const suites = readdirSync(join(ROOT, 'tests')).filter((f) => f.endsWith('.test.js')).length;
 const overall = lf ? (Math.round((lh / lf) * 1000) / 10).toFixed(1) : '0.0';
@@ -120,13 +119,14 @@ ${rows.join('\n')}
 };
 // --- END GENERATED COVERAGE ---`;
 
-// 5) Splice into admin/index.html and refresh the run date in the card header.
-let html = readFileSync(ADMIN, 'utf8');
+// 5) Splice the block into admin/admin.js; refresh the run date in the
+//    index.html card header.
+let js2 = readFileSync(ADMIN_JS, 'utf8');
 const re = /\/\/ --- BEGIN GENERATED COVERAGE[\s\S]*?\/\/ --- END GENERATED COVERAGE ---/;
-if (!re.test(html)) throw new Error('GENERATED COVERAGE markers not found in admin/index.html');
-html = html.replace(re, () => block);
+if (!re.test(js2)) throw new Error('GENERATED COVERAGE markers not found in admin/admin.js');
+writeFileSync(ADMIN_JS, js2.replace(re, () => block));
+let html = readFileSync(ADMIN_HTML, 'utf8');
 const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-html = html.replace(/suite run [^,<]+,/, `suite run ${today},`);
-writeFileSync(ADMIN, html);
+writeFileSync(ADMIN_HTML, html.replace(/suite run [^,<]+,/, `suite run ${today},`));
 
 console.log(`Coverage tab updated: ${tests} tests (${pass} pass, ${skipped} skipped), ${suites} suites, ${overall}% lines, ${notExercised} files not exercised.`);

@@ -46,9 +46,11 @@ refresh.
   SKIP_NET_TESTS=1; DB checks self-skip without .env secrets (e.g. CI).
 - `post-template.test.js` — author-bio block on published posts and the
   Person.description JSON-LD mirror.
-- `admin-editor.test.js` — the admin editor's category checkbox picker and
-  inline image alt-text bar, extracted from admin/index.html's inline script
-  and run against a stub DOM/editor in a vm sandbox.
+- `admin-editor.test.js` — the admin app (admin/admin.js): category checkbox
+  picker, inline image alt-text bar, slugify/esc/parseHash/collect helpers,
+  the Coverage-tab renderer, and extraction invariants (no inline script left
+  in admin/index.html). Requires the real module — wireAdmin() is skipped
+  under Node, so the whole file is instrumented.
 - `subscribe-api.test.js` — newsletter endpoint contract: Turnstile-first,
   EO list add (list setting decides double opt-in; PENDING surfaces to the
   form), member-exists-is-success, 502s, loud-config stored:false.
