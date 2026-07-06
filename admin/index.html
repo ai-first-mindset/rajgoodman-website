@@ -354,9 +354,12 @@
         <div><label>Author</label><input id="f_author" /></div>
         <div><label>Focus keyphrase <span class="muted">(editorial only)</span></label><input id="f_focus_keyphrase" /></div>
       </div>
-      <label>Categories <span class="muted">(comma-separated; each gets an archive at /blog/category/&hellip;/)</span></label>
-      <input id="f_categories" list="catlist" placeholder="e.g. AI Strategy, AI Governance" />
-      <datalist id="catlist"></datalist>
+      <label>Categories <span class="muted">(each gets an archive at /blog/category/&hellip;/)</span></label>
+      <div id="f_catbox" style="border:1px solid var(--bd);border-radius:4px;background:#fff;padding:8px 12px;max-height:150px;overflow-y:auto"></div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <input id="f_catnew" placeholder="Add a new category&hellip;" style="flex:1" />
+        <button type="button" id="f_cataddbtn">Add</button>
+      </div>
       <label>Canonical URL <span class="muted">(blank = self)</span></label>
       <input id="f_canonical_url" placeholder="(defaults to /blog/{slug}/)" />
       <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin-top:16px;cursor:pointer">
@@ -572,9 +575,9 @@ async function loadList() {
     tb.appendChild(tr);
   });
   tb.querySelectorAll('[data-edit],[data-id]').forEach(el => el.addEventListener('click', (e)=>{ e.preventDefault(); openEditor(el.getAttribute('data-edit')||el.getAttribute('data-id')); }));
-  // Populate the category autocomplete from existing posts.
-  const cats=[...new Set(posts.flatMap(p=>p.categories||[]))].sort();
-  $('catlist').innerHTML = cats.map(c=>`<option value="${esc(c)}"></option>`).join('');
+  // Refresh the category picker's known set from existing posts.
+  CAT_ALL=[...new Set(posts.flatMap(p=>p.categories||[]))].sort((a,b)=>a.localeCompare(b));
+  renderCats();
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -862,6 +865,20 @@ async function liMove(id,dir){ const i=LINKEDIN.findIndex(x=>String(x.id)===Stri
 async function liDelete(id){ if(!confirm('Delete this LinkedIn post?')) return;
   const r=await api('/api/admin/linkedin/',{method:'DELETE',body:JSON.stringify({id})}); if(r.ok){ toast('Deleted'); loadLinkedin(); } else toast('Delete failed'); }
 
+// --- Category picker (WordPress-style checkbox list; CAT_ALL = known set, CAT_SEL = this post's) ---
+let CAT_ALL=[], CAT_SEL=new Set();
+function renderCats(){
+  const box=$('f_catbox');
+  if(!CAT_ALL.length){ box.innerHTML='<span class="muted">No categories yet — add one below.</span>'; return; }
+  box.innerHTML=CAT_ALL.map(c=>'<label style="display:flex;align-items:center;gap:8px;font-weight:400;margin:4px 0;cursor:pointer"><input type="checkbox" style="width:auto;margin:0" data-cat="'+esc(c)+'"'+(CAT_SEL.has(c)?' checked':'')+' /> '+esc(c)+'</label>').join('');
+}
+function addNewCat(){
+  const v=$('f_catnew').value.trim(); if(!v) return;
+  const existing=CAT_ALL.find(c=>c.toLowerCase()===v.toLowerCase());
+  if(!existing){ CAT_ALL.push(v); CAT_ALL.sort((a,b)=>a.localeCompare(b)); }
+  CAT_SEL.add(existing||v); $('f_catnew').value=''; renderCats();
+}
+
 async function openEditor(id) {
   hideViews(); $('editView').classList.remove('hide'); setActiveMenu('navPosts');
   slugEdited = false;
@@ -879,7 +896,9 @@ function fill(p){
   $('f_excerpt').value=p.excerpt||''; $('f_featured_image').value=p.featured_image||'';
   $('f_featured_image_alt').value=p.featured_image_alt||''; $('f_author').value=p.author||'Raj Goodman Anand';
   $('f_focus_keyphrase').value=p.focus_keyphrase||''; $('f_canonical_url').value=p.canonical_url||'';
-  $('f_categories').value=(p.categories||[]).join(', ');
+  CAT_SEL=new Set(p.categories||[]);
+  (p.categories||[]).forEach(c=>{ if(!CAT_ALL.some(x=>x.toLowerCase()===c.toLowerCase())) CAT_ALL.push(c); });
+  CAT_ALL.sort((a,b)=>a.localeCompare(b)); renderCats();
   $('f_robots').value=p.robots||DEFAULT_ROBOTS;
   $('f_noindex').checked = /noindex/i.test(p.robots||DEFAULT_ROBOTS);
   $('f_og_title').value=p.og_title||''; $('f_og_description').value=p.og_description||''; $('f_og_image').value=p.og_image||'';
@@ -1010,6 +1029,9 @@ $('cta-cancel').addEventListener('click', ()=>{ $('tt-ctabar').style.display='no
 $('tt-formbar').addEventListener('click', e=>{ const p=e.target.closest('.form-preset'); if(p) insertForm(p.dataset.kind); });
 $('form-cancel').addEventListener('click', ()=>{ $('tt-formbar').style.display='none'; });
 $('tt-videourl').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); embedVideo(); } });
+$('f_catbox').addEventListener('change', e=>{ const cb=e.target.closest('input[data-cat]'); if(!cb) return; const c=cb.getAttribute('data-cat'); if(cb.checked) CAT_SEL.add(c); else CAT_SEL.delete(c); });
+$('f_cataddbtn').addEventListener('click', addNewCat);
+$('f_catnew').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addNewCat(); } });
 $('newBtn').addEventListener('click', ()=>openEditor(null));
 $('backBtn').addEventListener('click', loadList);
 
@@ -1021,7 +1043,7 @@ function collect(){
     featured_image:$('f_featured_image').value.trim()||null, featured_image_alt:$('f_featured_image_alt').value.trim()||null,
     author:$('f_author').value.trim()||'Raj Goodman Anand', canonical_url:$('f_canonical_url').value.trim()||null,
     robots:$('f_robots').value.trim()||DEFAULT_ROBOTS, focus_keyphrase:$('f_focus_keyphrase').value.trim()||null,
-    categories:$('f_categories').value.split(',').map(s=>s.trim()).filter(Boolean),
+    categories:Array.from(CAT_SEL),
     og_title:$('f_og_title').value.trim()||null, og_description:$('f_og_description').value.trim()||null, og_image:$('f_og_image').value.trim()||null,
   };
 }
