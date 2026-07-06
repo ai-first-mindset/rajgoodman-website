@@ -72,9 +72,12 @@ export default async function handler(req, res) {
       const row = pick(body);
       if ('body_html' in row) row.body_html = sanitizeHtml(row.body_html);
       // Look up the current row when we may need to set published_at, or record a
-      // slug change so the old URL can 301 to the new one.
+      // slug change so the old URL can 301 to the new one. If that lookup fails,
+      // refuse the save: proceeding would silently skip the publish timestamp or
+      // the prev_slugs redirect record.
       if (body.status === 'published' || body.slug) {
         const cur = await fetch(`${SB_URL}/rest/v1/posts?id=eq.${encodeURIComponent(body.id)}&select=published_at,slug,prev_slugs`, { headers: headers() });
+        if (!cur.ok) return res.status(502).json({ ok: false, error: 'current-row-lookup-failed' });
         const curRow = (await cur.json())[0];
         if (curRow) {
           if (body.status === 'published' && !curRow.published_at) row.published_at = new Date().toISOString();

@@ -24,9 +24,9 @@ const req = (method, { cookie = 'sb_at=good-token', body, url = '/api/admin/post
 
 /* ---- Supabase stub: GoTrue auth + PostgREST posts table ---- */
 const realFetch = globalThis.fetch;
-let restCalls, userRole, currentRow, restFail;
+let restCalls, userRole, currentRow, restFail, curLookupFail;
 beforeEach(() => {
-  restCalls = []; userRole = 'editor'; currentRow = null; restFail = false;
+  restCalls = []; userRole = 'editor'; currentRow = null; restFail = false; curLookupFail = false;
   globalThis.fetch = async (url, opts = {}) => {
     const u = String(url);
     if (u.includes('/auth/v1/user')) {
@@ -44,7 +44,7 @@ beforeEach(() => {
     if (u.includes('/rest/v1/posts')) {
       restCalls.push({ url: u, method: opts.method || 'GET', headers: opts.headers, body: opts.body && JSON.parse(opts.body) });
       if (restFail) return { ok: false, status: 500, json: async () => [], text: async () => 'db says no' };
-      if (u.includes('select=published_at,slug,prev_slugs')) return { ok: true, json: async () => (currentRow ? [currentRow] : []) };
+      if (u.includes('select=published_at,slug,prev_slugs')) return { ok: !curLookupFail, json: async () => (currentRow ? [currentRow] : []) };
       return { ok: true, json: async () => [{ id: 'p1', echoed: true }], text: async () => '' };
     }
     throw new Error('unexpected fetch ' + u);
@@ -149,6 +149,15 @@ test('PATCH: id required; first publish stamps published_at exactly once', async
   await handler(req('PATCH', { body: { id: 'p1', status: 'published' } }), res);
   const patch2 = restCalls.find((c) => c.method === 'PATCH').body;
   assert.equal(patch2.published_at, undefined);
+});
+
+test('PATCH: a failed bookkeeping lookup refuses the save instead of saving blind', async () => {
+  curLookupFail = true;
+  const res = makeRes();
+  await handler(req('PATCH', { body: { id: 'p1', status: 'published' } }), res);
+  assert.equal(res.statusCode, 502);
+  assert.equal(res.body.error, 'current-row-lookup-failed');
+  assert.ok(!restCalls.some((c) => c.method === 'PATCH'), 'no blind update issued');
 });
 
 test('PATCH: slug change records the old slug in prev_slugs (no dupes, no self)', async () => {
