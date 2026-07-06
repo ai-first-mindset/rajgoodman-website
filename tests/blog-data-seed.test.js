@@ -41,6 +41,20 @@ test('category helpers work over the seed set without crashing', async () => {
   assert.deepEqual(await data.listByCategory('ai-strategy'), []);
 });
 
+test('PRODUCTION with missing Supabase env refuses to serve seed content (loud 5xx, not a silent masquerade)', async (t) => {
+  process.env.VERCEL_ENV = 'production';
+  t.after(() => { delete process.env.VERCEL_ENV; });
+  await assert.rejects(() => data.listPublished(), /CONFIG ERROR/);
+  await assert.rejects(() => data.getPostBySlug('sample-ai-post'), /CONFIG ERROR/);
+  await assert.rejects(() => data.getPublishedByPrevSlug('x'), /CONFIG ERROR/);
+});
+
+test('preview/dev environments still get the seed fallback', async (t) => {
+  process.env.VERCEL_ENV = 'preview';
+  t.after(() => { delete process.env.VERCEL_ENV; });
+  assert.ok(await data.getPostBySlug('sample-ai-post'));
+});
+
 test('catSlug: lowercases, collapses punctuation, trims dashes, survives junk', () => {
   assert.equal(data.catSlug('AI Strategy'), 'ai-strategy');
   assert.equal(data.catSlug('  Ethics & Trust!  '), 'ethics-trust');
