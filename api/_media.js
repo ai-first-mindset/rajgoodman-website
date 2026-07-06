@@ -20,25 +20,33 @@ export function bucketPath(url) {
 }
 
 // Is this image still referenced by any LinkedIn post or blog post?
+// FAIL CLOSED: if either check cannot complete, report "referenced" — a DB
+// blip must never make a possibly-referenced file look deletable.
 export async function isReferenced(url) {
   const path = bucketPath(url);
   if (!path) return true; // not ours → treat as referenced, never delete
   const li = await fetch(`${SB_URL}/rest/v1/linkedin_posts?image_url=eq.${encodeURIComponent(url)}&select=id&limit=1`, { headers: auth() });
-  if (li.ok && (await li.json()).length) return true;
+  if (!li.ok || (await li.json()).length) return true;
   const needle = `*${path}*`;
   const cond = `body_html.ilike.${needle},featured_image.ilike.${needle},og_image.ilike.${needle}`;
   const po = await fetch(`${SB_URL}/rest/v1/posts?select=id&limit=1&or=(${cond})`, { headers: auth() });
-  if (po.ok && (await po.json()).length) return true;
+  if (!po.ok || (await po.json()).length) return true;
   return false;
 }
 
 // Delete the storage object for `url` iff it's one of ours and no longer
-// referenced anywhere. Best-effort. Returns true if it was deleted.
+// referenced anywhere. Best-effort, and fail closed: on any error the file
+// is kept. Returns true if it was deleted.
 export async function cleanupIfOrphan(url) {
   const path = bucketPath(url);
   if (!path) return false;
-  if (await isReferenced(url)) return false;
-  const enc = path.split('/').map(encodeURIComponent).join('/');
-  const del = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${enc}`, { method: 'DELETE', headers: auth() });
-  return del.ok;
+  try {
+    if (await isReferenced(url)) return false;
+    const enc = path.split('/').map(encodeURIComponent).join('/');
+    const del = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${enc}`, { method: 'DELETE', headers: auth() });
+    return del.ok;
+  } catch (err) {
+    console.error('cleanupIfOrphan: check failed, keeping file', url, err);
+    return false;
+  }
 }

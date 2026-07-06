@@ -57,11 +57,12 @@ async function metaMap() {
 
 // Posts that reference this object's path in their body, featured image or og image.
 // Storage paths are [a-z0-9-/._] so they're safe to inline into the PostgREST `or`.
+// Returns null when the check itself fails — callers must FAIL CLOSED on that.
 async function usedIn(path) {
   const needle = `*${path}*`;
   const cond = `body_html.ilike.${needle},featured_image.ilike.${needle},og_image.ilike.${needle}`;
   const r = await fetch(`${SB_URL}/rest/v1/posts?select=id,title,slug&or=(${cond})`, { headers: sbHeaders() });
-  if (!r.ok) return [];
+  if (!r.ok) return null;
   return await r.json();
 }
 
@@ -171,6 +172,8 @@ export default async function handler(req, res) {
       if (!body.path) return res.status(422).json({ ok: false, error: 'path-required' });
       if (!body.force) {
         const posts = await usedIn(body.path);
+        // Fail closed: if the in-use check couldn't run, refuse to delete.
+        if (posts === null) return res.status(502).json({ ok: false, error: 'in-use-check-failed' });
         if (posts.length) return res.status(409).json({ ok: false, error: 'in-use', posts });
       }
       const del = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${encPath(body.path)}`, { method: 'DELETE', headers: authOnly() });

@@ -25,9 +25,10 @@ const req = (method, { body, cookie = 'sb_at=good-token' } = {}) =>
   ({ method, body, headers: { cookie, host: 'localhost:3000' }, url: '/x', socket: {} });
 
 const realFetch = globalThis.fetch;
-let calls, role, inUsePosts, liReferences, postReferences, storageDeletes;
+let calls, role, inUsePosts, liReferences, postReferences, storageDeletes, usedInFail, refCheckFail;
 beforeEach(() => {
   calls = []; role = 'admin'; inUsePosts = []; liReferences = false; postReferences = false; storageDeletes = [];
+  usedInFail = false; refCheckFail = false;
   globalThis.fetch = async (url, opts = {}) => {
     const u = String(url);
     const method = opts.method || 'GET';
@@ -69,15 +70,15 @@ beforeEach(() => {
     if (u.includes('/rest/v1/linkedin_posts')) {
       if (method === 'PATCH' && u.includes('image_url=eq.')) return { ok: true, json: async () => [{ id: 7 }] }; // repointExact
       if (u.includes('select=image_url')) return { ok: true, json: async () => [{ image_url: PUB + 'li-old.png' }] };
-      if (u.includes('select=id&limit=1')) return { ok: true, json: async () => (liReferences ? [{ id: 1 }] : []) };
+      if (u.includes('select=id&limit=1')) return { ok: !refCheckFail, json: async () => (liReferences ? [{ id: 1 }] : []) };
       if (method === 'PATCH') return { ok: true, json: async () => [{ id: 5, image_url: PUB + 'li-new.png' }], text: async () => '' };
       if (method === 'POST') return { ok: true, json: async () => [{ id: 9, ...body }], text: async () => '' };
       if (method === 'DELETE') return { ok: true, json: async () => [] };
       return { ok: true, json: async () => [], text: async () => '' };
     }
     if (u.includes('/rest/v1/posts')) {
-      if (u.includes('select=id,title,slug')) return { ok: true, json: async () => inUsePosts }; // usedIn
-      if (u.includes('select=id&limit=1')) return { ok: true, json: async () => (postReferences ? [{ id: 'p' }] : []) }; // isReferenced
+      if (u.includes('select=id,title,slug')) return { ok: !usedInFail, json: async () => inUsePosts }; // usedIn
+      if (u.includes('select=id&limit=1')) return { ok: !refCheckFail, json: async () => (postReferences ? [{ id: 'p' }] : []) }; // isReferenced
       if (u.includes('select=id,body_html')) return { ok: true, json: async () => [{ id: 'p1', body_html: `<img src="${PUB}old-img.png">`, featured_image: null, og_image: null }] }; // repointPosts
       if (method === 'PATCH') return { ok: true, json: async () => [] };
       return { ok: true, json: async () => [] };
@@ -204,6 +205,35 @@ test('linkedin DELETE: admin-only', async () => {
   const res = makeRes();
   await linkedin(req('DELETE', { body: { id: 5 } }), res);
   assert.equal(res.statusCode, 403);
+});
+
+/* ---- fail-closed deletion guards ---- */
+test('media DELETE: a failed in-use check refuses the delete (502), never falls through', async () => {
+  usedInFail = true;
+  const res = makeRes();
+  await media(req('DELETE', { body: { path: 'hero.png' } }), res);
+  assert.equal(res.statusCode, 502);
+  assert.equal(res.body.error, 'in-use-check-failed');
+  assert.equal(storageDeletes.length, 0, 'file untouched');
+});
+
+test('linkedin PATCH: failed reference checks keep the old image (fail closed)', async () => {
+  refCheckFail = true;
+  const res = makeRes();
+  await linkedin(req('PATCH', { body: { id: 5, image_url: PUB + 'li-new.png' } }), res);
+  assert.equal(res.statusCode, 200, 'update itself still succeeds');
+  assert.equal(storageDeletes.length, 0, 'old image NOT deleted on a check failure');
+});
+
+test('isReferenced: a failing check reports "referenced" instead of deletable', async () => {
+  refCheckFail = true;
+  assert.equal(await isReferenced(PUB + 'any.png'), true);
+});
+
+test('cleanupIfOrphan: a thrown check keeps the file and reports not-deleted', async () => {
+  globalThis.fetch = async () => { throw new Error('supabase down'); };
+  const { cleanupIfOrphan } = await import('../api/_media.js');
+  assert.equal(await cleanupIfOrphan(PUB + 'any.png'), false);
 });
 
 /* ---- shared media helpers ---- */
