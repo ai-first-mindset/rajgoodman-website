@@ -294,6 +294,11 @@
         <button type="button" data-cmd="cta" title="Insert a call-to-action">CTA</button>
         <button type="button" data-cmd="form" title="Insert a form (Turnstile-protected)">Form</button>
       </div>
+      <div id="tt-altbar" style="display:none;gap:8px;align-items:center;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
+        <span class="muted" style="white-space:nowrap">Image alt text:</span>
+        <input id="tt-altinput" placeholder="Describe this image for SEO &amp; screen readers…" style="flex:1" />
+        <button type="button" id="tt-altapply" class="primary">Apply</button>
+      </div>
       <div id="tt-videobar" style="display:none;gap:8px;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
         <input id="tt-videourl" placeholder="Paste a YouTube URL, then Embed…" style="flex:1" />
         <button type="button" id="tt-videoembed" class="primary">Embed</button>
@@ -686,6 +691,14 @@ function updateToolbarActive(){
     quote:editor.isActive('blockquote'), code:editor.isActive('codeBlock'), faq:editor.isActive('details'),
   };
   document.querySelectorAll('#tt-toolbar button[data-cmd]').forEach(b=>b.classList.toggle('active', !!a[b.getAttribute('data-cmd')]));
+  // Alt-text bar: shown whenever an image node is selected, prefilled with its alt.
+  const altBar=$('tt-altbar'), onImg=editor.isActive('image');
+  if(onImg && document.activeElement!==$('tt-altinput')) $('tt-altinput').value = editor.getAttributes('image').alt || '';
+  altBar.style.display = onImg ? 'flex' : 'none';
+}
+function applyImageAlt(){
+  if(!editor || !editor.isActive('image')) return;
+  editor.chain().focus().updateAttributes('image', { alt: $('tt-altinput').value.trim() }).run();
 }
 
 // --- Image upload (signed URL → direct PUT to Supabase Storage) + media library ---
@@ -989,6 +1002,8 @@ $('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[
 function embedVideo(){ const url=$('tt-videourl').value.trim(); if(url && editor) editor.commands.setYoutubeVideo({ src:url }); $('tt-videobar').style.display='none'; $('tt-videourl').value=''; }
 $('tt-videoembed').addEventListener('click', embedVideo);
 $('tt-videocancel').addEventListener('click', ()=>{ $('tt-videobar').style.display='none'; $('tt-videourl').value=''; });
+$('tt-altapply').addEventListener('click', applyImageAlt);
+$('tt-altinput').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); applyImageAlt(); } });
 $('tt-ctabar').addEventListener('click', e=>{ const p=e.target.closest('.cta-preset'); if(p) insertCTA(p.dataset.h,p.dataset.t,p.dataset.l,p.dataset.u); });
 $('cta-insert').addEventListener('click', ()=> insertCTA($('cta-h').value.trim(),$('cta-t').value.trim(),$('cta-l').value.trim(),$('cta-u').value.trim()));
 $('cta-cancel').addEventListener('click', ()=>{ $('tt-ctabar').style.display='none'; });
