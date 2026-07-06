@@ -8,6 +8,9 @@ const DEFAULT_OG_IMAGE = 'https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/ob
 const PERSON_ID = `${SITE}/#raj`;        // matches the site-wide Person node (see index.html)
 const WEBSITE_ID = `${SITE}/#website`;
 const SAME_AS = ['https://www.linkedin.com/in/rajanand/', 'https://x.com/RajAnand'];
+// Author bio (E-E-A-T): single-author blog, so a static block rendered on Raj's posts.
+const AUTHOR_PHOTO = 'https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/wp-content/uploads/2024/06/raj-1.webp';
+const AUTHOR_BIO_TEXT = 'Raj Goodman Anand is an AI futurist, keynote speaker and founder of AI-First Mindset®. He built ventures including Goodman Lantern and GoPinLeads, and now helps leadership teams across five continents integrate AI into their daily operations.';
 
 function catSlug(name) {
   return String(name == null ? '' : name).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -40,6 +43,20 @@ function extractFaqs(html) {
     if (q && a) out.push({ q, a });
   }
   return out;
+}
+
+function authorBio(post) {
+  if (!/\braj\s+goodman\b/i.test(post.author || '')) return '';
+  return `
+    <aside class="author-bio" style="display:flex;gap:20px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:48px">
+      <img src="${AUTHOR_PHOTO}" alt="${esc(post.author)}" loading="lazy" style="width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
+      <div>
+        <div style="font-weight:700">${esc(post.author)}</div>
+        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:2px 0 10px">AI Futurist, Keynote Speaker &amp; Founder</div>
+        <p style="margin:0 0 12px;opacity:.85">${esc(AUTHOR_BIO_TEXT)}</p>
+        <div style="display:flex;gap:16px"><a href="/about/">More about Raj &rarr;</a><a href="https://www.linkedin.com/in/rajanand/" target="_blank" rel="noopener">LinkedIn</a></div>
+      </div>
+    </aside>`;
 }
 
 function recentCard(p) {
@@ -75,7 +92,7 @@ export function renderPost(post, recent = []) {
       {
         '@type': 'Person', '@id': PERSON_ID, name: post.author, alternateName: 'Raj Goodman',
         url: `${SITE}/`, image: DEFAULT_OG_IMAGE, jobTitle: 'AI Futurist, Keynote Speaker & Founder',
-        sameAs: SAME_AS,
+        description: AUTHOR_BIO_TEXT, sameAs: SAME_AS,
       },
       {
         '@type': 'WebSite', '@id': WEBSITE_ID, url: `${SITE}/`, name: SITE_NAME,
@@ -161,7 +178,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     <div style="opacity:.7;margin-bottom:18px">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</div>
     ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
-    <div class="post-body">${post.body_html || ''}</div>
+    <div class="post-body">${post.body_html || ''}</div>${authorBio(post)}
   </article>
 
   <section class="sec reach">
