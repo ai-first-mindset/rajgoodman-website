@@ -17,7 +17,9 @@ jobs:
         run: node --test 'tests/**/*.test.js'
 
   # Keep the admin "Coverage" tab snapshot fresh: regenerate it from the suite
-  # and commit the result back to main. [skip ci] prevents a re-trigger loop.
+  # and commit the result back to main. The bot commit deliberately re-triggers
+  # CI so the deployed commit is itself tested; the loop self-terminates because
+  # the re-run regenerates an identical snapshot and finds nothing to commit.
   coverage-snapshot:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: test
@@ -37,7 +39,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add admin/index.html admin/admin.js
-            git commit -m "Auto-update admin coverage snapshot [skip ci]"
+            git commit -m "Auto-update admin coverage snapshot"
             git push
           else
             echo "Snapshot already current."
