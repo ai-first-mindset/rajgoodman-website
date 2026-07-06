@@ -70,6 +70,12 @@ refresh.
   repointing), signed uploads (SVG refused, filename slugging), LinkedIn
   admin CRUD with orphan-image cleanup, and the shared bucketPath /
   isReferenced helpers.
+- `sitemap-feed.test.js` — Yoast-parity XML sitemaps (index/pages/posts/
+  categories, lastmod preference) and the RSS handler wrapper; error paths
+  stay valid XML and are never edge-cached.
+- `blog-data-seed.test.js` — _blog-data.js in unconfigured (seed) mode:
+  the render path works without a DB and never touches the network;
+  catSlug edge cases.
 - `render-handlers.test.js` — SSR handlers (post/index/category): status
   codes, cache headers, prev-slug 301s, admin draft preview (noindex +
   no-store), honest empty/error states that must never be edge-cached.
