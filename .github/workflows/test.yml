@@ -17,9 +17,10 @@ jobs:
         run: node --test 'tests/**/*.test.js'
 
   # Keep the admin "Coverage" tab snapshot fresh: regenerate it from the suite
-  # and commit the result back to main. The bot commit deliberately re-triggers
-  # CI so the deployed commit is itself tested; the loop self-terminates because
-  # the re-run regenerates an identical snapshot and finds nothing to commit.
+  # and commit the result back to main. GitHub never triggers workflows for
+  # GITHUB_TOKEN pushes (its own anti-loop rule), so the bot commit cannot be
+  # CI-tested after the fact — instead the regenerated file is validated HERE,
+  # before it is committed and deployed.
   coverage-snapshot:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: test
@@ -33,6 +34,10 @@ jobs:
           node-version: '24'
       - name: Regenerate the admin coverage snapshot
         run: node scripts/update-coverage.mjs
+      - name: Validate the regenerated file before it can deploy
+        run: |
+          node --check admin/admin.js
+          node --test tests/admin-editor.test.js
       - name: Commit the refreshed snapshot if it changed
         run: |
           if ! git diff --quiet -- admin/index.html admin/admin.js; then
