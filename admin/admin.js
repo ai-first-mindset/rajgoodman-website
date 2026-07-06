@@ -575,7 +575,7 @@ const COVERAGE = {
     { f:'api/admin/upload.js', l:100, b:55, fn:100, n:'' },
     { f:'api/admin/users.js', l:100, b:74.2, fn:100, n:'' },
     { g:'Shared helpers' },
-    { f:'api/_auth.js', l:100, b:92.1, fn:100, n:'admin-posts-api' },
+    { f:'api/_auth.js', l:100, b:94.6, fn:100, n:'admin-posts-api' },
     { f:'api/_blog-data.js', l:100, b:93.8, fn:94.4, n:'render-handlers' },
     { f:'api/_blog-index-template.js', l:100, b:100, fn:100, n:'via blog-index' },
     { f:'api/_body.js', l:100, b:100, fn:100, n:'read-body' },
