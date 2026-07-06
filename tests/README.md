@@ -40,6 +40,24 @@ CI runs the same command on every push to `main` and every pull request
   Supabase media URL (repo-hardcoded, post bodies/featured/og, LinkedIn
   cards, ebook registry) resolves live. Network checks skip with
   SKIP_NET_TESTS=1; DB checks self-skip without .env secrets (e.g. CI).
+- `post-template.test.js` — author-bio block on published posts and the
+  Person.description JSON-LD mirror.
+- `admin-editor.test.js` — the admin editor's category checkbox picker and
+  inline image alt-text bar, extracted from admin/index.html's inline script
+  and run against a stub DOM/editor in a vm sandbox.
+- `subscribe-api.test.js` — newsletter endpoint contract: Turnstile-first,
+  EO list add (list setting decides double opt-in; PENDING surfaces to the
+  form), member-exists-is-success, 502s, loud-config stored:false.
+- `contact-api.test.js` — contact endpoint contract: DealDesk forward with
+  x-api-key, service folded into the message, half-configured guard, 502s.
+- `turnstile.test.js` — the shared verifier fails CLOSED on missing
+  secret/token and unreachable siteverify; clientIp precedence.
+- `admin-posts-api.test.js` — admin auth guards (401 gate, cookie refresh,
+  role guard) and the posts CRUD contract against a stubbed Supabase:
+  field allow-listing, HTML sanitisation, publish/slug-history bookkeeping.
+- `render-handlers.test.js` — SSR handlers (post/index/category): status
+  codes, cache headers, prev-slug 301s, admin draft preview (noindex +
+  no-store), honest empty/error states that must never be edge-cached.
 - `parity-surfaces.test.js` — cutover parity surfaces: favicon files exist
   and every page/template links them; vercel.json keeps the WP-era URL
   surface alive (hotlinked /wp-content/uploads → Supabase, /blog/page/N and
