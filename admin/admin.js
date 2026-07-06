@@ -12,9 +12,22 @@ function toast(msg) { const t=$('toast'); t.textContent=msg; t.classList.add('sh
 function slugify(s){ return (s||'').toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); }
 
 async function api(path, opts={}) {
-  const r = await fetch(path, { headers:{'content-type':'application/json'}, ...opts });
-  let body=null; try { body = await r.json(); } catch(e){}
-  return { status:r.status, ok:r.ok, body };
+  try {
+    const r = await fetch(path, { headers:{'content-type':'application/json'}, ...opts });
+    let body=null; try { body = await r.json(); } catch(e){}
+    return { status:r.status, ok:r.ok, body };
+  } catch (e) {
+    // A network failure must surface as a normal error result, never an
+    // unhandled rejection that leaves a view stuck on "Loading…".
+    return { status:0, ok:false, body:null, netError:true };
+  }
+}
+// Honest failure copy for list/dashboard loads — an API error must never
+// masquerade as an empty state ("No posts yet").
+function loadFailMsg(r){
+  if (r && r.status===401) return 'Your session has expired — reload the page and sign in again.';
+  if (r && r.netError) return 'Network error — check your connection and try again.';
+  return 'Could not load (status '+((r&&r.status)||'?')+') — try again.';
 }
 
 let ME = null;            // { email, role }
@@ -68,13 +81,15 @@ async function showDashboard(){
   const g=$('glance'); g.innerHTML='<p class="muted">Loading…</p>';
   // Post counts are a fast DB query — render those at once; fill the slower
   // media (bucket walk) and users counts in as they resolve, without blocking.
-  const pr=await api('/api/admin/posts/'); const posts=(pr.body&&pr.body.posts)||[];
+  const pr=await api('/api/admin/posts/');
+  if(!pr.ok){ g.innerHTML='<p class="muted">'+esc(loadFailMsg(pr))+'</p>'; return; }
+  const posts=(pr.body&&pr.body.posts)||[];
   const pub=posts.filter(p=>p.status==='published').length;
   const stats=[['Published',pub],['Drafts',posts.length-pub],['Media','…']];
   const usersIdx = (ME&&ME.role==='admin') ? stats.push(['Users','…'])-1 : -1;
   const render=()=>{ g.innerHTML=stats.map(s=>'<div class="stat"><div class="n">'+s[1]+'</div><div class="l">'+s[0]+'</div></div>').join(''); };
   render();
-  fetchMedia().then(m=>{ stats[2][1]=m.length; render(); });
+  fetchMedia().then(m=>{ stats[2][1]=(m===null?'—':m.length); render(); });
   if(usersIdx>=0) api('/api/admin/users/').then(ur=>{ stats[usersIdx][1]=((ur.body&&ur.body.users)||[]).length; render(); });
 }
 
@@ -85,6 +100,7 @@ async function showUsers(){
   $('usersView').classList.remove('hide'); setActiveMenu('usersBtn');
   const r = await api('/api/admin/users/');
   const tb = $('usersTable').querySelector('tbody'); tb.innerHTML='';
+  if(!r.ok){ tb.innerHTML='<tr><td colspan="5" class="muted">'+esc(loadFailMsg(r))+'</td></tr>'; return; }
   const users = (r.body && r.body.users) || [];
   users.forEach(u => {
     const tr = document.createElement('tr');
@@ -105,7 +121,9 @@ async function loadList() {
   hideViews(); $('listView').classList.remove('hide'); setActiveMenu('navPosts');
   const r = await api('/api/admin/posts/');
   const tb = $('postsTable').querySelector('tbody'); tb.innerHTML='';
+  if(!r.ok){ const m=$('emptyMsg'); m.textContent=loadFailMsg(r); m.classList.remove('hide'); return; }
   const posts = (r.body && r.body.posts) || [];
+  $('emptyMsg').textContent='No posts yet — create one.';
   $('emptyMsg').classList.toggle('hide', posts.length>0);
   posts.forEach(p => {
     const tr = document.createElement('tr');
@@ -259,7 +277,14 @@ function pickFile(cb){ const i=document.createElement('input'); i.type='file'; i
 // Shared media list (recursive bucket list + alt/caption/title metadata).
 // Cached after first load so switching panes is instant; pass force=true after uploads.
 let MEDIA = [], MEDIA_LOADED = false;
-async function fetchMedia(force){ if(MEDIA_LOADED && !force) return MEDIA; const r=await api('/api/admin/media/'); MEDIA=(r.body&&r.body.files)||[]; MEDIA_LOADED=true; return MEDIA; }
+// Returns the file list, or null when the load FAILED (callers must show an
+// error, not an empty library). Failure is not cached so a retry refetches.
+async function fetchMedia(force){
+  if(MEDIA_LOADED && !force) return MEDIA;
+  const r=await api('/api/admin/media/');
+  if(!r.ok){ MEDIA=[]; MEDIA_LOADED=false; return null; }
+  MEDIA=(r.body&&r.body.files)||[]; MEDIA_LOADED=true; return MEDIA;
+}
 
 // --- In-editor picker modal: choose an existing image (or upload), then onPick(url, file) ---
 let mediaPick = null;
@@ -268,6 +293,7 @@ function closeMedia(){ $('mediaModal').style.display='none'; mediaPick=null; }
 async function loadMedia(){
   const grid=$('mediaGrid'); grid.innerHTML='<p class="muted">Loading…</p>';
   const files=await fetchMedia();
+  if(files===null){ grid.innerHTML='<p class="muted">'+esc(loadFailMsg({}))+'</p>'; return; }
   $('mediaEmpty').classList.toggle('hide', files.length>0); grid.innerHTML='';
   files.forEach(f=>{ const b=document.createElement('button'); b.type='button'; b.title=f.alt?f.name+' — '+f.alt:f.name;
     b.style.cssText='padding:0;border:1px solid var(--bd);border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#eef0f2;cursor:pointer';
@@ -285,8 +311,9 @@ function showMedia(){
 async function loadMediaLibrary(){
   $('mediaViewLoading').classList.remove('hide'); $('mediaViewEmpty').classList.add('hide');
   $('mediaViewGrid').innerHTML=''; $('mediaDetail').classList.add('hide'); mediaSelected=null;
-  await fetchMedia();
+  const files=await fetchMedia();
   $('mediaViewLoading').classList.add('hide');
+  if(files===null){ const e=$('mediaViewEmpty'); e.textContent=loadFailMsg({}); e.classList.remove('hide'); return; }
   renderMediaLibrary();
 }
 function renderMediaLibrary(){
@@ -367,8 +394,11 @@ let LINKEDIN=[], liEditing=null;
 function showLinkedin(){ hideViews(); $('linkedinView').classList.remove('hide'); setActiveMenu('navLinkedin'); loadLinkedin(); }
 async function loadLinkedin(){
   liCloseForm();
-  const r=await api('/api/admin/linkedin/'); LINKEDIN=(r.body&&r.body.posts)||[];
+  const r=await api('/api/admin/linkedin/');
   const tb=$('liTable').querySelector('tbody'); tb.innerHTML='';
+  if(!r.ok){ LINKEDIN=[]; const e=$('liEmpty'); e.textContent=loadFailMsg(r); e.classList.remove('hide'); $('liTable').classList.add('hide'); return; }
+  LINKEDIN=(r.body&&r.body.posts)||[];
+  $('liEmpty').textContent='No LinkedIn posts yet — Add one.';
   $('liEmpty').classList.toggle('hide', LINKEDIN.length>0);
   $('liTable').classList.toggle('hide', LINKEDIN.length===0);
   LINKEDIN.forEach((p,i)=>{ const tr=document.createElement('tr');
@@ -684,8 +714,11 @@ _mediaDrop.addEventListener('drop', async e=>{
   const files=[...((e.dataTransfer&&e.dataTransfer.files)||[])].filter(f=>/^image\//.test(f.type));
   if(!files.length) return;
   toast('Uploading '+files.length+' file'+(files.length>1?'s':'')+'…');
-  for(const f of files){ try{ await uploadFile(f); }catch(err){} }
-  MEDIA_LOADED=false; toast('Uploaded'); loadMediaLibrary();
+  let failed=0;
+  for(const f of files){ try{ await uploadFile(f); }catch(err){ failed++; } }
+  MEDIA_LOADED=false;
+  toast(failed ? (files.length-failed)+' uploaded, '+failed+' failed' : 'Uploaded');
+  loadMediaLibrary();
 });
 $('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[data-cmd]'); if(b) ttCmd(b.getAttribute('data-cmd')); });
 $('tt-videoembed').addEventListener('click', embedVideo);
@@ -722,6 +755,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     slugify, esc, parseHash, collect, renderCats, addNewCat,
     applyImageAlt, updateToolbarActive, renderCoverage, wireAdmin, COVERAGE,
+    api, loadFailMsg, fetchMedia,
     __test: {
       setEditor: (e) => { editor = e; },
       setCats: (all, sel) => { CAT_ALL = all; CAT_SEL = new Set(sel); },

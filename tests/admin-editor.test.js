@@ -179,6 +179,45 @@ test('the alt bar markup lives in the page and its wiring in the app', () => {
   assert.match(SRC, /\$\('tt-altapply'\)\.addEventListener\('click', applyImageAlt\)/);
 });
 
+/* ---- honest failure states ---- */
+test('api(): a network throw becomes a normal error result, not an unhandled rejection', async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error('offline'); };
+  try {
+    const r = await admin.api('/api/admin/posts/');
+    assert.deepEqual(r, { status: 0, ok: false, body: null, netError: true });
+  } finally { globalThis.fetch = realFetch; }
+});
+
+test('loadFailMsg: session expiry, network, and generic failures each get honest copy', () => {
+  assert.match(admin.loadFailMsg({ status: 401 }), /session has expired/);
+  assert.match(admin.loadFailMsg({ status: 0, netError: true }), /Network error/);
+  assert.match(admin.loadFailMsg({ status: 500 }), /status 500/);
+  assert.match(admin.loadFailMsg(undefined), /Could not load/);
+});
+
+test('fetchMedia: a failed load returns null (never an empty library) and is not cached', async () => {
+  const realFetch = globalThis.fetch;
+  let fail = true;
+  globalThis.fetch = async () => (fail
+    ? { ok: false, status: 500, json: async () => ({}) }
+    : { ok: true, status: 200, json: async () => ({ ok: true, files: [{ path: 'a.png' }] }) });
+  try {
+    assert.equal(await admin.fetchMedia(true), null, 'failure signalled as null');
+    fail = false;
+    const files = await admin.fetchMedia(); // no force — failure must not have been cached
+    assert.equal(files.length, 1, 'retry refetches after a failure');
+  } finally { globalThis.fetch = realFetch; }
+});
+
+test('loaders render failure copy instead of lying empty states (source guards)', () => {
+  assert.match(SRC, /if\(!r\.ok\)\{ const m=\$\('emptyMsg'\); m\.textContent=loadFailMsg\(r\)/, 'posts list');
+  assert.match(SRC, /if\(!pr\.ok\)\{ g\.innerHTML=/, 'dashboard');
+  assert.match(SRC, /liEmpty'\); e\.textContent=loadFailMsg\(r\)/, 'linkedin list');
+  assert.match(SRC, /'<tr><td colspan="5" class="muted">'\+esc\(loadFailMsg\(r\)\)/, 'users table');
+  assert.match(SRC, /failed \? \(files\.length-failed\)\+' uploaded, '\+failed\+' failed' : 'Uploaded'/, 'drag-drop counts failures');
+});
+
 /* ---- extraction invariants ---- */
 test('index.html carries no inline app script — only the two script tags', () => {
   assert.match(HTML, /<script src="\/assets\/tiptap\.bundle\.js"><\/script>\s*<script src="\/admin\/admin\.js"><\/script>/);
