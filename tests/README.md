@@ -59,6 +59,17 @@ refresh.
 - `admin-posts-api.test.js` — admin auth guards (401 gate, cookie refresh,
   role guard) and the posts CRUD contract against a stubbed Supabase:
   field allow-listing, HTML sanitisation, publish/slug-history bookkeeping.
+- `admin-auth-api.test.js` — login (password grant -> httpOnly cookies,
+  Secure off-localhost), session whoami/logout, and the invite
+  set-password flow (min length, GoTrue rejection, optional auto-login).
+- `admin-users-api.test.js` — admin-only user management: 401/403 gates,
+  invite with authoritative app_metadata role (unknown roles coerced to
+  editor), self-delete protection.
+- `admin-media-api.test.js` — media library (recursive listing + metadata
+  overlay, in-use delete refusal, admin-only replace with reference
+  repointing), signed uploads (SVG refused, filename slugging), LinkedIn
+  admin CRUD with orphan-image cleanup, and the shared bucketPath /
+  isReferenced helpers.
 - `render-handlers.test.js` — SSR handlers (post/index/category): status
   codes, cache headers, prev-slug 301s, admin draft preview (noindex +
   no-store), honest empty/error states that must never be edge-cached.
