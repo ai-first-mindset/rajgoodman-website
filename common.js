@@ -450,5 +450,5 @@
   }
   /* Exposed for unit tests under Node (CommonJS); a no-op in the browser,
      where `module` is undefined. */
-  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms };
 })();

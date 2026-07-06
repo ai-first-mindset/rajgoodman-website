@@ -70,6 +70,14 @@ refresh.
   repointing), signed uploads (SVG refused, filename slugging), LinkedIn
   admin CRUD with orphan-image cleanup, and the shared bucketPath /
   isReferenced helpers.
+- `forms.test.js` — the generic Turnstile form handler in common.js (every
+  contact/newsletter submission): widget render, ad-block fallback,
+  verification gating, exact payload, success/pending/error states.
+- `cookie-consent-dom.test.js` — the consent banner/panel wiring: Consent
+  Mode v2 defaults before any choice, accept/reject/granular save, stored
+  record, returning-visitor and stale-version paths, footer reopen link.
+- `chrome.test.js` — injected nav/footer smoke: placement, canonical
+  trailing-slash links, data-page active states, .f-bot anchor.
 - `sitemap-feed.test.js` — Yoast-parity XML sitemaps (index/pages/posts/
   categories, lastmod preference) and the RSS handler wrapper; error paths
   stay valid XML and are never edge-cached.

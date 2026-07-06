@@ -37,9 +37,9 @@ const NOTES = {
   'api/_post-template.js': 'post-template, parity-surfaces',
   'api/_blog-index-template.js': 'via blog-index',
   'api/_media.js': 'media-library listing glue',
-  'common.js': 'linkedin-widget, download-modal · forms/nav/reveal untested',
-  'assets/cookie-consent.js': 'cookie-consent · banner DOM + GTM wiring untested',
-  'chrome.js': 'nav/footer chrome injection',
+  'common.js': 'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)',
+  'assets/cookie-consent.js': 'cookie-consent (helpers), cookie-consent-dom (banner/panel)',
+  'chrome.js': 'chrome · nav/footer injection smoke',
   'scripts/sync-linkedin-fallback.mjs': 'LinkedIn fallback-card generator',
   'scripts/update-coverage.mjs': 'this generator (tooling)',
 };
