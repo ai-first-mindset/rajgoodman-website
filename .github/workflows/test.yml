@@ -15,3 +15,30 @@ jobs:
           node-version: '24'
       - name: Run tests (Node built-in runner, no dependencies)
         run: node --test 'tests/**/*.test.js'
+
+  # Keep the admin "Coverage" tab snapshot fresh: regenerate it from the suite
+  # and commit the result back to main. [skip ci] prevents a re-trigger loop.
+  coverage-snapshot:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Regenerate the admin coverage snapshot
+        run: node scripts/update-coverage.mjs
+      - name: Commit the refreshed snapshot if it changed
+        run: |
+          if ! git diff --quiet admin/index.html; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add admin/index.html
+            git commit -m "Auto-update admin coverage snapshot [skip ci]"
+            git push
+          else
+            echo "Snapshot already current."
+          fi

@@ -11,7 +11,11 @@ node --test 'tests/**/*.test.js'
 ```
 
 CI runs the same command on every push to `main` and every pull request
-(`.github/workflows/test.yml`).
+(`.github/workflows/test.yml`). After the suite passes on `main`, CI also
+regenerates the admin **Coverage** tab snapshot (`scripts/update-coverage.mjs`
+rewrites the marked block in `admin/index.html`) and commits it back with
+`[skip ci]`. Run `node scripts/update-coverage.mjs` locally for an instant
+refresh.
 
 ## Coverage
 
