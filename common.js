@@ -300,7 +300,7 @@
         if (!a) {
           a = document.createElement('a');
           a.className = 'li-card'; a.target = '_blank'; a.rel = 'noopener';
-          a.innerHTML = '<img/><span class="tag">in &middot; Raj Anand</span>';
+          a.innerHTML = '<img loading="lazy"/><span class="tag">in &middot; Raj Anand</span>';
           grid.appendChild(a); a.classList.add('is-in');
         }
         a.href = p.url || '#';

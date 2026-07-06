@@ -47,7 +47,7 @@ const hrefOf = (u) => esc(String(u).split('?')[0]); // drop tracking params from
 const cards = posts.map((p, i) => {
   const delay = i === 0 ? '' : ` data-delay="${i * 80}"`;
   return `      <a class="li-card" href="${hrefOf(p.url)}" target="_blank" rel="noopener" data-reveal${delay}>`
-    + `<img src="${esc(p.image_url)}" alt="Raj Goodman LinkedIn post"/><span class="tag">in · Raj Anand</span></a>`;
+    + `<img src="${esc(p.image_url)}" alt="Raj Goodman LinkedIn post" loading="lazy"/><span class="tag">in · Raj Anand</span></a>`;
 }).join('\n');
 
 const file = join(ROOT, 'index.html');
