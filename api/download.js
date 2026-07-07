@@ -21,6 +21,14 @@ export const ASSETS = {
     title: 'The AI-First Mindset® — Building Trust in the Digital Age',
     url: `${STORAGE}/ebook-building-trust-in-the-digital-age.pdf`,
   },
+  'audiobook-embracing-the-future': {
+    title: 'The AI-First Mindset® — Embracing the Future Today (Audiobook)',
+    url: `${STORAGE}/audiobook-ai-first-mindset-embracing-the-future.mp3`,
+  },
+  'audiobook-ai-era': {
+    title: 'The AI Era — Adapting & Thriving (Audiobook)',
+    url: `${STORAGE}/audiobook-the-ai-era-adapting-thriving.mp3`,
+  },
 };
 
 export default async function handler(req, res) {

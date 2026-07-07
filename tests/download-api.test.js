@@ -37,11 +37,20 @@ afterEach(() => { globalThis.fetch = realFetch; });
 
 test('registry: every asset has a title and a downloads-bucket URL', () => {
   const keys = Object.keys(ASSETS);
-  assert.ok(keys.length >= 3);
+  assert.ok(keys.length >= 5);
   for (const k of keys) {
     assert.ok(ASSETS[k].title.length > 5, k);
-    assert.match(ASSETS[k].url, /\/storage\/v1\/object\/public\/downloads\/.+\.pdf$/, k);
+    assert.match(ASSETS[k].url, /\/storage\/v1\/object\/public\/downloads\/.+\.(pdf|mp3)$/, k);
   }
+});
+
+test('registry: audiobook keys map to mp3 files, ebook keys to pdf', () => {
+  for (const k of Object.keys(ASSETS)) {
+    if (k.startsWith('audiobook-')) assert.match(ASSETS[k].url, /\.mp3$/, k);
+    else assert.match(ASSETS[k].url, /\.pdf$/, k);
+  }
+  assert.ok(ASSETS['audiobook-embracing-the-future']);
+  assert.ok(ASSETS['audiobook-ai-era']);
 });
 
 test('happy path: verified human gets the URL, lead lands in EO with the asset tag', async () => {
@@ -55,6 +64,15 @@ test('happy path: verified human gets the URL, lead lands in EO with the asset t
   assert.deepEqual(eoCalls[0].body.tags, ['ebook-ai-era']);
   assert.equal(eoCalls[0].body.fields.FirstName, 'Ada');
   assert.equal(eoCalls[0].body.fields.LastName, 'Lovelace');
+});
+
+test('audiobook happy path: URL delivered, lead tagged with the audiobook asset', async () => {
+  stubFetch();
+  const res = makeRes();
+  await handler(post({ token: 't', name: 'Ada Lovelace', email: 'ada@example.com', asset: 'audiobook-ai-era' }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.url, ASSETS['audiobook-ai-era'].url);
+  assert.deepEqual(eoCalls[0].body.tags, ['audiobook-ai-era']);
 });
 
 test('bot (turnstile fail) never reaches the registry or EO', async () => {

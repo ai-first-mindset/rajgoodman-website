@@ -289,6 +289,25 @@ test('two books on the page: each opens with its own title and posts its own ass
   assert.equal(fetchCalls[0].body.asset, 'ebook-building-trust');
 });
 
+test('audiobook button: modal copy says Audiobook and reverts for eBooks', async () => {
+  installEnv();
+  const eb = makeBookCard('ebook-ai-era', 'AI Era');
+  const ab = makeBookCard('audiobook-ai-era', 'AI Era');
+  initDownloads();
+  ab.click();
+  assert.equal(modal().querySelector('#dlm-title').textContent, 'Get the Audiobook');
+  assert.match(modal().querySelector('.dlm-form .btn').textContent, /Get the Audiobook/);
+  fillFields();
+  modal().querySelector('.dlm-form').requestSubmit();
+  await tick();
+  assert.equal(fetchCalls[0].body.asset, 'audiobook-ai-era');
+  assert.match(modal().querySelector('.dlm-success a').textContent, /Download Audiobook/);
+  modal().querySelector('.dlm-close').click();
+  eb.click();
+  assert.equal(modal().querySelector('#dlm-title').textContent, 'Get the eBook');
+  assert.match(modal().querySelector('.dlm-form .btn').textContent, /Get the eBook/);
+});
+
 /* helpers used by several tests */
 function fillFields() {
   const o = modal();

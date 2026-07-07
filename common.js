@@ -320,6 +320,10 @@
 
     var overlay = null, tsWidget = null, currentAsset = '';
 
+    /* The registry key doubles as the asset kind: audiobook-* keys label the
+       modal "Audiobook", everything else stays "eBook". */
+    function assetKind() { return currentAsset.indexOf('audiobook-') === 0 ? 'Audiobook' : 'eBook'; }
+
     function buildModal() {
       var css = document.createElement('style');
       css.textContent =
@@ -398,8 +402,8 @@
       overlay.querySelector('.dlm-form').style.display = 'none';
       box.innerHTML =
         '<h3>Your download is ready</h3>' +
-        '<p class="dlm-asset">' + (j.title || 'Your eBook') + '</p>' +
-        '<a class="btn btn-y" href="' + j.url + '" target="_blank" rel="noopener">Download eBook <span class="ar">&rarr;</span></a>' +
+        '<p class="dlm-asset">' + (j.title || 'Your ' + assetKind()) + '</p>' +
+        '<a class="btn btn-y" href="' + j.url + '" target="_blank" rel="noopener">Download ' + assetKind() + ' <span class="ar">&rarr;</span></a>' +
         (j.pending ? '<p class="dlm-note">We’ve also sent you a confirmation email — confirm to get Raj’s newsletter.</p>' : '');
       box.style.display = 'block';
       // Open immediately as well — the button remains as a fallback.
@@ -409,11 +413,12 @@
     function open(asset, title) {
       currentAsset = asset;
       if (!overlay) buildModal();
+      overlay.querySelector('#dlm-title').textContent = 'Get the ' + assetKind();
       overlay.querySelector('.dlm-asset').textContent = title;
       overlay.querySelector('.dlm-form').style.display = '';
       overlay.querySelector('.dlm-success').style.display = 'none';
       var btn = overlay.querySelector('.dlm-form .btn');
-      setLabel(btn, 'Get the eBook'); btn.disabled = false;
+      setLabel(btn, 'Get the ' + assetKind()); btn.disabled = false;
       overlay.style.display = 'grid';
       if (window.turnstile) {
         if (tsWidget == null) tsWidget = window.turnstile.render(overlay.querySelector('[data-turnstile]'), { sitekey: TURNSTILE_SITEKEY, theme: 'dark' });
