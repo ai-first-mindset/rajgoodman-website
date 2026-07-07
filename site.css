@@ -371,3 +371,13 @@ footer .fcol a:hover{color:var(--yellow)}
   .ev{grid-template-columns:1fr;gap:14px}
   .phero{padding:120px 0 50px}
 }
+
+
+/* LinkedIn widget (site-wide standard; markup lives in each page's On LinkedIn section) */
+.li-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+.li-card{border:1px solid var(--line);overflow:hidden;aspect-ratio:1;position:relative;display:block}
+.li-card img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.li-card:hover img{transform:scale(1.06)}
+.li-card .tag{position:absolute;left:10px;bottom:10px;font-family:var(--mono);font-size:.66rem;font-weight:600;background:rgba(32,22,0,.8);border:1px solid var(--line);padding:.3em .6em;border-radius:3px}
+@media(max-width:980px){.li-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.li-grid{grid-template-columns:1fr}}
