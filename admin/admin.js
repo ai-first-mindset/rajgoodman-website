@@ -552,12 +552,12 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['212','Tests'],['207','Passed'],['5','Env-gated skips'],['24','Suites'],['75.9%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['215','Tests'],['210','Passed'],['5','Env-gated skips'],['24','Suites'],['76.0%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
     { f:'api/contact.js', l:100, b:95, fn:100, n:'contact-api' },
-    { f:'api/download.js', l:94.7, b:84.2, fn:50, n:'download-api' },
+    { f:'api/download.js', l:95.2, b:85, fn:50, n:'download-api' },
     { f:'api/feed.js', l:100, b:93.8, fn:100, n:'parity-surfaces' },
     { f:'api/linkedin.js', l:100, b:77.8, fn:100, n:'linkedin-api' },
     { f:'api/render-category.js', l:100, b:59.1, fn:85.7, n:'render-handlers' },
@@ -583,7 +583,7 @@ const COVERAGE = {
     { f:'api/_post-template.js', l:92.5, b:51.7, fn:81.8, n:'post-template, parity-surfaces' },
     { f:'api/_turnstile.js', l:100, b:100, fn:100, n:'turnstile' },
     { g:'Front-end' },
-    { f:'common.js', l:63.2, b:87.6, fn:77.8, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
+    { f:'common.js', l:63.6, b:88, fn:78.3, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
     { f:'chrome.js', l:100, b:91.7, fn:100, n:'chrome · nav/footer injection smoke' },
     { f:'assets/cookie-consent.js', l:100, b:84.4, fn:96.3, n:'cookie-consent (helpers), cookie-consent-dom (banner/panel)' },
     { f:'admin/admin.js', l:29.1, b:88.1, fn:32.9, n:'admin-editor · picker/alt-bar/helpers; view flows untested' },
