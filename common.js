@@ -168,7 +168,7 @@
       if (!a) return;
       var href = a.getAttribute('href');
       var m = href.match(YT);
-      if (!m) return; // not a single video (e.g. channel/article links) — let it through
+      if (!m) return; // not a single video (e.g. channel/article links) - let it through
       e.preventDefault();
       var tm = href.match(/[?&](?:t|start)=([0-9hms]+)/);
       open(m[1], tm ? toSeconds(tm[1]) : 0);
@@ -182,7 +182,7 @@
      Each form is marked with data-form="contact" | "newsletter". The widget is
      rendered explicitly so we control placement, and submit is intercepted to
      POST JSON (named fields + Turnstile token) to the matching /api endpoint. */
-  var TURNSTILE_SITEKEY = '0x4AAAAAADpKQw5ozbUsMz-E'; // public sitekey — safe to commit
+  var TURNSTILE_SITEKEY = '0x4AAAAAADpKQw5ozbUsMz-E'; // public sitekey - safe to commit
   var FORM_ENDPOINTS = { contact: '/api/contact/', newsletter: '/api/subscribe/' }; // trailing slash: trailingSlash:true 308-redirects the non-slash form
 
   function initForms() {
@@ -205,14 +205,14 @@
     s.async = true;
     s.defer = true;
     // If the script never loads (ad blocker, network), the widget can't render
-    // and no token can ever exist — say so instead of leaving a dead form.
+    // and no token can ever exist - say so instead of leaving a dead form.
     s.onerror = function () {
       forms.forEach(function (form) {
         form._tsBlocked = true;
         var mount = form.querySelector('[data-turnstile]');
         if (mount) {
           mount.innerHTML = '<p style="font-size:.84rem;color:var(--tx-60,#999);border:1px solid var(--line,#444);border-radius:4px;padding:.7em .9em;margin:0">'
-            + 'The verification step couldn’t load — it may be blocked by a browser extension. '
+            + 'The verification step couldn’t load - it may be blocked by a browser extension. '
             + 'Please allow challenges.cloudflare.com, or email '
             + '<a href="mailto:raj@goodmanlantern.com" style="color:var(--yellow,#f3af00)">raj@goodmanlantern.com</a> directly.</p>';
         }
@@ -229,7 +229,7 @@
 
         var btn = form.querySelector('.btn');
         if (form._tsBlocked) {
-          setBtn(btn, 'Verification blocked — please email us', false);
+          setBtn(btn, 'Verification blocked - please email us', false);
           return;
         }
         var token = window.turnstile && form._tsWidgetId != null
@@ -256,17 +256,17 @@
           .then(function (result) {
             if (result.ok) {
               var doneMsg = type === 'newsletter'
-                ? (result.pending ? 'Almost done — check your inbox to confirm' : 'Thanks — you\'re subscribed')
-                : 'Thank you — we\'ll be in touch';
+                ? (result.pending ? 'Almost done - check your inbox to confirm' : 'Thanks - you\'re subscribed')
+                : 'Thank you - we\'ll be in touch';
               setBtn(btn, doneMsg, true);
               [].slice.call(form.querySelectorAll('input,select,textarea,button')).forEach(function (el) { el.disabled = true; });
             } else {
-              setBtn(btn, 'Something went wrong — try again', false);
+              setBtn(btn, 'Something went wrong - try again', false);
               if (window.turnstile && form._tsWidgetId != null) window.turnstile.reset(form._tsWidgetId);
             }
           })
           .catch(function () {
-            setBtn(btn, 'Network error — try again', false);
+            setBtn(btn, 'Network error - try again', false);
             if (window.turnstile && form._tsWidgetId != null) window.turnstile.reset(form._tsWidgetId);
           });
       });
@@ -283,7 +283,7 @@
   }
 
   /* ---- LinkedIn widget: replace the static fallback cards with managed posts.
-     Progressive enhancement — if the API is empty or unreachable, the hard-coded
+     Progressive enhancement - if the API is empty or unreachable, the hard-coded
      cards in the page stay. Injected cards omit data-reveal so they're visible
      immediately (the reveal observer has already run by the time this resolves). */
   function initLinkedIn() {
@@ -313,7 +313,7 @@
 
   /* ---- Gated downloads: [data-download="<asset>"] opens a modal form.
      Human verification + lead capture happen in /api/download/, which alone
-     knows the file URLs — nothing downloadable is exposed in the markup. */
+     knows the file URLs - nothing downloadable is exposed in the markup. */
   function initDownloads() {
     var triggers = [].slice.call(document.querySelectorAll('[data-download]'));
     if (triggers.length === 0) return;
@@ -366,7 +366,7 @@
         e.preventDefault();
         var form = e.target;
         var btn = form.querySelector('.btn');
-        if (!window.turnstile || tsWidget == null) { setLabel(btn, 'Verification blocked — please email us'); return; }
+        if (!window.turnstile || tsWidget == null) { setLabel(btn, 'Verification blocked - please email us'); return; }
         var token = window.turnstile.getResponse(tsWidget);
         if (!token) { setLabel(btn, 'Please complete the verification'); return; }
 
@@ -385,9 +385,9 @@
           .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
           .then(function (res) {
             if (res.ok) { showSuccess(res.j); }
-            else { setLabel(btn, 'Something went wrong — try again'); btn.disabled = false; window.turnstile.reset(tsWidget); }
+            else { setLabel(btn, 'Something went wrong - try again'); btn.disabled = false; window.turnstile.reset(tsWidget); }
           })
-          .catch(function () { setLabel(btn, 'Network error — try again'); btn.disabled = false; window.turnstile.reset(tsWidget); });
+          .catch(function () { setLabel(btn, 'Network error - try again'); btn.disabled = false; window.turnstile.reset(tsWidget); });
       });
     }
 
@@ -404,9 +404,9 @@
         '<h3>Your download is ready</h3>' +
         '<p class="dlm-asset">' + (j.title || 'Your ' + assetKind()) + '</p>' +
         '<a class="btn btn-y" href="' + j.url + '" target="_blank" rel="noopener">Download ' + assetKind() + ' <span class="ar">&rarr;</span></a>' +
-        (j.pending ? '<p class="dlm-note">We’ve also sent you a confirmation email — confirm to get Raj’s newsletter.</p>' : '');
+        (j.pending ? '<p class="dlm-note">We’ve also sent you a confirmation email - confirm to get Raj’s newsletter.</p>' : '');
       box.style.display = 'block';
-      // Open immediately as well — the button remains as a fallback.
+      // Open immediately as well - the button remains as a fallback.
       window.open(j.url, '_blank', 'noopener');
     }
 

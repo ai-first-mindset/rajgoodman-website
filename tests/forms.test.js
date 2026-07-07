@@ -143,7 +143,7 @@ test('contact happy path: exact payload, sending state, success, controls disabl
     token: 'tok-9', name: 'Ada', email: 'ada@x.com', service: 'Keynote', message: 'Hi Raj',
     source_page: 'rajgoodman.com/about/',
   });
-  assert.match(btnOf(form).textContent, /Thank you — we/);
+  assert.match(btnOf(form).textContent, /Thank you - we/);
   assert.ok(form.querySelectorAll('input,select,textarea,button').every((el) => el.disabled), 'controls disabled after success');
 });
 

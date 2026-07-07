@@ -204,7 +204,7 @@ ${recent.length ? `  <section class="sec">
 export function renderNotFound() {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Article not found — ${SITE_NAME}</title><meta name="robots" content="noindex" />
+<title>Article not found - ${SITE_NAME}</title><meta name="robots" content="noindex" />
 <link rel="stylesheet" href="/site.css" /></head>
 <body data-page="blog"><main><article class="wrap" style="max-width:760px;padding:140px 0 100px;text-align:center">
 <h1>Article not found</h1><p style="opacity:.75">That post doesn't exist or isn't published yet.</p>

@@ -65,7 +65,7 @@
   '<footer><div class="wrap"><div class="f-grid">' +
     '<div class="f-brand">' +
       '<a href="/" class="brand" aria-label="Raj Goodman home"><img class="full" src="/' + LOGO + '" alt="Raj Goodman" width="137" height="38"/></a>' +
-      '<p>Insights from a visionary AI futurist speaker transforming business mindsets \u2014 changing how machines think, how businesses scale, and how entrepreneurs build tomorrow\u2019s solutions.</p>' +
+      '<p>Insights from a visionary AI futurist speaker transforming business mindsets - changing how machines think, how businesses scale, and how entrepreneurs build tomorrow\u2019s solutions.</p>' +
     '</div>' +
     '<div class="fcol"><h4>Helping Through</h4>' +
       '<a href="/workshops/tech-workshop/">Workshops</a><a href="/ai-training-for-executives/">AI Training</a><a href="/ai-business-consultant/">AI Business Consultant</a><a href="/organizational-transformation-consultant/">Organizational Transformation</a><a href="/fractional-chief-ai-officer/">Fractional CAIO</a>' +
@@ -77,7 +77,7 @@
       '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/testimonials/">Testimonials</a>' +
     '</div>' +
   '</div>' +
-  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM \u2014 ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
+  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM - ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
   '</div></footer>';
 
   document.body.insertAdjacentHTML('afterbegin', nav);

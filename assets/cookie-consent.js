@@ -1,10 +1,10 @@
-/* Cookie consent — vanilla, zero-dependency. Two layers (banner + preferences),
+/* Cookie consent - vanilla, zero-dependency. Two layers (banner + preferences),
    categorized (Necessary / Analytics / Marketing), wired to Google Consent
    Mode v2 via gtag(). No cookies/tags fire before an explicit choice.
 
    Load this in <head> on every page (BEFORE the GTM snippet, once GTM is added)
    so the Consent Mode defaults are set first. It injects its own stylesheet and
-   a "Cookie settings" link into the footer .f-bot — no per-page markup needed. */
+   a "Cookie settings" link into the footer .f-bot - no per-page markup needed. */
 (function () {
   'use strict';
 
@@ -23,7 +23,7 @@
   var CATEGORIES = [
     {
       key: 'necessary', locked: true, title: 'Strictly necessary',
-      desc: 'Required for the site to function — security, load balancing and remembering your cookie choice. Always on.'
+      desc: 'Required for the site to function - security, load balancing and remembering your cookie choice. Always on.'
     },
     {
       key: 'analytics', locked: false, title: 'Analytics',

@@ -20,7 +20,7 @@ export function bucketPath(url) {
 }
 
 // Is this image still referenced by any LinkedIn post or blog post?
-// FAIL CLOSED: if either check cannot complete, report "referenced" — a DB
+// FAIL CLOSED: if either check cannot complete, report "referenced" - a DB
 // blip must never make a possibly-referenced file look deletable.
 export async function isReferenced(url) {
   const path = bucketPath(url);

@@ -1,7 +1,7 @@
 // Gated downloads: verifies the human (Turnstile), captures the lead in
 // EmailOctopus (tagged per asset; list double opt-in applies), then returns
 // the file URL. The registry lives here server-side so download URLs never
-// appear in page markup — the form is the only way to obtain them.
+// appear in page markup - the form is the only way to obtain them.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
 import { readBody, isValidEmail } from './_body.js';
@@ -10,23 +10,23 @@ const STORAGE = 'https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/publ
 
 export const ASSETS = {
   'ebook-embracing-the-future': {
-    title: 'The AI-First Mindset® — Embracing the Future Today',
+    title: 'The AI-First Mindset® - Embracing the Future Today',
     url: `${STORAGE}/ebook-ai-first-mindset-embracing-the-future.pdf`,
   },
   'ebook-ai-era': {
-    title: 'The AI Era — Adapting & Thriving',
+    title: 'The AI Era - Adapting & Thriving',
     url: `${STORAGE}/ebook-the-ai-era-adapting-thriving.pdf`,
   },
   'ebook-building-trust': {
-    title: 'The AI-First Mindset® — Building Trust in the Digital Age',
+    title: 'The AI-First Mindset® - Building Trust in the Digital Age',
     url: `${STORAGE}/ebook-building-trust-in-the-digital-age.pdf`,
   },
   'audiobook-embracing-the-future': {
-    title: 'The AI-First Mindset® — Embracing the Future Today (Audiobook)',
+    title: 'The AI-First Mindset® - Embracing the Future Today (Audiobook)',
     url: `${STORAGE}/audiobook-ai-first-mindset-embracing-the-future.mp3`,
   },
   'audiobook-ai-era': {
-    title: 'The AI Era — Adapting & Thriving (Audiobook)',
+    title: 'The AI Era - Adapting & Thriving (Audiobook)',
     url: `${STORAGE}/audiobook-the-ai-era-adapting-thriving.mp3`,
   },
 };
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
   if (!isValidEmail(email)) return res.status(422).json({ ok: false, error: 'invalid-email' });
 
   // Capture the lead. A failure here is logged loudly but never blocks the
-  // download — the human is verified and was promised a file.
+  // download - the human is verified and was promised a file.
   let pending = false;
   const apiKey = process.env.EMAILOCTOPUS_API_KEY;
   const listId = process.env.EMAILOCTOPUS_LIST_ID;

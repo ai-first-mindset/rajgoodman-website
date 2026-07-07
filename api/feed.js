@@ -1,4 +1,4 @@
-// RSS 2.0 feed at /feed/ (via vercel.json rewrite) — parity with the old
+// RSS 2.0 feed at /feed/ (via vercel.json rewrite) - parity with the old
 // WordPress feed so existing subscribers and aggregators keep working.
 
 import { listPublished } from './_blog-data.js';
@@ -24,7 +24,7 @@ export function rss(posts) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-<title>Raj Goodman — AI, Strategy &amp; Innovation</title>
+<title>Raj Goodman - AI, Strategy &amp; Innovation</title>
 <link>${SITE}/blog/</link>
 <atom:link href="${SITE}/feed/" rel="self" type="application/rss+xml" />
 <description>Raj Goodman's latest thinking on AI, leadership and strategy.</description>

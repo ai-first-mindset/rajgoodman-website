@@ -21,7 +21,7 @@ async function sb(path) {
 // with the one seed post while every page still returns 200.
 function guardSeed() {
   if (!configured && process.env.VERCEL_ENV === 'production') {
-    throw new Error('CONFIG ERROR: SUPABASE_URL/SUPABASE_SECRET_KEY missing in production — refusing to serve seed content');
+    throw new Error('CONFIG ERROR: SUPABASE_URL/SUPABASE_SECRET_KEY missing in production - refusing to serve seed content');
   }
 }
 
@@ -31,7 +31,7 @@ export async function getPostBySlug(slug) {
   return rows[0] || null;
 }
 
-// Any-status lookup — used only for authed admin draft preview.
+// Any-status lookup - used only for authed admin draft preview.
 export async function getPostBySlugAnyStatus(slug) {
   if (!configured) { guardSeed(); return SEED.find((p) => p.slug === slug) || null; }
   const rows = await sb(`posts?slug=eq.${encodeURIComponent(slug)}&limit=1`);
@@ -74,12 +74,12 @@ export const dataSource = configured ? 'supabase' : 'seed';
 const SEED = [
   {
     slug: 'sample-ai-post',
-    title: 'A Sample Post — Proving the Blog Render Path',
-    seo_title: 'Sample Post — rajgoodman.com Blog Editor (render-path test)',
+    title: 'A Sample Post - Proving the Blog Render Path',
+    seo_title: 'Sample Post - rajgoodman.com Blog Editor (render-path test)',
     meta_description: 'A seed post used to verify the new Supabase-backed blog render path renders full Yoast-equivalent SEO metadata at /blog/{slug}/.',
     excerpt: 'A seed post used to verify the new blog render path.',
     body_html:
-      '<p>This page is rendered by the new serverless blog engine from a data record — not a hand-written HTML file. ' +
+      '<p>This page is rendered by the new serverless blog engine from a data record - not a hand-written HTML file. ' +
       'It exists to prove the render path, the themed chrome (nav + footer via <code>chrome.js</code>), and full SEO metadata before the database is wired.</p>' +
       '<h2>What this demonstrates</h2><ul><li>SSR HTML with a complete &lt;head&gt; (canonical, OpenGraph, Twitter, Article JSON-LD)</li>' +
       '<li>The site theme via <code>site.css</code> + injected chrome</li><li>Edge caching for static-like performance</li></ul>' +

@@ -12,7 +12,7 @@ const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverif
 export async function verifyTurnstile(token, ip) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) {
-    // Misconfiguration — fail closed so we never silently skip verification.
+    // Misconfiguration - fail closed so we never silently skip verification.
     return { ok: false, errors: ['missing-secret-key'] };
   }
   if (!token) {

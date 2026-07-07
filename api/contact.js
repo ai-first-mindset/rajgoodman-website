@@ -1,5 +1,5 @@
 // Contact form handler: verifies Turnstile, then forwards the lead to DealDesk.
-// DealDesk endpoint is env-gated (DEALDESK_ENDPOINT) — until Raj ships it,
+// DealDesk endpoint is env-gated (DEALDESK_ENDPOINT) - until Raj ships it,
 // the function still verifies the human and accepts the submission gracefully.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
@@ -29,11 +29,11 @@ export default async function handler(req, res) {
 
   // 3) Forward to DealDesk intake (server-to-server, x-api-key). Gated on BOTH
   //    endpoint and key so setting one without the other can't open a broken
-  //    window — until both exist, we accept + log the lead gracefully.
+  //    window - until both exist, we accept + log the lead gracefully.
   const endpoint = process.env.DEALDESK_ENDPOINT;
   const apiKey = process.env.DEALDESK_API_KEY;
   if (endpoint && apiKey) {
-    // Our form has no dedicated "service" field on Raj's side — fold the
+    // Our form has no dedicated "service" field on Raj's side - fold the
     // dropdown selection into the message so it isn't lost.
     const dealMessage = service ? `Service interest: ${service}\n\n${message || ''}`.trim() : message;
     try {
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'dealdesk-unreachable' });
     }
   } else {
-    // Lead reaches nobody in this state — log at error level so a missing env
+    // Lead reaches nobody in this state - log at error level so a missing env
     // var after a deploy/cutover is visible in monitoring, and mark the
     // response so it's detectable from outside (the form UI ignores extras).
     console.error('CONFIG ERROR: DealDesk not configured (need DEALDESK_ENDPOINT + DEALDESK_API_KEY); lead NOT forwarded:', { name, email, service });

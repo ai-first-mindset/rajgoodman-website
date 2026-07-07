@@ -6,7 +6,7 @@ import { listPublished, getAllCategories } from './_blog-data.js';
 
 const SITE = 'https://rajgoodman.com';
 
-// The static pages (canonical paths) — kept in sync with the canonical tags.
+// The static pages (canonical paths) - kept in sync with the canonical tags.
 const PAGES = ['/', '/about/', '/ai-business-consultant/', '/keynote-speaker/',
   '/ai-for-business-leaders/', '/ai-trainer/', '/events/', '/media/',
   '/ai-training-for-executives/', '/blog/', '/testimonials/', '/eo-ypo-leadership/',

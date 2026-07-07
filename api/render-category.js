@@ -19,8 +19,8 @@ function card(p) {
 
 function page(name, slug, posts) {
   const url = `${SITE}/blog/category/${slug}/`;
-  const title = `${name} — Raj Goodman Blog`;
-  const desc = `Articles on ${name} from Raj Goodman — practical thinking on AI, leadership and strategy.`;
+  const title = `${name} - Raj Goodman Blog`;
+  const desc = `Articles on ${name} from Raj Goodman - practical thinking on AI, leadership and strategy.`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,7 +52,7 @@ function page(name, slug, posts) {
     <div class="crumbs"><a href="/">Home</a><span class="sep">/</span><a href="/blog/">Blog</a><span class="sep">/</span><span>${esc(name)}</span></div>
     <span class="eyebrow"><span class="live"></span>Category</span>
     <h1>${esc(name)}</h1>
-    <p class="lede">${posts.length ? `${posts.length} article${posts.length === 1 ? '' : 's'} on ${esc(name)}.` : 'No articles in this category yet — browse all articles below.'}</p>
+    <p class="lede">${posts.length ? `${posts.length} article${posts.length === 1 ? '' : 's'} on ${esc(name)}.` : 'No articles in this category yet - browse all articles below.'}</p>
   </div>
 </header>
 <section class="sec" style="padding-top:30px">

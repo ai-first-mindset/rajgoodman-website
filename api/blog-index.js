@@ -42,10 +42,10 @@ export default async function handler(req, res) {
   }
 
   const grid = dbFailed
-    ? '<p style="opacity:.7;grid-column:1/-1">Articles are temporarily unavailable — please try again in a moment.</p>'
+    ? '<p style="opacity:.7;grid-column:1/-1">Articles are temporarily unavailable - please try again in a moment.</p>'
     : posts.length
       ? posts.map(card).join('\n')
-      : '<p style="opacity:.7;grid-column:1/-1">No articles published yet — check back soon.</p>';
+      : '<p style="opacity:.7;grid-column:1/-1">No articles published yet - check back soon.</p>';
 
   let cats = [];
   try { cats = await getAllCategories(); } catch (e) { /* noop */ }

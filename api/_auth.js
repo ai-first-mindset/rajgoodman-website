@@ -1,7 +1,7 @@
 // Admin auth backed by Supabase Auth (GoTrue). Login / refresh / set-password
 // are proxied through our own endpoints; the Supabase access + refresh tokens
 // live in httpOnly cookies (never exposed to client JS). All Supabase Auth
-// calls use the service key as the apikey — server-side only.
+// calls use the service key as the apikey - server-side only.
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;

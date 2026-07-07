@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       headers: { apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` },
     });
     if (!r.ok) {
-      // Fail-soft is deliberate (homepage keeps its fallback cards) — but log,
+      // Fail-soft is deliberate (homepage keeps its fallback cards) - but log,
       // or a DB outage silently freezes the widget with no way to notice.
       console.error('linkedin: DB query failed', r.status, (await r.text()).slice(0, 200));
       return res.status(200).json({ ok: true, posts: [] });
