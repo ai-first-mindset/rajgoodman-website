@@ -552,7 +552,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['215','Tests'],['210','Passed'],['5','Env-gated skips'],['24','Suites'],['76.0%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['219','Tests'],['214','Passed'],['5','Env-gated skips'],['25','Suites'],['76.1%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
@@ -583,7 +583,7 @@ const COVERAGE = {
     { f:'api/_post-template.js', l:92.5, b:51.7, fn:81.8, n:'post-template, parity-surfaces' },
     { f:'api/_turnstile.js', l:100, b:100, fn:100, n:'turnstile' },
     { g:'Front-end' },
-    { f:'common.js', l:63.6, b:88, fn:78.3, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
+    { f:'common.js', l:64.7, b:89, fn:80.4, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
     { f:'chrome.js', l:100, b:91.7, fn:100, n:'chrome · nav/footer injection smoke' },
     { f:'assets/cookie-consent.js', l:100, b:84.4, fn:96.3, n:'cookie-consent (helpers), cookie-consent-dom (banner/panel)' },
     { f:'admin/admin.js', l:29.1, b:88.1, fn:32.9, n:'admin-editor · picker/alt-bar/helpers; view flows untested' },
