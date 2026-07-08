@@ -438,6 +438,22 @@
     });
   }
 
+  /* ---- FAQ accordion: auto-collapse siblings so only one answer is open at a
+     time (matches the live site). Scoped per .faq group, so independent FAQ
+     blocks on a page don't affect each other. Uses native <details> toggle. */
+  function initFaq() {
+    var groups = [].slice.call(document.querySelectorAll('.faq'));
+    groups.forEach(function (group) {
+      var items = [].slice.call(group.querySelectorAll('details'));
+      items.forEach(function (d) {
+        d.addEventListener('toggle', function () {
+          if (!d.open) return;
+          items.forEach(function (other) { if (other !== d) other.open = false; });
+        });
+      });
+    });
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -448,6 +464,7 @@
     initForms();
     initLinkedIn();
     initDownloads();
+    initFaq();
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -455,5 +472,5 @@
   }
   /* Exposed for unit tests under Node (CommonJS); a no-op in the browser,
      where `module` is undefined. */
-  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms, initFaq: initFaq };
 })();
