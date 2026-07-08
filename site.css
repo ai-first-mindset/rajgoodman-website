@@ -96,7 +96,7 @@ main,nav,footer{position:relative;z-index:2}
 .phero h1{font-size:clamp(2.6rem,5.6vw,4.6rem);letter-spacing:-.04em;max-width:16em;text-wrap:balance}
 .phero h1 .hi{color:var(--yellow)}.phero h1 .bl{color:var(--blue-l)}
 .phero .lede{font-size:clamp(1.05rem,1.4vw,1.28rem);color:var(--tx-60);max-width:46em;margin:1.6rem 0 2.2rem}
-.phero .cta{display:flex;gap:.8rem;flex-wrap:wrap}
+.cta{display:flex;gap:.8rem;flex-wrap:wrap}
 .phero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:54px;align-items:center}
 .phero-grid .pic{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--panel)}
 .phero-grid .pic img{width:100%;height:100%;object-fit:cover}
@@ -381,3 +381,11 @@ footer .fcol a:hover{color:var(--yellow)}
 .li-card .tag{position:absolute;left:10px;bottom:10px;font-family:var(--mono);font-size:.66rem;font-weight:600;background:rgba(32,22,0,.8);border:1px solid var(--line);padding:.3em .6em;border-radius:3px}
 @media(max-width:980px){.li-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.li-grid{grid-template-columns:1fr}}
+
+/* Back-to-top (injected site-wide by common.js) */
+.to-top{position:fixed;right:22px;bottom:22px;z-index:90;width:46px;height:46px;border:0;border-radius:50%;background:var(--yellow);color:var(--ink);font-size:1.35rem;line-height:1;cursor:pointer;box-shadow:0 8px 24px -8px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .25s,transform .25s,visibility .25s,background .2s}
+.to-top.show{opacity:1;visibility:visible;transform:none}
+.to-top:hover{background:var(--yellow-d)}
+.to-top:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.to-top{transition:opacity .2s,visibility .2s}}
+@media print{.to-top{display:none}}

@@ -454,6 +454,25 @@
     });
   }
 
+  /* ---- Back-to-top button: injected once, site-wide (no per-page markup).
+     Appears after scrolling down, smooth-scrolls to the top. Respects the
+     reduced-motion preference. */
+  function initBackToTop() {
+    var btn = document.createElement('button');
+    btn.className = 'to-top';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.innerHTML = '<span aria-hidden="true">↑</span>';
+    document.body.appendChild(btn);
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function onScroll() { btn.classList.toggle('show', window.pageYOffset > 600); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -465,6 +484,7 @@
     initLinkedIn();
     initDownloads();
     initFaq();
+    initBackToTop();
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -472,5 +492,5 @@
   }
   /* Exposed for unit tests under Node (CommonJS); a no-op in the browser,
      where `module` is undefined. */
-  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms, initFaq: initFaq };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms, initFaq: initFaq, initBackToTop: initBackToTop };
 })();
