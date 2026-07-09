@@ -266,7 +266,33 @@ function applyImageAlt(){
 }
 
 // --- Image upload (signed URL → direct PUT to Supabase Storage) + media library ---
+
+// Client-side compression: re-encode raster uploads to WebP q85 (the same
+// standard as the committed /assets images) and downscale anything larger than
+// IMG_MAX_DIM on its long edge, BEFORE the direct-to-storage PUT. Animated GIFs,
+// SVGs and non-images pass through untouched, and it falls back to the original
+// on any failure or if WebP doesn't actually shrink the file - so an upload can
+// never fail because of compression.
+const IMG_QUALITY = 0.85, IMG_MAX_DIM = 2000;
+async function compressImage(file){
+  if(!file || !/^image\/(png|jpe?g|webp)$/i.test(file.type)) return file;
+  if(typeof createImageBitmap !== 'function' || typeof document === 'undefined') return file;
+  try{
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, IMG_MAX_DIM / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width*scale)), h = Math.max(1, Math.round(bmp.height*scale));
+    const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+    canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+    if(bmp.close) bmp.close();
+    const blob = await new Promise(res=> canvas.toBlob(res, 'image/webp', IMG_QUALITY));
+    if(!blob || blob.size >= file.size) return file; // already small/webp → keep original
+    const base = (file.name||'image').replace(/\.[a-z0-9]+$/i,'');
+    return new File([blob], base+'.webp', { type:'image/webp' });
+  }catch(e){ return file; }
+}
+
 async function uploadFile(file){
+  file = await compressImage(file);
   const sign = await api('/api/admin/upload/', { method:'POST', body: JSON.stringify({ filename:file.name, contentType:file.type }) });
   if(!sign.ok) throw new Error((sign.body&&sign.body.error)||'upload-failed');
   const put = await fetch(sign.body.signedUrl, { method:'PUT', headers:{'content-type':file.type}, body:file });
@@ -755,7 +781,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     slugify, esc, parseHash, collect, renderCats, addNewCat,
     applyImageAlt, updateToolbarActive, renderCoverage, wireAdmin, COVERAGE,
-    api, loadFailMsg, fetchMedia,
+    api, loadFailMsg, fetchMedia, compressImage,
     __test: {
       setEditor: (e) => { editor = e; },
       setCats: (all, sel) => { CAT_ALL = all; CAT_SEL = new Set(sel); },
