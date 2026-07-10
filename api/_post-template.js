@@ -175,7 +175,10 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
   <article class="wrap" style="max-width:760px;padding-top:120px;padding-bottom:80px">
     <a href="/blog/" style="opacity:.7;text-decoration:none">&larr; All articles</a>
     <h1 style="margin:18px 0 10px">${esc(post.title)}</h1>
-    <div style="opacity:.7;margin-bottom:18px">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <img src="${AUTHOR_PHOTO}" alt="${esc(post.author)}" loading="lazy" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
+      <span style="opacity:.7">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
+    </div>
     ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${post.body_html || ''}</div>${authorBio(post)}

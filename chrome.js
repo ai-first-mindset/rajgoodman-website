@@ -35,10 +35,11 @@
         '</div>' +
       '</div>' +
       '<a href="/events/"' + on('events') + '>Events</a>' +
-      '<div class="nav-item' + (page === 'blog' || page === 'media' ? ' active' : '') + '"><a>Resources</a>' +
+      '<div class="nav-item' + (page === 'blog' || page === 'media' || page === 'authors' ? ' active' : '') + '"><a>Resources</a>' +
         '<div class="nav-menu">' +
           '<a href="/blog/">Blog</a>' +
           '<a href="/media/">Media</a>' +
+          '<a href="/authors/">Authors</a>' +
         '</div>' +
       '</div>' +
       '<a href="/testimonials/"' + on('testimonials') + '>Testimonials</a>' +
@@ -57,7 +58,7 @@
     '<a href="/ai-trainer/">AI Trainer</a><a href="/ai-business-consultant/">AI Business Consultant</a>' +
     '<a href="/organizational-transformation-consultant/">Organizational Transformation</a><a href="/fractional-chief-ai-officer/">Fractional CAIO</a>' +
     '<span class="grp">More</span>' +
-    '<a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/media/">Media</a><a href="/testimonials/">Testimonials</a>' +
+    '<a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/media/">Media</a><a href="/authors/">Authors</a><a href="/testimonials/">Testimonials</a>' +
     '<a href="#work">Let\u2019s Talk</a>' +
   '</div>';
 
@@ -74,7 +75,7 @@
       '<a href="https://goodmanlantern.com/" target="_blank" rel="noopener">Goodman Lantern</a><a href="https://aifirstmindset.ai/" target="_blank" rel="noopener">AI-First Mindset</a>' +
     '</div>' +
     '<div class="fcol"><h4>Quick Links</h4>' +
-      '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/testimonials/">Testimonials</a>' +
+      '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/authors/">Authors</a><a href="/testimonials/">Testimonials</a>' +
     '</div>' +
   '</div>' +
   '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM - ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
