@@ -49,6 +49,10 @@
   .ProseMirror { min-height:340px; padding:24px 26px; outline:none }
   .ProseMirror:focus { outline:none }
   .ProseMirror p.is-editor-empty:first-child::before { content:attr(data-placeholder); color:rgba(244,239,230,.4); float:left; height:0; pointer-events:none }
+  .ProseMirror img { max-width:100%; height:auto; cursor:pointer }
+  /* Flag images that still need alt text so they are easy to spot and click. */
+  .ProseMirror img:not([alt]), .ProseMirror img[alt=""] { outline:2px dashed #d0491c; outline-offset:2px }
+  .ProseMirror img.ProseMirror-selectednode { outline:2px solid var(--acc); outline-offset:2px }
   .hide { display:none } .toast { position:fixed; bottom:20px; right:20px; background:var(--ink); color:#fff; padding:11px 16px; border-radius:8px; opacity:0; transition:opacity .2s }
   .toast.show { opacity:1 } a.link { color:#1a56db; text-decoration:none }
   .login { max-width:360px; margin:12vh auto; }
@@ -327,8 +331,9 @@
         <button type="button" data-cmd="cta" title="Insert a call-to-action">CTA</button>
         <button type="button" data-cmd="form" title="Insert a form (Turnstile-protected)">Form</button>
       </div>
+      <div class="muted" style="font-size:11px;padding:5px 8px 0">Tip: click any image in the post to add or edit its alt text here. Images still missing alt are outlined in red.</div>
       <div id="tt-altbar" style="display:none;gap:8px;align-items:center;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
-        <span class="muted" style="white-space:nowrap">Image alt text:</span>
+        <span class="muted" style="white-space:nowrap">Alt text for selected image:</span>
         <input id="tt-altinput" placeholder="Describe this image for SEO &amp; screen readers…" style="flex:1" />
         <button type="button" id="tt-altapply" class="primary">Apply</button>
       </div>

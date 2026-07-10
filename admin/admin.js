@@ -239,7 +239,7 @@ function ttCmd(cmd){
     if(url==='') editor.chain().focus().extendMarkRange('link').unsetLink().run();
     else editor.chain().focus().extendMarkRange('link').setLink({ href:url }).run();
   }
-  else if(cmd==='image') openMedia((url,f)=>{ const at={ src:url }; if(f&&f.alt) at.alt=f.alt; editor.chain().focus().setImage(at).run(); });
+  else if(cmd==='image') openMedia((url,f)=>{ const at={ src:url }; if(f&&f.alt) at.alt=f.alt; editor.chain().focus().setImage(at).run(); if(!at.alt) editImageAlt(url); });
   else if(cmd==='faq') c.setDetails().run();
   else if(cmd==='video'){ const bar=$('tt-videobar'); bar.style.display='flex'; const inp=$('tt-videourl'); inp.value=''; inp.focus(); return; }
   else if(cmd==='cta'){ const bar=$('tt-ctabar'); bar.style.display='flex'; $('cta-h').focus(); return; }
@@ -263,6 +263,17 @@ function updateToolbarActive(){
 function applyImageAlt(){
   if(!editor || !editor.isActive('image')) return;
   editor.chain().focus().updateAttributes('image', { alt: $('tt-altinput').value.trim() }).run();
+}
+// Select an image node by src and reveal the alt-text bar focused on it, so alt
+// can be added/edited inline in the editor (no need to open the Media library).
+function editImageAlt(src){
+  if(!editor) return;
+  let pos=null;
+  editor.state.doc.descendants((n,p)=>{ if(n.type.name==='image' && n.attrs.src===src) pos=p; });
+  if(pos==null) return;
+  editor.chain().setNodeSelection(pos).run();
+  updateToolbarActive();
+  const inp=$('tt-altinput'); if(inp){ inp.focus(); inp.select(); }
 }
 
 // --- Image upload (signed URL → direct PUT to Supabase Storage) + media library ---
