@@ -145,6 +145,7 @@ test('contact happy path: exact payload, sending state, success, controls disabl
   });
   assert.match(btnOf(form).textContent, /Thank you - we/);
   assert.ok(form.querySelectorAll('input,select,textarea,button').every((el) => el.disabled), 'controls disabled after success');
+  assert.deepEqual(global.window.dataLayer, [{ event: 'contact_form' }], 'GA4 conversion event pushed');
 });
 
 test('newsletter: pending flag switches the success copy to check-your-inbox', async () => {
@@ -157,6 +158,7 @@ test('newsletter: pending flag switches the success copy to check-your-inbox', a
   await tick();
   assert.equal(fetchCalls[0].url, '/api/subscribe/');
   assert.match(btnOf(form).textContent, /check your inbox to confirm/);
+  assert.deepEqual(global.window.dataLayer, [{ event: 'email_subscribe' }], 'GA4 conversion event pushed even while pending');
 
   installEnv();
   const f2 = makeForm('newsletter', { email: 'a@b.cc' });
@@ -179,6 +181,7 @@ test('server rejection: retry message, widget reset, controls stay enabled', asy
   assert.match(btnOf(form).textContent, /Something went wrong/);
   assert.equal(ts.resets, 1);
   assert.equal(form.querySelector('input').disabled, false);
+  assert.equal(global.window.dataLayer, undefined, 'no GA4 event on rejection');
 });
 
 test('network failure: network-error message and widget reset', async () => {

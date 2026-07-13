@@ -185,6 +185,16 @@
   var TURNSTILE_SITEKEY = '0x4AAAAAADpKQw5ozbUsMz-E'; // public sitekey - safe to commit
   var FORM_ENDPOINTS = { contact: '/api/contact/', newsletter: '/api/subscribe/' }; // trailing slash: trailingSlash:true 308-redirects the non-slash form
 
+  /* GA4 conversion events via the GTM dataLayer. Event names must match the
+     live GTM container (GTM-PQ6PSBZN) exactly - they are the reporting
+     continuity contract across the WordPress cutover. Inert until the GTM
+     snippet is added to the site. Deliberately NOT pushed for tel:/mailto:
+     clicks - GTM's own link-click triggers already fire phone_click /
+     email_click, so a push here would double-count. */
+  function trackEvent(name) {
+    (window.dataLayer = window.dataLayer || []).push({ event: name });
+  }
+
   function initForms() {
     var forms = [].slice.call(document.querySelectorAll('form[data-form]'));
     if (forms.length === 0) return;
@@ -255,6 +265,7 @@
           .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, pending: !!j.pending }; }); })
           .then(function (result) {
             if (result.ok) {
+              trackEvent(type === 'newsletter' ? 'email_subscribe' : 'contact_form');
               var doneMsg = type === 'newsletter'
                 ? (result.pending ? 'Almost done - check your inbox to confirm' : 'Thanks - you\'re subscribed')
                 : 'Thank you - we\'ll be in touch';
@@ -398,6 +409,7 @@
     }
 
     function showSuccess(j) {
+      trackEvent(assetKind() === 'Audiobook' ? 'audio_books_form' : 'ebooks_the_ai_first_mindset_form');
       var box = overlay.querySelector('.dlm-success');
       overlay.querySelector('.dlm-form').style.display = 'none';
       box.innerHTML =

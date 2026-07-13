@@ -197,6 +197,7 @@ test('happy path: verified submit posts the exact payload and unlocks the file',
   assert.equal(success.querySelector('a').getAttribute('href'), 'https://sb/downloads/trust.pdf');
   assert.deepEqual(opened, ['https://sb/downloads/trust.pdf'], 'download auto-opened');
   assert.equal(success.querySelector('.dlm-note'), null, 'no confirm note when not pending');
+  assert.deepEqual(global.window.dataLayer, [{ event: 'ebooks_the_ai_first_mindset_form' }], 'GA4 conversion event pushed');
 });
 
 test('double opt-in pending -> the "confirm your inbox" note is shown', async () => {
@@ -224,6 +225,7 @@ test('server rejection re-enables the form and resets the widget', async () => {
   assert.equal(b.disabled, false);
   assert.equal(turnstile.resets, 1);
   assert.equal(modal().querySelector('.dlm-success').style.display, 'none');
+  assert.equal(global.window.dataLayer, undefined, 'no GA4 event on rejection');
 });
 
 test('network failure shows the retry message and resets the widget', async () => {
@@ -302,6 +304,7 @@ test('audiobook button: modal copy says Audiobook and reverts for eBooks', async
   await tick();
   assert.equal(fetchCalls[0].body.asset, 'audiobook-ai-era');
   assert.match(modal().querySelector('.dlm-success a').textContent, /Download Audiobook/);
+  assert.deepEqual(global.window.dataLayer, [{ event: 'audio_books_form' }], 'audiobook GA4 conversion event pushed');
   modal().querySelector('.dlm-close').click();
   eb.click();
   assert.equal(modal().querySelector('#dlm-title').textContent, 'Get the eBook');
