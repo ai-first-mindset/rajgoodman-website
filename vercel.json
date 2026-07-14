@@ -3,7 +3,7 @@
   "trailingSlash": true,
   "regions": ["sin1"],
   "redirects": [
-    { "source": "/blog/author/:slug/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/author/:slug/", "destination": "/authors/", "statusCode": 301 },
     { "source": "/blog/page/:n/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/category/:slug/page/:n/", "destination": "/blog/category/:slug/", "statusCode": 301 },
     { "source": "/author-sitemap.xml", "destination": "/sitemap_index.xml", "statusCode": 301 },
