@@ -71,8 +71,9 @@ function parseInto(root, html) {
 
 /* ---- environment + fresh module load per scenario ---- */
 let body, head, store, docHandlers, lastFocused;
-function boot(storedRaw, { withFooter = true } = {}) {
+function boot(storedRaw, { withFooter = true, hostname = 'localhost' } = {}) {
   body = new El('body'); head = new El('head'); docHandlers = {}; lastFocused = null;
+  global.location = { hostname };
   if (withFooter) { const f = new El('div'); f.className = 'f-bot'; body.appendChild(f); }
   store = new Map();
   if (storedRaw) store.set('rg_cookie_consent', storedRaw);
@@ -94,7 +95,7 @@ function boot(storedRaw, { withFooter = true } = {}) {
   require(MODULE);
   return global.window.dataLayer;
 }
-afterEach(() => { delete global.document; delete global.window; delete global.localStorage; });
+afterEach(() => { delete global.document; delete global.window; delete global.localStorage; delete global.location; });
 
 const banner = () => body.querySelector('.cc-banner');
 const overlay = () => body.querySelector('.cc-overlay');
@@ -184,4 +185,31 @@ test('footer gets a Cookie settings control that reopens the panel; RGCookieCons
   assert.ok(overlay(), 'panel reopened from the footer');
   global.window.RGCookieConsent.reset();
   assert.equal(store.size, 0);
+});
+
+/* ---- GTM loader (hostname-gated, consent-default-first) ---- */
+
+test('production hostname: gtm.js injected AFTER the consent default, correct container', () => {
+  const dl = boot(null, { hostname: 'rajgoodman.com' });
+  const script = head.querySelector('script[data-gtm]');
+  assert.ok(script, 'gtm script injected');
+  assert.match(script.src, /googletagmanager\.com\/gtm\.js\?id=GTM-PQ6PSBZN/);
+  // dataLayer[0] must be the Consent Mode default; gtm.start comes after it
+  assert.equal(dl[0][0], 'consent');
+  assert.equal(dl[0][1], 'default');
+  const gtmIdx = dl.findIndex((e) => e && e['gtm.start']);
+  assert.ok(gtmIdx > 0, 'gtm.start pushed after the consent default');
+});
+
+test('www subdomain also loads GTM', () => {
+  boot(null, { hostname: 'www.rajgoodman.com' });
+  assert.ok(head.querySelector('script[data-gtm]'));
+});
+
+test('staging/preview/localhost hostnames never load GTM', () => {
+  for (const hostname of ['rajgoodman-website.vercel.app', 'localhost', 'rg-content-audit.vercel.app']) {
+    boot(null, { hostname });
+    assert.equal(head.querySelector('script[data-gtm]'), null, hostname + ' must not load GTM');
+    assert.ok(!global.window.dataLayer.some((e) => e && e['gtm.start']), hostname + ' must not push gtm.start');
+  }
 });

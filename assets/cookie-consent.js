@@ -48,6 +48,23 @@
 
   function gtag() { window.dataLayer.push(arguments); }
 
+  var GTM_ID = 'GTM-PQ6PSBZN';
+
+  // GTM loads ONLY on the production hostname - staging, previews and
+  // localhost must never send traffic into the live container's GA4 data.
+  // Inert until the domain cutover points rajgoodman.com at this build.
+  function loadGTM() {
+    var host = typeof location !== 'undefined' ? location.hostname : '';
+    if (host !== 'rajgoodman.com' && host !== 'www.rajgoodman.com') return;
+    if (document.querySelector('script[data-gtm]')) return;
+    window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
+    s.setAttribute('data-gtm', '');
+    (document.head || document.documentElement).appendChild(s);
+  }
+
   // ---- pure helpers (unit-tested) ----
 
   // Map a category choice ({analytics, marketing}) to the Consent Mode v2
@@ -226,6 +243,7 @@
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || gtag;
     gtag('consent', 'default', DEFAULT_CONSENT);
+    loadGTM(); // after the consent default so gtm.js boots with storage denied
 
     // Inject our stylesheet as early as possible (once).
     if (!document.querySelector('link[data-cc-css]')) {
