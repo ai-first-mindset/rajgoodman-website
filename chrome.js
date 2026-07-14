@@ -75,10 +75,10 @@
       '<a href="https://goodmanlantern.com/" target="_blank" rel="noopener">Goodman Lantern</a><a href="https://aifirstmindset.ai/" target="_blank" rel="noopener">AI-First Mindset</a>' +
     '</div>' +
     '<div class="fcol"><h4>Quick Links</h4>' +
-      '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/authors/">Authors</a><a href="/testimonials/">Testimonials</a>' +
+      '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/authors/">Authors</a><a href="/testimonials/">Testimonials</a><a href="/site-map/">Sitemap</a>' +
     '</div>' +
   '</div>' +
-  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM - ALL RIGHTS RESERVED</span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
+  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM - ALL RIGHTS RESERVED | <a href="/terms-and-conditions/">LEGAL</a></span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
   '</div></footer>';
 
   document.body.insertAdjacentHTML('afterbegin', nav);
