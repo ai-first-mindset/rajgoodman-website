@@ -39,12 +39,12 @@ Everything below is already done and verified:
 
 ## 2. Open items BEFORE the switch (owner in bold)
 
-1. **Editorial: 5 unpublished posts** (**Areeb/Raj**). On 14 July, 12 migrated
-   posts were published to match the live site; shortly afterwards someone
-   with editor access unpublished 5 of them (including 2 that were live on
-   WordPress since June). Decision needed per post: publish, or retire.
-   Any post that stays retired needs a 301 redirect added before cutover so
-   its Google-indexed URL doesn't break (10-minute job once decided).
+1. ~~Editorial: unpublished posts~~ **RESOLVED 14 July.** Areeb retired 5
+   posts as part of his content review; the site goes live with the 16
+   approved posts. All 5 retired URLs (and the now-empty AI-First Mindset
+   category) 301-redirect to /blog/, so nothing indexed by Google breaks.
+   Note for later: if any of these posts is ever re-published, its redirect
+   must be removed from vercel.json at the same time.
 2. **Admin login emails - custom SMTP** (**David**). The editor's invite /
    password-reset emails currently use Supabase's built-in sender, which is
    rate-limited. Before the team relies on it, connect a proper sender

@@ -3,6 +3,12 @@
   "trailingSlash": true,
   "regions": ["sin1"],
   "redirects": [
+    { "source": "/blog/how-ai-is-transforming-future-of-technology/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/ai-sales-automation/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/ai-in-telecom-industry/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/next-interface-shift-ai-native-devices-multimodal-agents/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/why-ai-first-leadership-fails-industrial-businesses/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/category/ai-first-mindset/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/author/:slug/", "destination": "/authors/", "statusCode": 301 },
     { "source": "/blog/page/:n/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/category/:slug/page/:n/", "destination": "/blog/category/:slug/", "statusCode": 301 },
