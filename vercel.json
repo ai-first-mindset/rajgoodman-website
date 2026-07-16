@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": true,
   "regions": ["sin1"],
+  "git": { "deploymentEnabled": { "main": false } },
   "redirects": [
     { "source": "/blog/how-ai-is-transforming-future-of-technology/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-sales-automation/", "destination": "/blog/", "statusCode": 301 },

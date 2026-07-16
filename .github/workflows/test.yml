@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   pull_request:
 
+# Serialize runs per ref so production deploys can never land out of order.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      deploy_sha: ${{ steps.sha.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,3 +56,27 @@ jobs:
           else
             echo "Snapshot already current."
           fi
+      - name: Record the exact commit to deploy
+        id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # Production deploy is gated on the suite: Vercel's git auto-deploy for main
+  # is off (vercel.json git.deploymentEnabled), so the ONLY path to production
+  # is this job, which needs test + coverage-snapshot to succeed. Deploys the
+  # exact SHA the coverage job left on main (includes any refreshed snapshot).
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [test, coverage-snapshot]
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: team_tWwsaxggw510huVDYZY7dncV
+      VERCEL_PROJECT_ID: prj_DySkDGxNVCU0CvLQ4xhTOLKSfUJh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.coverage-snapshot.outputs.deploy_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Deploy to Vercel production
+        run: npx vercel@latest deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
