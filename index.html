@@ -354,6 +354,17 @@ footer a:hover{color:var(--yellow)}
   .work-quote,.work-form{padding:30px 22px}
   .readout,.reach .big{flex-wrap:wrap}.readout .cell{min-width:50%}
 }
+/* below ~560px the full wordmark + CTA + burger exceed the nav width and the
+   CTA paints over the overflowing wordmark - go icon-only brand + compact CTA */
+@media(max-width:560px){
+  .brand .wm{display:none}
+  .nav-cta .btn{font-size:.8rem;padding:.7em 1em}
+  .eyebrow{white-space:normal}  /* nowrap chip is wider than a phone and zooms the page out */
+  /* press-mark readout cells: nowrap wordmarks at full size overflow a 2-up row */
+  .readout .cell{padding:14px 12px}
+  .pm-serif{font-size:1.14rem}.pm-base{font-size:.95rem}.pm-bw{font-size:1rem}.pm-rev{font-size:.82rem}
+  .shead .kick,.trust .lab{white-space:normal}  /* long section labels overflow a phone */
+}
 </style>
 <meta property="article:modified_time" content="2026-02-04T13:25:23+00:00" />
 </head>
