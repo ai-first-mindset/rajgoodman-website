@@ -351,6 +351,8 @@ footer .fcol a:hover{color:var(--yellow)}
   .mnav.open{display:block;position:fixed;top:74px;left:0;right:0;background:var(--bg-2);border-bottom:1px solid var(--line);padding:16px 34px;z-index:89;max-height:calc(100vh - 74px);overflow:auto}
   .mnav.open a{display:block;padding:.7em 0;font-family:var(--mono);font-weight:600;border-bottom:1px solid var(--line)}
   .mnav.open .grp{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-l);padding-top:1em;border:0}
+  /* hero text must not wait for JS on mobile - it's the LCP element (see 5eae787); desktop keeps the reveal fade */
+  .phero .eyebrow,.phero h1,.phero .lede{opacity:1;transform:none;transition:none}
 }
 /* ===== companies / ventures ===== */
 .co-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
