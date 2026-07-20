@@ -6,6 +6,8 @@
   "redirects": [
     { "source": "/\\*", "destination": "/", "statusCode": 301 },
     { "source": "/\\*/", "destination": "/", "statusCode": 301 },
+    { "source": "/%2A", "destination": "/", "statusCode": 301 },
+    { "source": "/%2A/", "destination": "/", "statusCode": 301 },
     { "source": "/blog/how-ai-is-transforming-future-of-technology/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-sales-automation/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-in-telecom-industry/", "destination": "/blog/", "statusCode": 301 },
