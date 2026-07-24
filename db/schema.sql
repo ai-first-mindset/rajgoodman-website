@@ -94,3 +94,49 @@ alter table posts enable row level security;
 drop policy if exists posts_public_read on posts;
 create policy posts_public_read on posts for select
   using (status = 'published');
+
+-- ---------------------------------------------------------------------------
+-- Pages: the block-based page CMS. Mirrors posts for SEO/status/slug handling,
+-- but content is an ordered array of typed blocks (see api/_blocks.js) instead
+-- of a single body_html. Rendered by api/render-page.js at the page's own
+-- clean URL (e.g. /about/); each migrated page adds a vercel.json rewrite and
+-- retires its static .html in the same commit.
+-- ---------------------------------------------------------------------------
+create table if not exists pages (
+  id                  uuid primary key default gen_random_uuid(),
+  slug                text unique not null,          -- interior path, e.g. 'about' → /about/
+  title               text not null,                 -- on-page H1 / internal name
+  seo_title           text,                          -- <title>; falls back to title
+  meta_description    text,
+  excerpt             text,
+  blocks              jsonb not null default '[]',   -- ordered array of typed block objects
+  featured_image      text,                          -- og:image URL
+  featured_image_alt  text,
+  canonical_url       text,                          -- override; defaults to self
+  robots              text not null default 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  og_title            text,                          -- social override; falls back to seo_title/title
+  og_description      text,                          -- social override; falls back to meta_description/excerpt
+  og_image            text,                          -- social override; falls back to featured_image
+  json_ld             jsonb,                         -- optional per-page custom schema graph (merged into <head>)
+  template            text not null default 'interior' check (template in ('interior')),
+  nav_label           text,                          -- reserved for data-driven nav (Phase 2)
+  prev_slugs          text[] not null default '{}',  -- former slugs → 301 redirect to current
+  status              text not null default 'draft' check (status in ('draft','published')),
+  published_at        timestamptz,                   -- set once on first publish
+  modified_at         timestamptz not null default now(),
+  created_at          timestamptz not null default now()
+);
+
+create index if not exists pages_status_pub_idx on pages (status, published_at desc);
+create unique index if not exists pages_slug_idx on pages (slug);
+create index if not exists pages_prev_slugs_idx on pages using gin (prev_slugs);
+
+-- reuse the shared set_modified_at() trigger function defined above
+drop trigger if exists pages_set_modified on pages;
+create trigger pages_set_modified before update on pages
+  for each row execute function set_modified_at();
+
+alter table pages enable row level security;
+drop policy if exists pages_public_read on pages;
+create policy pages_public_read on pages for select
+  using (status = 'published');

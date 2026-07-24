@@ -74,7 +74,7 @@ function showApp(){
   showDashboard();
 }
 function setActiveMenu(id){ document.querySelectorAll('#adminmenu .item').forEach(a=>a.classList.toggle('current', a.id===id)); }
-function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView','coverageView'].forEach(v=>$(v).classList.add('hide')); }
+function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView','coverageView','pagesListView','pageBuilderView'].forEach(v=>$(v).classList.add('hide')); }
 async function showDashboard(){
   hideViews();
   $('dashboardView').classList.remove('hide'); setActiveMenu('navDashboard');
@@ -141,6 +141,113 @@ async function loadList() {
   renderCats();
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ---- Pages CMS (block page-builder) ----
+let PAGE_CUR = null, PAGE_BLOCKS = [], pageSlugEdited = false;
+
+async function loadPagesList(){
+  hideViews(); $('pagesListView').classList.remove('hide'); setActiveMenu('navPages');
+  const r = await api('/api/admin/pages/');
+  const tb = $('pagesTable').querySelector('tbody'); tb.innerHTML='';
+  if(!r.ok){ const m=$('pagesEmptyMsg'); m.textContent=loadFailMsg(r); m.classList.remove('hide'); return; }
+  const pages = (r.body && r.body.pages) || [];
+  $('pagesEmptyMsg').textContent='No pages yet — create one.';
+  $('pagesEmptyMsg').classList.toggle('hide', pages.length>0);
+  pages.forEach(p=>{
+    const tr=document.createElement('tr');
+    const mod=p.modified_at ? new Date(p.modified_at).toLocaleDateString() : '';
+    tr.innerHTML = `<td><a class="link" href="#" data-id="${p.id}">${esc(p.title)}</a></td>
+      <td class="muted">/${esc(p.slug)}/</td>
+      <td><span class="pill ${p.status}">${p.status}</span></td>
+      <td class="muted">${mod}</td>
+      <td><button data-edit="${p.id}">Edit</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('[data-edit],[data-id]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); openPageBuilder(el.getAttribute('data-edit')||el.getAttribute('data-id')); }));
+}
+
+async function openPageBuilder(id){
+  hideViews(); $('pageBuilderView').classList.remove('hide'); setActiveMenu('navPages');
+  pageSlugEdited = Boolean(id);
+  if(id){
+    const r=await api('/api/admin/pages/?id='+encodeURIComponent(id));
+    PAGE_CUR = (r.body && r.body.pages) || null;
+    if(!PAGE_CUR){ toast('Could not load page'); loadPagesList(); return; }
+  } else {
+    PAGE_CUR = { status:'draft', robots:DEFAULT_ROBOTS };
+  }
+  fillPage(PAGE_CUR);
+}
+
+function fillPage(p){
+  $('pg_title').value = p.title || '';
+  $('pg_slug').value = p.slug || '';
+  $('pg_seo_title').value = p.seo_title || '';
+  $('pg_meta_description').value = p.meta_description || '';
+  $('pg_canonical_url').value = p.canonical_url || '';
+  $('pg_noindex').checked = /noindex/i.test(p.robots || '');
+  PAGE_BLOCKS = Array.isArray(p.blocks) ? p.blocks.slice() : [];
+  populateAddType();
+  renderPageBlocks();
+  const isPub = p.status==='published';
+  $('pageStatusPill').textContent = p.id ? (isPub?'published':'draft') : 'new';
+  $('pageStatusPill').className = 'pill '+(p.id?p.status:'');
+  $('pageUnpubBtn').classList.toggle('hide', !isPub);
+  $('pageDeleteBtn').classList.toggle('hide', !p.id);
+  $('pageSaveBtn').textContent = isPub ? 'Save' : 'Save draft';
+  $('pgSlugPreview').textContent = p.slug ? '→ /'+p.slug+'/' : '';
+}
+
+function populateAddType(){
+  const sel=$('pgAddType'); if(sel.options.length) return;
+  Object.keys(BLOCKS_UI.TYPES).forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=BLOCKS_UI.label(t); sel.appendChild(o); });
+}
+
+function renderPageBlocks(){
+  const box=$('pgBlocks'); box.innerHTML='';
+  $('pgBlocksEmpty').classList.toggle('hide', PAGE_BLOCKS.length>0);
+  PAGE_BLOCKS.forEach((b,i)=>{
+    const card=document.createElement('div'); card.className='card'; card.style.margin='0 0 12px';
+    const head=document.createElement('div'); head.className='media-toolbar'; head.style.marginBottom='8px';
+    head.innerHTML='<div class="left"><strong>'+esc(BLOCKS_UI.label(b.type))+'</strong></div>';
+    const ctrls=document.createElement('div'); ctrls.className='actions';
+    const up=document.createElement('button'); up.type='button'; up.textContent='↑'; up.title='Move up';
+    up.addEventListener('click',()=>{ if(i>0){ const t=PAGE_BLOCKS[i-1]; PAGE_BLOCKS[i-1]=b; PAGE_BLOCKS[i]=t; renderPageBlocks(); } });
+    const dn=document.createElement('button'); dn.type='button'; dn.textContent='↓'; dn.title='Move down';
+    dn.addEventListener('click',()=>{ if(i<PAGE_BLOCKS.length-1){ const t=PAGE_BLOCKS[i+1]; PAGE_BLOCKS[i+1]=b; PAGE_BLOCKS[i]=t; renderPageBlocks(); } });
+    const del=document.createElement('button'); del.type='button'; del.className='danger'; del.textContent='Delete';
+    del.addEventListener('click',()=>{ if(confirm('Remove this block?')){ PAGE_BLOCKS.splice(i,1); renderPageBlocks(); } });
+    ctrls.appendChild(up); ctrls.appendChild(dn); ctrls.appendChild(del);
+    head.appendChild(ctrls);
+    card.appendChild(head);
+    card.appendChild(BLOCKS_UI.buildForm(b));
+    box.appendChild(card);
+  });
+}
+
+function collectPage(){
+  return {
+    slug: slugify($('pg_slug').value),
+    title: $('pg_title').value.trim(),
+    seo_title: $('pg_seo_title').value.trim(),
+    meta_description: $('pg_meta_description').value.trim(),
+    canonical_url: $('pg_canonical_url').value.trim(),
+    robots: $('pg_noindex').checked ? 'noindex, follow' : DEFAULT_ROBOTS,
+    blocks: PAGE_BLOCKS,
+    status: (PAGE_CUR && PAGE_CUR.status) || 'draft',
+  };
+}
+
+async function savePage(status){
+  const f=collectPage(); f.status=status;
+  if(!f.title || !f.slug){ toast('Title and slug are required'); return; }
+  const hasId = PAGE_CUR && PAGE_CUR.id;
+  const r = hasId
+    ? await api('/api/admin/pages/', { method:'PATCH', body: JSON.stringify({ id:PAGE_CUR.id, ...f }) })
+    : await api('/api/admin/pages/', { method:'POST', body: JSON.stringify(f) });
+  if(r.ok && r.body && r.body.ok){ PAGE_CUR = r.body.page; fillPage(PAGE_CUR); toast(status==='published'?'Published':'Saved'); }
+  else { toast('Save failed'+((r.body&&r.body.error)?': '+r.body.error:'')); }
+}
 
 // Build (or rebuild) the editor with the post body baked in at construction —
 // ProseMirror renders initial content reliably on mount, whereas setContent run
@@ -782,6 +889,23 @@ $('deleteBtn').addEventListener('click', async ()=>{
   if(!confirm('Delete this post permanently?')) return;
   const r = await api('/api/admin/posts/', { method:'DELETE', body:JSON.stringify({id:current.id}) });
   if(r.ok){ toast('Deleted'); loadList(); } else { toast('Delete failed'); }
+});
+// Pages CMS (block page-builder)
+$('navPages').addEventListener('click', loadPagesList);
+$('newPageBtn').addEventListener('click', ()=>openPageBuilder(null));
+$('pageBackBtn').addEventListener('click', loadPagesList);
+$('pg_title').addEventListener('input', ()=>{ if(!pageSlugEdited){ $('pg_slug').value=slugify($('pg_title').value); $('pgSlugPreview').textContent=$('pg_slug').value?'→ /'+$('pg_slug').value+'/':''; } });
+$('pg_slug').addEventListener('input', ()=>{ pageSlugEdited=true; $('pg_slug').value=slugify($('pg_slug').value); $('pgSlugPreview').textContent=$('pg_slug').value?'→ /'+$('pg_slug').value+'/':''; });
+$('pgAddBtn').addEventListener('click', ()=>{ PAGE_BLOCKS.push(BLOCKS_UI.make($('pgAddType').value)); renderPageBlocks(); });
+$('pageSaveBtn').addEventListener('click', ()=>savePage(PAGE_CUR && PAGE_CUR.status==='published' ? 'published':'draft'));
+$('pagePublishBtn').addEventListener('click', ()=>savePage('published'));
+$('pageUnpubBtn').addEventListener('click', ()=>savePage('draft'));
+$('pagePreviewBtn').addEventListener('click', ()=>{ const s=slugify($('pg_slug').value); if(s) window.open('/'+s+'/','_blank'); });
+$('pageDeleteBtn').addEventListener('click', async ()=>{
+  if(!PAGE_CUR||!PAGE_CUR.id) return;
+  if(!confirm('Delete this page permanently?')) return;
+  const r=await api('/api/admin/pages/', { method:'DELETE', body:JSON.stringify({id:PAGE_CUR.id}) });
+  if(r.ok){ toast('Deleted'); loadPagesList(); } else { toast('Delete failed'); }
 });
 boot();
 }
