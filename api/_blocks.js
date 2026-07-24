@@ -85,6 +85,45 @@ function renderRaw(b) {
   return b.html || '';
 }
 
+// ---- Layout + bare content elements (the container/columns/element hierarchy) ----
+// Which fields on a block hold nested child blocks (Puck slots). Shared with the
+// editor adapter so nesting round-trips generically.
+export const SLOT_FIELDS = { columns: ['col0', 'col1', 'col2', 'col3'] };
+
+// Columns: a self-contained section whose wrap holds a responsive N-column grid;
+// each column is an array of child blocks rendered recursively.
+function renderColumns(b) {
+  const n = Math.min(Math.max(parseInt(b.cols, 10) || 2, 2), 4);
+  const cells = [];
+  for (let i = 0; i < n; i += 1) {
+    cells.push(`<div class="pb-col">${renderBlocks(b['col' + i])}</div>`);
+  }
+  return `<section class="sec tight">
+  <div class="wrap">
+    <div class="pb-cols pb-cols-${n}" data-reveal>
+      ${cells.join('\n      ')}
+    </div>
+  </div>
+</section>`;
+}
+
+// Bare elements: no <section> wrapper, meant to sit inside a column/container.
+function renderElHeading(b) {
+  const tag = String(b.level) === '3' ? 'h3' : 'h2';
+  return `<${tag} data-reveal>${esc(b.text)}</${tag}>`;
+}
+function renderElText(b) {
+  return `<div class="prose" data-reveal>${b.html || ''}</div>`;
+}
+function renderElButton(b) {
+  const cls = b.style === 'line' ? 'btn btn-line' : 'btn btn-y';
+  return `<div data-reveal><a href="${esc(b.url || '#')}" class="${cls}">${esc(b.label)} <span class="ar">&rarr;</span></a></div>`;
+}
+function renderElImage(b) {
+  if (!b.src) return '';
+  return `<div data-reveal><img src="${esc(b.src)}" alt="${esc(b.alt || '')}" loading="lazy" style="width:100%;height:auto;border-radius:8px" /></div>`;
+}
+
 // ---------------------------------------------------------------------------
 // Block registry: one entry per type co-locating label, editable fields,
 // defaults, the autonumber flag, and the render fn. Single source of truth —
@@ -116,6 +155,29 @@ const BLOCKS = {
   'raw-html': {
     label: 'Raw HTML', fields: ['html'], defaults: { html: '' },
     render: (b) => renderRaw(b),
+  },
+  // Layout
+  columns: {
+    label: 'Columns', fields: ['cols', 'col0', 'col1', 'col2', 'col3'],
+    defaults: { cols: 2, col0: [], col1: [], col2: [], col3: [] },
+    render: (b) => renderColumns(b),
+  },
+  // Bare content elements (for use inside columns/containers)
+  'el-heading': {
+    label: 'Heading', fields: ['text', 'level'], defaults: { text: '', level: 2 },
+    render: (b) => renderElHeading(b),
+  },
+  'el-text': {
+    label: 'Text', fields: ['html'], defaults: { html: '' },
+    render: (b) => renderElText(b),
+  },
+  'el-button': {
+    label: 'Button', fields: ['label', 'url', 'style'], defaults: { label: '', url: '', style: 'y' },
+    render: (b) => renderElButton(b),
+  },
+  'el-image': {
+    label: 'Image', fields: ['src', 'alt'], defaults: { src: '', alt: '' },
+    render: (b) => renderElImage(b),
   },
 };
 

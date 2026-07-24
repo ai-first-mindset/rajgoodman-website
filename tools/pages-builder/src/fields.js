@@ -41,6 +41,39 @@ export const PUCK_FIELDS = {
   'raw-html': {
     html: { type: 'textarea', label: 'HTML (verbatim)' },
   },
+  // --- Layout ---
+  columns: {
+    cols: { type: 'select', label: 'Columns', options: [{ label: '2 columns', value: 2 }, { label: '3 columns', value: 3 }, { label: '4 columns', value: 4 }] },
+    col0: { type: 'slot' },
+    col1: { type: 'slot' },
+    col2: { type: 'slot' },
+    col3: { type: 'slot' },
+  },
+  // --- Bare content elements (drop inside columns) ---
+  'el-heading': {
+    text: { type: 'text', label: 'Heading text' },
+    level: { type: 'select', label: 'Level', options: [{ label: 'H2', value: 2 }, { label: 'H3', value: 3 }] },
+  },
+  'el-text': {
+    html: { type: 'textarea', label: 'Text (HTML)' },
+  },
+  'el-button': {
+    label: { type: 'text', label: 'Button label' },
+    url: { type: 'text', label: 'Button URL' },
+    style: { type: 'select', label: 'Style', options: [{ label: 'Solid', value: 'y' }, { label: 'Outline', value: 'line' }] },
+  },
+  'el-image': {
+    src: { type: 'text', label: 'Image URL' },
+    alt: { type: 'text', label: 'Alt text' },
+  },
+};
+
+// Inserter categories (Avada-style element library grouping).
+export const CATEGORIES = {
+  Layout: { title: 'Layout', components: ['columns'] },
+  Content: { title: 'Content', components: ['section-heading', 'el-heading', 'rich-text', 'el-text', 'el-button'] },
+  Media: { title: 'Media', components: ['el-image', 'raw-html'] },
+  Marketing: { title: 'Marketing', components: ['cta', 'faq'] },
 };
 
 export const LABELS = {
@@ -49,6 +82,11 @@ export const LABELS = {
   cta: 'Call to action',
   faq: 'FAQ accordion',
   'raw-html': 'Raw HTML',
+  columns: 'Columns',
+  'el-heading': 'Heading',
+  'el-text': 'Text',
+  'el-button': 'Button',
+  'el-image': 'Image',
 };
 
 // Defaults for newly-inserted blocks. Seeded with real placeholder content so a
@@ -60,4 +98,9 @@ export const DEFAULT_PROPS = {
   cta: { idx: '', kicker: 'Get in touch', heading: 'Ready to work with Raj?', text: 'Add a short supporting line here.', label: 'Contact', url: '/#contact' },
   faq: { idx: '', kicker: 'FAQs', heading: 'Questions, answered', items: [{ question: 'Your question here?', answer_html: 'Your answer here.', open: true }] },
   'raw-html': { html: '<!-- Paste custom HTML here -->' },
+  columns: { cols: 2, col0: [], col1: [], col2: [], col3: [] },
+  'el-heading': { text: 'New heading', level: 2 },
+  'el-text': { html: '<p>Start writing…</p>' },
+  'el-button': { label: 'Learn more', url: '/#contact', style: 'y' },
+  'el-image': { src: '', alt: '' },
 };

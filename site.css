@@ -301,6 +301,14 @@ form input::placeholder,form textarea::placeholder{color:var(--tx-40)}
 form input:focus,form select:focus,form textarea:focus{outline:0;border-color:var(--blue-l);box-shadow:0 0 0 3px rgba(72,167,203,.16)}
 form textarea{resize:vertical;min-height:104px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* Page-builder columns (Container/Columns layout blocks) */
+.pb-cols{display:grid;gap:34px}
+.pb-cols-2{grid-template-columns:1fr 1fr}
+.pb-cols-3{grid-template-columns:repeat(3,1fr)}
+.pb-cols-4{grid-template-columns:repeat(4,1fr)}
+.pb-col{min-width:0}
+.pb-col>*+*{margin-top:20px}
+@media(max-width:820px){.pb-cols-2,.pb-cols-3,.pb-cols-4{grid-template-columns:1fr;gap:24px}}
 
 /* ===== footer ===== */
 footer{border-top:1px solid var(--line);padding:64px 0 30px}
