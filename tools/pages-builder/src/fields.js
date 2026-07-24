@@ -66,14 +66,55 @@ export const PUCK_FIELDS = {
     src: { type: 'text', label: 'Image URL' },
     alt: { type: 'text', label: 'Alt text' },
   },
+  'el-split': {
+    src: { type: 'text', label: 'Image URL' },
+    alt: { type: 'text', label: 'Alt text' },
+    heading: { type: 'text', label: 'Heading' },
+    html: { type: 'textarea', label: 'Text (HTML)' },
+    flip: { type: 'radio', label: 'Image side', options: [{ label: 'Left', value: false }, { label: 'Right', value: true }] },
+  },
+  'el-stats': {
+    stats: {
+      type: 'array', label: 'Stats',
+      arrayFields: { value: { type: 'text', label: 'Number' }, suffix: { type: 'text', label: 'Suffix' }, label: { type: 'text', label: 'Label' } },
+      defaultItemProps: { value: '100', suffix: '+', label: 'Metric' },
+      getItemSummary: (i) => (i && i.label) || 'Stat',
+    },
+  },
+  'el-testimonial': {
+    quote: { type: 'textarea', label: 'Quote' },
+    name: { type: 'text', label: 'Name' },
+    role: { type: 'text', label: 'Role' },
+    org: { type: 'text', label: 'Organisation' },
+  },
+  'el-logos': {
+    logos: {
+      type: 'array', label: 'Logos',
+      arrayFields: { src: { type: 'text', label: 'Image URL' }, alt: { type: 'text', label: 'Alt text' } },
+      defaultItemProps: { src: '', alt: '' },
+      getItemSummary: (i) => (i && i.alt) || 'Logo',
+    },
+  },
+  'el-features': {
+    items: {
+      type: 'array', label: 'Cards',
+      arrayFields: { title: { type: 'text', label: 'Title' }, text: { type: 'textarea', label: 'Text' } },
+      defaultItemProps: { title: 'Feature', text: 'Describe it here.' },
+      getItemSummary: (i) => (i && i.title) || 'Card',
+    },
+  },
+  'el-spacer': {
+    size: { type: 'select', label: 'Size', options: [{ label: 'Small', value: 'small' }, { label: 'Medium', value: 'medium' }, { label: 'Large', value: 'large' }] },
+    line: { type: 'radio', label: 'Divider line', options: [{ label: 'No', value: false }, { label: 'Yes', value: true }] },
+  },
 };
 
 // Inserter categories (Avada-style element library grouping).
 export const CATEGORIES = {
-  Layout: { title: 'Layout', components: ['columns'] },
+  Layout: { title: 'Layout', components: ['columns', 'el-spacer'] },
   Content: { title: 'Content', components: ['section-heading', 'el-heading', 'rich-text', 'el-text', 'el-button'] },
-  Media: { title: 'Media', components: ['el-image', 'raw-html'] },
-  Marketing: { title: 'Marketing', components: ['cta', 'faq'] },
+  Media: { title: 'Media', components: ['el-image', 'el-split', 'el-logos', 'raw-html'] },
+  Marketing: { title: 'Marketing', components: ['cta', 'faq', 'el-testimonial', 'el-stats', 'el-features'] },
 };
 
 export const LABELS = {
@@ -87,6 +128,12 @@ export const LABELS = {
   'el-text': 'Text',
   'el-button': 'Button',
   'el-image': 'Image',
+  'el-split': 'Image + Text',
+  'el-stats': 'Stats',
+  'el-testimonial': 'Testimonial',
+  'el-logos': 'Logo strip',
+  'el-features': 'Feature cards',
+  'el-spacer': 'Spacer / Divider',
 };
 
 // Defaults for newly-inserted blocks. Seeded with real placeholder content so a
@@ -103,4 +150,10 @@ export const DEFAULT_PROPS = {
   'el-text': { html: '<p>Start writing…</p>' },
   'el-button': { label: 'Learn more', url: '/#contact', style: 'y' },
   'el-image': { src: '', alt: '' },
+  'el-split': { src: '', alt: '', heading: 'A compelling heading', html: '<p>Supporting copy goes here.</p>', flip: false },
+  'el-stats': { stats: [{ value: '300', suffix: '+', label: 'Workshops delivered' }, { value: '50', suffix: '+', label: 'Countries reached' }, { value: '20', suffix: 'K+', label: 'Leaders trained' }] },
+  'el-testimonial': { quote: 'A genuinely great session — practical and immediately useful.', name: 'Client name', role: 'Title', org: 'EO' },
+  'el-logos': { logos: [{ src: '', alt: 'Logo 1' }, { src: '', alt: 'Logo 2' }, { src: '', alt: 'Logo 3' }] },
+  'el-features': { items: [{ title: 'First feature', text: 'Describe the feature here.' }, { title: 'Second feature', text: 'Describe the feature here.' }, { title: 'Third feature', text: 'Describe the feature here.' }] },
+  'el-spacer': { size: 'medium', line: false },
 };

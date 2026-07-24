@@ -21,7 +21,14 @@ function ensureIframeStyles(el) {
   const inject = () => {
     const iframe = el.querySelector('iframe');
     const doc = iframe && iframe.contentDocument;
-    if (doc && doc.head && !doc.getElementById('pb-site-css')) {
+    if (!doc) return;
+    // Counters (.big [data-count]) animate from 0 via common.js on the live page,
+    // which doesn't run here — show their target value so the preview isn't all 0s.
+    if (doc.body) doc.querySelectorAll('[data-count]').forEach((s) => {
+      const t = s.getAttribute('data-count');
+      if (t && s.textContent !== t) s.textContent = t;
+    });
+    if (doc.head && !doc.getElementById('pb-site-css')) {
       const link = doc.createElement('link');
       link.id = 'pb-site-css';
       link.rel = 'stylesheet';

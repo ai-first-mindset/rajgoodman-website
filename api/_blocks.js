@@ -124,6 +124,48 @@ function renderElImage(b) {
   return `<div data-reveal><img src="${esc(b.src)}" alt="${esc(b.alt || '')}" loading="lazy" style="width:100%;height:auto;border-radius:8px" /></div>`;
 }
 
+// Image + Text split (media on one side, heading + prose on the other).
+function renderElSplit(b) {
+  const media = b.src ? `<div class="pb-split-media"><img src="${esc(b.src)}" alt="${esc(b.alt || '')}" loading="lazy" /></div>` : '';
+  const heading = b.heading ? `<h3>${esc(b.heading)}</h3>` : '';
+  const body = `<div class="pb-split-body">${heading}<div class="prose">${b.html || ''}</div></div>`;
+  return `<div class="pb-split${b.flip ? ' pb-split-flip' : ''}" data-reveal>${media}${body}</div>`;
+}
+
+// Animated stat/counter row (reuses the site .big counters + common.js initCounters).
+function renderElStats(b) {
+  const items = Array.isArray(b.stats) ? b.stats : [];
+  const cells = items.map((s) => `<div class="cell"><div class="n"><span data-count="${esc(s && s.value)}">0</span>${esc((s && s.suffix) || '')}</div><div class="l">${esc(s && s.label)}</div></div>`).join('');
+  return `<div class="big" data-reveal>${cells}</div>`;
+}
+
+// Single testimonial card.
+function renderElTestimonial(b) {
+  const org = b.org ? `<span>${esc(b.org)}</span>` : '';
+  const role = b.role ? `<span>${esc(b.role)}</span>` : '';
+  return `<div class="pb-testimonial" data-reveal><div class="top"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>${org}</div><p>${esc(b.quote)}</p><div class="who">${esc(b.name)}${role}</div></div>`;
+}
+
+// Logo strip (reuses the site .logowall grid, image cells).
+function renderElLogos(b) {
+  const items = Array.isArray(b.logos) ? b.logos : [];
+  const cells = items.map((l) => (l && l.src ? `<div class="cell"><img src="${esc(l.src)}" alt="${esc(l.alt || '')}" loading="lazy" /></div>` : '')).join('');
+  return `<div class="logowall" data-reveal>${cells}</div>`;
+}
+
+// Feature cards (reuses the site .feat-grid / .feat card).
+function renderElFeatures(b) {
+  const items = Array.isArray(b.items) ? b.items : [];
+  const cards = items.map((it, i) => `<article class="feat" data-reveal${i ? ` data-delay="${i * 80}"` : ''}><span class="ct tl"></span><span class="ct br"></span><h3>${esc(it && it.title)}</h3><p>${esc(it && it.text)}</p></article>`).join('');
+  return `<div class="feat-grid" data-reveal>${cards}</div>`;
+}
+
+// Spacer / optional divider line.
+function renderElSpacer(b) {
+  const h = b.size === 'large' ? 80 : b.size === 'small' ? 24 : 48;
+  return b.line ? `<hr class="pb-divider" style="margin:${h}px 0" />` : `<div style="height:${h}px"></div>`;
+}
+
 // ---------------------------------------------------------------------------
 // Block registry: one entry per type co-locating label, editable fields,
 // defaults, the autonumber flag, and the render fn. Single source of truth —
@@ -178,6 +220,33 @@ const BLOCKS = {
   'el-image': {
     label: 'Image', fields: ['src', 'alt'], defaults: { src: '', alt: '' },
     render: (b) => renderElImage(b),
+  },
+  'el-split': {
+    label: 'Image + Text', fields: ['src', 'alt', 'heading', 'html', 'flip'],
+    defaults: { src: '', alt: '', heading: '', html: '', flip: false },
+    render: (b) => renderElSplit(b),
+  },
+  'el-stats': {
+    label: 'Stats', fields: ['stats'], defaults: { stats: [] },
+    render: (b) => renderElStats(b),
+  },
+  'el-testimonial': {
+    label: 'Testimonial', fields: ['quote', 'name', 'role', 'org'],
+    defaults: { quote: '', name: '', role: '', org: '' },
+    render: (b) => renderElTestimonial(b),
+  },
+  'el-logos': {
+    label: 'Logo strip', fields: ['logos'], defaults: { logos: [] },
+    render: (b) => renderElLogos(b),
+  },
+  'el-features': {
+    label: 'Feature cards', fields: ['items'], defaults: { items: [] },
+    render: (b) => renderElFeatures(b),
+  },
+  'el-spacer': {
+    label: 'Spacer / Divider', fields: ['size', 'line'],
+    defaults: { size: 'medium', line: false },
+    render: (b) => renderElSpacer(b),
   },
 };
 
