@@ -21,6 +21,7 @@
     { "source": "/wp-content/uploads/:path*", "destination": "https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/wp-content/uploads/:path*", "statusCode": 301 }
   ],
   "rewrites": [
+    { "source": "/about/", "destination": "/api/render-page/?slug=about" },
     { "source": "/blog/", "destination": "/api/blog-index/" },
     { "source": "/feed/", "destination": "/api/feed/" },
     { "source": "/blog/feed/", "destination": "/api/feed/" },
