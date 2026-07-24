@@ -187,8 +187,7 @@ function fillPage(p){
   $('pg_canonical_url').value = p.canonical_url || '';
   $('pg_noindex').checked = /noindex/i.test(p.robots || '');
   PAGE_BLOCKS = Array.isArray(p.blocks) ? p.blocks.slice() : [];
-  populateAddType();
-  renderPageBlocks();
+  remountPuck();
   const isPub = p.status==='published';
   $('pageStatusPill').textContent = p.id ? (isPub?'published':'draft') : 'new';
   $('pageStatusPill').className = 'pill '+(p.id?p.status:'');
@@ -198,31 +197,15 @@ function fillPage(p){
   $('pgSlugPreview').textContent = p.slug ? '→ /'+p.slug+'/' : '';
 }
 
-function populateAddType(){
-  const sel=$('pgAddType'); if(sel.options.length) return;
-  Object.keys(BLOCKS_UI.TYPES).forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=BLOCKS_UI.label(t); sel.appendChild(o); });
-}
-
-function renderPageBlocks(){
-  const box=$('pgBlocks'); box.innerHTML='';
-  $('pgBlocksEmpty').classList.toggle('hide', PAGE_BLOCKS.length>0);
-  PAGE_BLOCKS.forEach((b,i)=>{
-    const card=document.createElement('div'); card.className='card'; card.style.margin='0 0 12px';
-    const head=document.createElement('div'); head.className='media-toolbar'; head.style.marginBottom='8px';
-    head.innerHTML='<div class="left"><strong>'+esc(BLOCKS_UI.label(b.type))+'</strong></div>';
-    const ctrls=document.createElement('div'); ctrls.className='actions';
-    const up=document.createElement('button'); up.type='button'; up.textContent='↑'; up.title='Move up';
-    up.addEventListener('click',()=>{ if(i>0){ const t=PAGE_BLOCKS[i-1]; PAGE_BLOCKS[i-1]=b; PAGE_BLOCKS[i]=t; renderPageBlocks(); } });
-    const dn=document.createElement('button'); dn.type='button'; dn.textContent='↓'; dn.title='Move down';
-    dn.addEventListener('click',()=>{ if(i<PAGE_BLOCKS.length-1){ const t=PAGE_BLOCKS[i+1]; PAGE_BLOCKS[i+1]=b; PAGE_BLOCKS[i]=t; renderPageBlocks(); } });
-    const del=document.createElement('button'); del.type='button'; del.className='danger'; del.textContent='Delete';
-    del.addEventListener('click',()=>{ if(confirm('Remove this block?')){ PAGE_BLOCKS.splice(i,1); renderPageBlocks(); } });
-    ctrls.appendChild(up); ctrls.appendChild(dn); ctrls.appendChild(del);
-    head.appendChild(ctrls);
-    card.appendChild(head);
-    card.appendChild(BLOCKS_UI.buildForm(b));
-    box.appendChild(card);
-  });
+// Mount (or re-mount) the Puck visual editor into #pgPuck with the current
+// page's blocks. onChange keeps PAGE_BLOCKS current so the existing collectPage/
+// savePage persistence is reused unchanged; Puck's Publish → savePage('published').
+function remountPuck(){
+  if(!window.PagesBuilder){ toast('Editor failed to load — reload the page'); return; }
+  window.PagesBuilder.unmount();
+  window.PagesBuilder.mount($('pgPuck'), PAGE_BLOCKS,
+    function(blocks){ PAGE_BLOCKS = blocks; },
+    function(){ savePage('published'); });
 }
 
 function collectPage(){
@@ -893,10 +876,9 @@ $('deleteBtn').addEventListener('click', async ()=>{
 // Pages CMS (block page-builder)
 $('navPages').addEventListener('click', loadPagesList);
 $('newPageBtn').addEventListener('click', ()=>openPageBuilder(null));
-$('pageBackBtn').addEventListener('click', loadPagesList);
+$('pageBackBtn').addEventListener('click', ()=>{ if(window.PagesBuilder) window.PagesBuilder.unmount(); loadPagesList(); });
 $('pg_title').addEventListener('input', ()=>{ if(!pageSlugEdited){ $('pg_slug').value=slugify($('pg_title').value); $('pgSlugPreview').textContent=$('pg_slug').value?'→ /'+$('pg_slug').value+'/':''; } });
 $('pg_slug').addEventListener('input', ()=>{ pageSlugEdited=true; $('pg_slug').value=slugify($('pg_slug').value); $('pgSlugPreview').textContent=$('pg_slug').value?'→ /'+$('pg_slug').value+'/':''; });
-$('pgAddBtn').addEventListener('click', ()=>{ PAGE_BLOCKS.push(BLOCKS_UI.make($('pgAddType').value)); renderPageBlocks(); });
 $('pageSaveBtn').addEventListener('click', ()=>savePage(PAGE_CUR && PAGE_CUR.status==='published' ? 'published':'draft'));
 $('pagePublishBtn').addEventListener('click', ()=>savePage('published'));
 $('pageUnpubBtn').addEventListener('click', ()=>savePage('draft'));

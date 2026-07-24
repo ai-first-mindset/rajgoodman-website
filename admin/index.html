@@ -316,11 +316,8 @@
       <label>Slug <span class="muted" id="pgSlugPreview"></span></label><input id="pg_slug" placeholder="about" />
     </div>
     <div class="card" style="margin-top:16px">
-      <div class="media-toolbar" style="margin-bottom:10px"><div class="left"><h3 style="margin:0">Content blocks</h3></div>
-        <div class="actions"><select id="pgAddType"></select><button id="pgAddBtn" type="button" class="primary">Add block</button></div>
-      </div>
-      <div id="pgBlocks"></div>
-      <p id="pgBlocksEmpty" class="muted hide">No blocks yet — add one above.</p>
+      <h3 style="margin:0 0 10px">Content blocks</h3>
+      <div id="pgPuck" style="height:80vh;border:1px solid var(--bd);border-radius:4px;overflow:hidden;background:#fff"></div>
     </div>
     <div class="card" style="margin-top:16px">
       <h3 style="margin-top:0">SEO</h3>
@@ -502,8 +499,9 @@
 
 <div id="toast" class="toast"></div>
 
+<link rel="stylesheet" href="/assets/pages-builder.bundle.css" />
 <script src="/assets/tiptap.bundle.js"></script>
-<script src="/admin/blocks-ui.js"></script>
+<script src="/assets/pages-builder.bundle.js"></script>
 <script src="/admin/admin.js"></script>
 </body>
 </html>

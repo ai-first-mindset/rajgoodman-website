@@ -1,32 +1,27 @@
-// Drift guard: the admin's block field definitions (admin/blocks-ui.js) must
-// stay a subset of the server registry (api/_blocks.js BLOCK_TYPES), since the
-// two are hand-kept in sync (no bundler). Run: node --test 'tests/**/*.test.js'
+// Drift guard: the Puck editor's field manifest (tools/pages-builder/src/fields.js)
+// must stay a subset of the server registry (api/_blocks.js BLOCK_TYPES), since the
+// editor and renderer are hand-kept in sync. fields.js is plain data (no React), so
+// it imports cleanly under node. Run: node --test 'tests/**/*.test.js'
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { BLOCK_TYPES } from '../api/_blocks.js';
+import { PUCK_FIELDS } from '../tools/pages-builder/src/fields.js';
 
-function loadBlocksUi() {
-  const src = readFileSync(new URL('../admin/blocks-ui.js', import.meta.url), 'utf8');
-  const win = {};
-  const doc = { createElement: () => ({ setAttribute() {}, appendChild() {}, addEventListener() {}, style: {} }) };
-  // eslint-disable-next-line no-new-func
-  new Function('window', 'document', src)(win, doc);
-  return win.BLOCKS_UI;
-}
-
-test('admin block types match the api registry', () => {
-  const UI = loadBlocksUi();
-  assert.ok(UI && UI.TYPES, 'BLOCKS_UI.TYPES is defined');
-  assert.deepEqual(Object.keys(UI.TYPES).sort(), Object.keys(BLOCK_TYPES).sort());
+test('Puck component types match the api registry', () => {
+  assert.deepEqual(Object.keys(PUCK_FIELDS).sort(), Object.keys(BLOCK_TYPES).sort());
 });
 
-test('every admin field name exists in the api BLOCK_TYPES field list', () => {
-  const UI = loadBlocksUi();
-  for (const [type, def] of Object.entries(UI.TYPES)) {
+test('every Puck field name exists in the api BLOCK_TYPES field list', () => {
+  for (const [type, fields] of Object.entries(PUCK_FIELDS)) {
     assert.ok(BLOCK_TYPES[type], `api registry knows type "${type}"`);
-    for (const f of def.fields) {
-      assert.ok(BLOCK_TYPES[type].fields.includes(f), `field "${type}.${f}" exists in api BLOCK_TYPES`);
+    for (const name of Object.keys(fields)) {
+      assert.ok(BLOCK_TYPES[type].fields.includes(name), `field "${type}.${name}" exists in api BLOCK_TYPES`);
     }
   }
+});
+
+test('FAQ array item fields are limited to the block item shape', () => {
+  const itemFields = Object.keys(PUCK_FIELDS.faq.items.arrayFields);
+  const allowed = ['question', 'answer_html', 'open'];
+  for (const f of itemFields) assert.ok(allowed.includes(f), `faq item field "${f}" is allowed`);
 });

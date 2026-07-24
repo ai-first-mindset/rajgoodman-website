@@ -220,7 +220,7 @@ test('loaders render failure copy instead of lying empty states (source guards)'
 
 /* ---- extraction invariants ---- */
 test('index.html carries no inline app script — only external script tags', () => {
-  assert.match(HTML, /<script src="\/assets\/tiptap\.bundle\.js"><\/script>\s*<script src="\/admin\/blocks-ui\.js"><\/script>\s*<script src="\/admin\/admin\.js"><\/script>/);
+  assert.match(HTML, /<script src="\/assets\/tiptap\.bundle\.js"><\/script>\s*<script src="\/assets\/pages-builder\.bundle\.js"><\/script>\s*<script src="\/admin\/admin\.js"><\/script>/);
   assert.doesNotMatch(HTML, /addEventListener/, 'no leftover inline wiring');
 });
 
