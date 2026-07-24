@@ -51,11 +51,13 @@ export const LABELS = {
   'raw-html': 'Raw HTML',
 };
 
-// Defaults for newly-inserted blocks (mirror the old blocks-ui make()).
+// Defaults for newly-inserted blocks. Seeded with real placeholder content so a
+// freshly-dropped block looks complete immediately (Avada-style ease of use) —
+// the author edits in place rather than staring at an empty box.
 export const DEFAULT_PROPS = {
-  'rich-text': { html: '' },
-  'section-heading': { idx: '', kicker: '', heading: '', showLine: true },
-  cta: { idx: '', kicker: '', heading: '', text: '', label: '', url: '' },
-  faq: { idx: '', kicker: 'FAQs', heading: 'Questions, answered', items: [{ question: '', answer_html: '', open: true }] },
-  'raw-html': { html: '' },
+  'rich-text': { html: '<p>Start writing…</p>' },
+  'section-heading': { idx: '', kicker: 'Section', heading: 'New section heading', showLine: true },
+  cta: { idx: '', kicker: 'Get in touch', heading: 'Ready to work with Raj?', text: 'Add a short supporting line here.', label: 'Contact', url: '/#contact' },
+  faq: { idx: '', kicker: 'FAQs', heading: 'Questions, answered', items: [{ question: 'Your question here?', answer_html: 'Your answer here.', open: true }] },
+  'raw-html': { html: '<!-- Paste custom HTML here -->' },
 };

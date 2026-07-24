@@ -52,8 +52,12 @@ test('raw-html renders verbatim', () => {
   assert.equal(html, '<section class="custom"><b>hi</b></section>');
 });
 
-test('unknown block type renders nothing', () => {
-  assert.equal(renderBlock({ type: 'nope' }), '');
+test('unknown block type is preserved, never silently dropped', () => {
+  // A raw payload from a newer editor bundle is kept verbatim.
+  assert.equal(renderBlock({ type: 'nope', html: '<p>keep me</p>' }), '<p>keep me</p>');
+  // No payload → an inert marker (data still round-trips), not an empty drop.
+  assert.match(renderBlock({ type: 'nope' }), /<!-- unsupported-block:nope -->/);
+  // Non-objects still yield nothing.
   assert.equal(renderBlock(null), '');
 });
 

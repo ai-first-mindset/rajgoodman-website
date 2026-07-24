@@ -85,29 +85,62 @@ function renderRaw(b) {
   return b.html || '';
 }
 
-// Which block types carry a numbered section heading (participate in autonumber).
-const NUMBERED = new Set(['section-heading', 'faq', 'cta']);
+// ---------------------------------------------------------------------------
+// Block registry: one entry per type co-locating label, editable fields,
+// defaults, the autonumber flag, and the render fn. Single source of truth —
+// BLOCK_TYPES, autonumbering, rendering, and defaults all derive from this, so
+// adding a block is ONE entry and there is no multi-file drift to forget.
+// ---------------------------------------------------------------------------
+export const BLOCKS_SCHEMA_VERSION = 1;
 
-// Metadata for the admin UI (labels + editable field names). The admin builds
-// its field forms from this; a drift test asserts admin fields ⊆ these.
-export const BLOCK_TYPES = {
-  'rich-text': { label: 'Rich text', fields: ['html'] },
-  'section-heading': { label: 'Section heading', fields: ['idx', 'kicker', 'heading', 'showLine'] },
-  cta: { label: 'Call to action', fields: ['idx', 'kicker', 'heading', 'text', 'label', 'url'] },
-  faq: { label: 'FAQ accordion', fields: ['idx', 'kicker', 'heading', 'items'] },
-  'raw-html': { label: 'Raw HTML', fields: ['html'] },
+const BLOCKS = {
+  'rich-text': {
+    label: 'Rich text', fields: ['html'], defaults: { html: '' },
+    render: (b) => renderRichText(b),
+  },
+  'section-heading': {
+    label: 'Section heading', fields: ['idx', 'kicker', 'heading', 'showLine'],
+    defaults: { idx: '', kicker: '', heading: '', showLine: true }, numbered: true,
+    render: (b, autoNo) => renderHeading(b, autoNo),
+  },
+  cta: {
+    label: 'Call to action', fields: ['idx', 'kicker', 'heading', 'text', 'label', 'url'],
+    defaults: { idx: '', kicker: '', heading: '', text: '', label: '', url: '' }, numbered: true,
+    render: (b, autoNo) => renderCta(b, autoNo),
+  },
+  faq: {
+    label: 'FAQ accordion', fields: ['idx', 'kicker', 'heading', 'items'],
+    defaults: { idx: '', kicker: 'FAQs', heading: 'Questions, answered', items: [] }, numbered: true,
+    render: (b, autoNo) => renderFaq(b, autoNo),
+  },
+  'raw-html': {
+    label: 'Raw HTML', fields: ['html'], defaults: { html: '' },
+    render: (b) => renderRaw(b),
+  },
 };
+
+// Metadata for the admin UI (labels + editable field names), derived from the
+// registry; a drift test asserts the editor's fields ⊆ these.
+export const BLOCK_TYPES = Object.fromEntries(
+  Object.entries(BLOCKS).map(([type, def]) => [type, { label: def.label, fields: def.fields }]),
+);
+
+// Which block types carry a numbered section heading (participate in autonumber).
+const NUMBERED = new Set(Object.keys(BLOCKS).filter((t) => BLOCKS[t].numbered));
+
+// Anti-fragile: an unrecognised block type (e.g. authored by a newer editor
+// bundle than this renderer) is NEVER silently dropped. Preserve any raw HTML
+// payload; otherwise emit an inert marker so the block still round-trips through
+// render without its content vanishing from the page.
+function renderUnknown(block) {
+  if (typeof block.html === 'string' && block.html) return block.html;
+  return `<!-- unsupported-block:${esc(block.type || 'unknown')} -->`;
+}
 
 export function renderBlock(block, autoNo) {
   if (!block || typeof block !== 'object') return '';
-  switch (block.type) {
-    case 'faq': return renderFaq(block, autoNo);
-    case 'section-heading': return renderHeading(block, autoNo);
-    case 'rich-text': return renderRichText(block);
-    case 'cta': return renderCta(block, autoNo);
-    case 'raw-html': return renderRaw(block);
-    default: return '';
-  }
+  const def = BLOCKS[block.type];
+  return def ? def.render(block, autoNo) : renderUnknown(block);
 }
 
 export function renderBlocks(blocks) {
@@ -117,6 +150,19 @@ export function renderBlocks(blocks) {
     const no = b && NUMBERED.has(b.type) ? ++n : null;
     return renderBlock(b, no);
   }).filter(Boolean).join('\n');
+}
+
+// Migration/normalise seam: fill missing fields with per-type defaults so render
+// tolerates partial/older-schema blocks; unknown types pass through untouched.
+// Call on read (editor load) — kept OUT of the server render path to preserve
+// exact byte-parity. Bump BLOCKS_SCHEMA_VERSION + add cases here when a stored
+// block shape changes, so content survives schema evolution.
+export function normalizeBlocks(blocks) {
+  return (Array.isArray(blocks) ? blocks : []).map((b) => {
+    if (!b || typeof b !== 'object') return b;
+    const def = BLOCKS[b.type];
+    return def ? { ...def.defaults, ...b } : b;
+  });
 }
 
 // FAQ Q&A across all faq blocks → [{q,a}] for FAQPage JSON-LD.

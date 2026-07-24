@@ -4,6 +4,7 @@
 
 import { requireUser } from '../_auth.js';
 import { readBody } from '../_body.js';
+import { sanitizeHtml } from '../_sanitize.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -20,18 +21,6 @@ function pick(body) {
   const row = {};
   for (const k of ALLOWED) if (k in body && body[k] !== undefined) row[k] = body[k];
   return row;
-}
-// Best-effort sanitiser for admin-authored HTML: strip <script>/<style>, inline
-// event handlers, and javascript:/vbscript: URLs. Body comes from Quill (already
-// format-constrained), so this is defence-in-depth.
-function sanitizeHtml(html) {
-  if (typeof html !== 'string') return html;
-  return html
-    .replace(/<\s*script\b[\s\S]*?<\/\s*script\s*>/gi, '')
-    .replace(/<\s*script\b[^>]*>/gi, '')
-    .replace(/<\s*style\b[\s\S]*?<\/\s*style\s*>/gi, '')
-    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src)\s*=\s*("|')\s*(?:javascript|vbscript):[^"']*\2/gi, '$1=$2#$2');
 }
 function getId(req) {
   let id = req.query && req.query.id;

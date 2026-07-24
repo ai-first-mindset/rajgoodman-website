@@ -46,6 +46,10 @@ function render(blocks) {
       data={toPuck(blocks || [])}
       onChange={(d) => { if (changeCb) changeCb(toBlocks(d)); }}
       onPublish={(d) => { if (changeCb) changeCb(toBlocks(d)); if (publishCb) publishCb(); }}
+      // One control surface: the admin toolbar (Save draft / Publish / Preview /
+      // Delete) is authoritative, so hide Puck's own Publish button to avoid a
+      // confusing second publish. Keeps Puck's undo/redo + viewport switcher.
+      overrides={{ headerActions: () => null }}
     />,
   );
 }

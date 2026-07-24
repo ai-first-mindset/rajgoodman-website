@@ -4,6 +4,7 @@
 
 import { requireUser } from '../_auth.js';
 import { readBody } from '../_body.js';
+import { sanitizeBlocks } from '../_sanitize.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -20,33 +21,6 @@ function pick(body) {
   const row = {};
   for (const k of ALLOWED) if (k in body && body[k] !== undefined) row[k] = body[k];
   return row;
-}
-// Best-effort sanitiser for admin-authored HTML: strip <script>/<style>, inline
-// event handlers, and javascript:/vbscript: URLs. Defence-in-depth (rich text
-// comes from TipTap, already format-constrained).
-function sanitizeHtml(html) {
-  if (typeof html !== 'string') return html;
-  return html
-    .replace(/<\s*script\b[\s\S]*?<\/\s*script\s*>/gi, '')
-    .replace(/<\s*script\b[^>]*>/gi, '')
-    .replace(/<\s*style\b[\s\S]*?<\/\s*style\s*>/gi, '')
-    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src)\s*=\s*("|')\s*(?:javascript|vbscript):[^"']*\2/gi, '$1=$2#$2');
-}
-// Sanitise every rich (HTML-bearing) field inside the blocks array.
-function sanitizeBlocks(blocks) {
-  if (!Array.isArray(blocks)) return blocks;
-  return blocks.map((b) => {
-    if (!b || typeof b !== 'object') return b;
-    const out = { ...b };
-    if (typeof out.html === 'string') out.html = sanitizeHtml(out.html);
-    if (out.type === 'faq' && Array.isArray(out.items)) {
-      out.items = out.items.map((it) => (it && typeof it === 'object'
-        ? { ...it, answer_html: sanitizeHtml(it.answer_html) }
-        : it));
-    }
-    return out;
-  });
 }
 function getId(req) {
   let id = req.query && req.query.id;
