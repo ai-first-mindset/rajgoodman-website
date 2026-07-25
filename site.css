@@ -395,6 +395,12 @@ footer .fcol a:hover{color:var(--yellow)}
 @media(max-width:980px){.li-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.li-grid{grid-template-columns:1fr}}
 
+/* End-of-post membership promo (rendered by api/_post-template.js) */
+.pcta{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:8px;background:var(--bg-2);padding:22px 24px}
+.pcta-t{font-weight:800;font-size:1.05rem}
+.pcta-d{color:var(--tx-60);font-size:.86rem;margin-top:4px}
+.pcta-d s{color:var(--tx-40)}
+
 /* Back-to-top (injected site-wide by common.js) */
 .to-top{position:fixed;right:22px;bottom:22px;z-index:90;width:46px;height:46px;border:0;border-radius:50%;background:var(--yellow);color:var(--ink);font-size:1.35rem;line-height:1;cursor:pointer;box-shadow:0 8px 24px -8px rgba(0,0,0,.6);opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .25s,transform .25s,visibility .25s,background .2s}
 .to-top.show{opacity:1;visibility:visible;transform:none}

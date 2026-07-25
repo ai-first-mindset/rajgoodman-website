@@ -67,6 +67,29 @@ function recentCard(p) {
   return `<a class="post" href="/blog/${esc(p.slug)}/">${img}<div class="bd"><h3>${esc(p.title)}</h3>${ex}<span class="go">READ &#8594;</span></div></a>`;
 }
 
+// End-of-post membership promo. Rendered fresh on every request, so the
+// founding-rate copy switches itself to the standard rate after 15 Sept 2026
+// (same cutoff as resources.aifirstmindset.ai/membership) - no redeploy needed.
+const FOUNDING_DEADLINE = Date.parse('2026-09-15T23:59:00+04:00');
+const MEMBERSHIP_URL = 'https://resources.aifirstmindset.ai/membership'
+  + '?utm_source=rajgoodman.com&utm_medium=referral&utm_campaign=membership-founding-2026&utm_content=blog-post';
+
+export function membershipCta(now = Date.now()) {
+  const founding = now < FOUNDING_DEADLINE;
+  const detail = founding
+    ? 'Join Raj&rsquo;s year-long AI-First Mindset&reg; Membership &middot; founding rate $3,000 <s>$4,800</s> ends 15 Sept'
+    : 'Join Raj&rsquo;s year-long AI-First Mindset&reg; Membership: three sprints, three deployed AI systems';
+  return `<section class="wrap" style="max-width:760px;padding-bottom:30px">
+    <div class="pcta">
+      <div>
+        <div class="pcta-t">Go from reading about AI to shipping it</div>
+        <div class="pcta-d">${detail}</div>
+      </div>
+      <a class="btn btn-y" href="${MEMBERSHIP_URL}" target="_blank" rel="noopener">See the membership <span class="ar">&rarr;</span></a>
+    </div>
+  </section>`;
+}
+
 export function renderPost(post, recent = []) {
   const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
   const title = post.seo_title || post.title;
@@ -183,6 +206,8 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${post.body_html || ''}</div>${authorBio(post)}
   </article>
+
+  ${membershipCta()}
 
   <section class="sec reach">
     <div class="wrap">

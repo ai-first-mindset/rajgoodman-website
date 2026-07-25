@@ -22,6 +22,21 @@
 .tl h3{font-size:1.2rem;margin-bottom:.5rem}
 .tl .yr{font-family:var(--mono);font-size:.8rem;color:var(--yellow);font-weight:600;margin-bottom:.5rem}
 .tl p{color:var(--tx-60);max-width:46em}
+/* Membership two-door cards: public individual price, private chapter terms.
+   Founding vs standard copy swapped by initFoundingCopy() in common.js. */
+.mduo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:760px){.mduo{grid-template-columns:1fr}}
+.mcard{border:1px solid var(--line);border-radius:10px;padding:32px;background:var(--bg-2);display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.mcard-eyeb{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-l);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mcard-badge{background:rgba(243,175,0,.13);border:1px solid rgba(243,175,0,.4);color:var(--yellow);font-size:.6rem;letter-spacing:.12em;padding:.25em .8em;border-radius:999px}
+.mcard h3{font-size:1.25rem}
+.mcard p{color:var(--tx-60);flex:1}
+.mcard-price{font-family:var(--mono)}
+.mcard-price b{font-size:1.3rem;font-weight:600}
+.mcard-price s{color:var(--tx-40);margin-left:.5em}
+.mcard-price small{display:block;font-size:.68rem;color:var(--tx-40);letter-spacing:.06em;margin-top:4px}
+.mcard-code{font-size:.8rem;color:var(--tx-40);text-decoration:underline;text-underline-offset:3px}
+.mcard-code:hover{color:var(--tx)}
 </style>
 <link rel="canonical" href="https://rajgoodman.com/eo-ypo-leadership/" />
 <meta property="og:url" content="https://rajgoodman.com/eo-ypo-leadership/" />
@@ -147,6 +162,38 @@
     <h2 style="max-width:24em;margin:0 auto">"Raj has delivered over 150 workshops globally with EO and YPO, inspiring leaders to rethink the future of marketing, technology and business."</h2>
     <p class="sub" style="margin:1.6rem auto 0;text-align:center">EO &amp; YPO speaking enquiries welcome.</p>
     <a href="#work" class="btn btn-y" style="margin-top:1.8rem">Book Raj for your chapter <span class="ar">→</span></a>
+  </div>
+</section>
+
+<!-- MEMBERSHIP: two doors - public individual price, private chapter terms.
+     Chapter pricing is deliberately NEVER printed here or anywhere on the site:
+     officers request terms by email and redeem an access code on the
+     confidential /chapters page of resources.aifirstmindset.ai. -->
+<section class="sec tight" id="chapter-terms">
+  <div class="wrap">
+    <div class="shead" data-reveal><span class="idx">[ 05 ]</span><span class="kick">Beyond The Workshop</span><span class="ln"></span></div>
+    <h2 data-reveal>Two ways in for EO &amp; YPO members</h2>
+    <p class="sub" data-reveal>One workshop sparks the change. The AI-First Mindset&reg; Membership sustains it: a year of live build sprints on the EO/YPO calendar, Sept 2026 to Apr 2027.</p>
+    <div class="mduo" style="margin-top:34px">
+      <div class="mcard" data-reveal>
+        <div class="mcard-eyeb">For you</div>
+        <h3>Join as an individual</h3>
+        <p>Full membership: three build sprints, one deployed AI system each, live on Thursdays through the membership year.</p>
+        <div class="mcard-price">
+          <span data-founding-only><b>$3,000</b> <s>$4,800</s><small>Founding rate · ends 15 Sept · <span data-founding-days></span></small></span>
+          <span data-standard-only style="display:none"><b>$4,800</b><small>Annual membership</small></span>
+        </div>
+        <a class="btn btn-y" href="https://resources.aifirstmindset.ai/membership?utm_source=rajgoodman.com&amp;utm_medium=referral&amp;utm_campaign=membership-founding-2026&amp;utm_content=eoypo-individual" target="_blank" rel="noopener">See the membership <span class="ar">→</span></a>
+      </div>
+      <div class="mcard" data-reveal data-delay="100">
+        <div class="mcard-eyeb">For your chapter <span class="mcard-badge">Private terms</span></div>
+        <h3>Run it as a chapter programme</h3>
+        <p>Chapters get their own pricing, agreed privately with your learning chair, on terms individual seats can't match. Tell us your chapter and we'll send yours<span data-founding-only>: ask before 15 Sept to lock founding terms for your whole chapter</span>.</p>
+        <div class="mcard-price"><b>Priced per chapter</b><small>Never published on the site</small></div>
+        <a class="btn btn-line" href="mailto:info@aifirstmindset.ai?subject=AI-First%20Mindset%20Membership%20-%20chapter%20terms&amp;body=Hi%20team%2C%0A%0AWe%20would%20like%20the%20private%20chapter%20terms%20for%20the%20AI-First%20Mindset%20Membership.%0A%0AChapter%3A%0ACity%3A%0AMembers%20interested%20(approx.)%3A%0A%0AThanks%2C">Request chapter terms <span class="ar">→</span></a>
+        <a class="mcard-code" href="https://resources.aifirstmindset.ai/chapters?utm_source=rajgoodman.com&amp;utm_medium=referral&amp;utm_campaign=membership-founding-2026&amp;utm_content=eoypo-code" target="_blank" rel="noopener">Have a chapter code? Enter it</a>
+      </div>
+    </div>
   </div>
 </section>
 
