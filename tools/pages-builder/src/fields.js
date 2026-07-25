@@ -42,6 +42,9 @@ export const PUCK_FIELDS = {
     html: { type: 'textarea', label: 'HTML (verbatim)' },
   },
   // --- Layout ---
+  container: {
+    content: { type: 'slot' },
+  },
   columns: {
     cols: { type: 'select', label: 'Columns', options: [{ label: '2 columns', value: 2 }, { label: '3 columns', value: 3 }, { label: '4 columns', value: 4 }] },
     col0: { type: 'slot' },
@@ -111,7 +114,7 @@ export const PUCK_FIELDS = {
 
 // Inserter categories (Avada-style element library grouping).
 export const CATEGORIES = {
-  Layout: { title: 'Layout', components: ['columns', 'el-spacer'] },
+  Layout: { title: 'Layout', components: ['container', 'columns', 'el-spacer'] },
   Content: { title: 'Content', components: ['section-heading', 'el-heading', 'rich-text', 'el-text', 'el-button'] },
   Media: { title: 'Media', components: ['el-image', 'el-split', 'el-logos', 'raw-html'] },
   Marketing: { title: 'Marketing', components: ['cta', 'faq', 'el-testimonial', 'el-stats', 'el-features'] },
@@ -123,6 +126,7 @@ export const LABELS = {
   cta: 'Call to action',
   faq: 'FAQ accordion',
   'raw-html': 'Raw HTML',
+  container: 'Container',
   columns: 'Columns',
   'el-heading': 'Heading',
   'el-text': 'Text',
@@ -145,6 +149,7 @@ export const DEFAULT_PROPS = {
   cta: { idx: '', kicker: 'Get in touch', heading: 'Ready to work with Raj?', text: 'Add a short supporting line here.', label: 'Contact', url: '/#contact' },
   faq: { idx: '', kicker: 'FAQs', heading: 'Questions, answered', items: [{ question: 'Your question here?', answer_html: 'Your answer here.', open: true }] },
   'raw-html': { html: '<!-- Paste custom HTML here -->' },
+  container: { content: [] },
   columns: { cols: 2, col0: [], col1: [], col2: [], col3: [] },
   'el-heading': { text: 'New heading', level: 2 },
   'el-text': { html: '<p>Start writing…</p>' },

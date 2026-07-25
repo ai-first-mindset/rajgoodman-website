@@ -325,6 +325,13 @@ form textarea{resize:vertical;min-height:104px}
 .pb-testimonial .who span{display:block;font-weight:400;opacity:.6;font-size:.82rem;margin-top:2px}
 /* Divider */
 .pb-divider{border:0;border-top:1px solid var(--line)}
+/* Token-driven per-element design controls (the .pb-wrap wrapper) */
+.pb-mt-sm{margin-top:16px}
+.pb-mt-md{margin-top:34px}
+.pb-mt-lg{margin-top:64px}
+.pb-al-c{text-align:center}
+.pb-al-r{text-align:right}
+.pb-bg-panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px}
 
 /* ===== footer ===== */
 footer{border-top:1px solid var(--line);padding:64px 0 30px}

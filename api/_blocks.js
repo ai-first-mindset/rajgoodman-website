@@ -88,7 +88,7 @@ function renderRaw(b) {
 // ---- Layout + bare content elements (the container/columns/element hierarchy) ----
 // Which fields on a block hold nested child blocks (Puck slots). Shared with the
 // editor adapter so nesting round-trips generically.
-export const SLOT_FIELDS = { columns: ['col0', 'col1', 'col2', 'col3'] };
+export const SLOT_FIELDS = { columns: ['col0', 'col1', 'col2', 'col3'], container: ['content'] };
 
 // Columns: a self-contained section whose wrap holds a responsive N-column grid;
 // each column is an array of child blocks rendered recursively.
@@ -166,6 +166,31 @@ function renderElSpacer(b) {
   return b.line ? `<hr class="pb-divider" style="margin:${h}px 0" />` : `<div style="height:${h}px"></div>`;
 }
 
+// Container: a full-width section whose wrap holds child blocks (single column).
+function renderContainer(b) {
+  return `<section class="sec tight">
+  <div class="wrap">
+    ${renderBlocks(b.content)}
+  </div>
+</section>`;
+}
+
+// Token-driven per-element design controls. Applied generically by renderBlock:
+// a block's optional `d` object (spacing / align / panel background) becomes a
+// thin wrapper of token classes. Absent `d` → no wrapper (byte-parity preserved).
+function designClasses(d) {
+  if (!d || typeof d !== 'object') return '';
+  const c = [];
+  if (d.space) c.push('pb-mt-' + d.space);   // sm | md | lg
+  if (d.align) c.push('pb-al-' + d.align);   // c | r
+  if (d.bg) c.push('pb-bg-' + d.bg);         // panel
+  return c.join(' ');
+}
+function applyDesign(html, block) {
+  const cls = designClasses(block && block.d);
+  return cls ? `<div class="pb-wrap ${cls}">${html}</div>` : html;
+}
+
 // ---------------------------------------------------------------------------
 // Block registry: one entry per type co-locating label, editable fields,
 // defaults, the autonumber flag, and the render fn. Single source of truth —
@@ -199,6 +224,10 @@ const BLOCKS = {
     render: (b) => renderRaw(b),
   },
   // Layout
+  container: {
+    label: 'Container', fields: ['content'], defaults: { content: [] },
+    render: (b) => renderContainer(b),
+  },
   columns: {
     label: 'Columns', fields: ['cols', 'col0', 'col1', 'col2', 'col3'],
     defaults: { cols: 2, col0: [], col1: [], col2: [], col3: [] },
@@ -271,7 +300,8 @@ function renderUnknown(block) {
 export function renderBlock(block, autoNo) {
   if (!block || typeof block !== 'object') return '';
   const def = BLOCKS[block.type];
-  return def ? def.render(block, autoNo) : renderUnknown(block);
+  const html = def ? def.render(block, autoNo) : renderUnknown(block);
+  return applyDesign(html, block);
 }
 
 export function renderBlocks(blocks) {
