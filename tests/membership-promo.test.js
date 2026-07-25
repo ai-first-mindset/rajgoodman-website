@@ -176,12 +176,12 @@ test('scrolls the #hash target under the fixed nav (76px offset, no bar)', () =>
   assert.equal(global.window._scrolledTo, 3600 - 76);
 });
 
-test('adds the promo bar height to the anchor offset when the bar is shown', () => {
+test('adds the promo bar height + gap to the anchor offset when the bar is shown', () => {
   const target = new El('section'); target._top = 3600;
   install({ hash: '#chapter-terms', qs: { '#chapter-terms': target } });
-  initPromoBar(BEFORE); // injects a 40px-tall bar
+  initPromoBar(BEFORE); // injects a 40px-tall bar; 16px breathing gap below it
   initHashScroll();
-  assert.equal(global.window._scrolledTo, 3600 - 76 - 40);
+  assert.equal(global.window._scrolledTo, 3600 - 76 - 40 - 16);
 });
 
 test('no hash or missing target: no scroll', () => {

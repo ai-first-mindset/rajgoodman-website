@@ -525,9 +525,13 @@
     '.pbar-x:hover{opacity:1}' +
     '.pbar-short{display:none}' +
     '@media(max-width:640px){.pbar-long,.pbar-days{display:none}.pbar-short{display:inline}.pbar-link{padding:8px 40px 8px 12px;gap:8px}}' +
-    'html.has-pbar body{padding-top:var(--pbar-h,0px)}' +
-    'html.has-pbar .nav{top:var(--pbar-h,0px)}' +
+    'html.has-pbar body{padding-top:calc(var(--pbar-h,0px) + 16px)}' +
+    'html.has-pbar .nav{top:calc(var(--pbar-h,0px) + 16px)}' +
     'html.pbar-hidden .nav{top:0}';
+
+  /* Breathing room between the bar and the nav below it; mirrored in
+     initHashScroll's anchor offset and the has-pbar CSS above. */
+  var PROMO_GAP = 16;
 
   function initPromoBar(now) {
     if (promoDaysLeft(now) <= 0) return;
@@ -594,7 +598,7 @@
     var lastPlaced = -1;
     function place() {
       var bar = document.querySelector('.pbar');
-      var off = 76 + (bar ? bar.offsetHeight : 0);
+      var off = 76 + (bar ? bar.offsetHeight + PROMO_GAP : 0);
       var y = Math.max(0, t.getBoundingClientRect().top + window.pageYOffset - off);
       window.scrollTo(0, y);
       lastPlaced = y;
