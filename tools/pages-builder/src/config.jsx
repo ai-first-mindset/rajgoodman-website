@@ -6,6 +6,7 @@
 // "Design" group (spacing / align / panel background) applied by renderBlock.
 import { PUCK_FIELDS, LABELS, DEFAULT_PROPS, CATEGORIES } from './fields.js';
 import { BlockPreview } from './canvas.jsx';
+import { ICONS } from './icons.jsx';
 
 // Token-scoped design controls, grouped under one collapsible "Design" panel so
 // element settings read as Content + Design (not one flat list). Values map to
@@ -58,6 +59,7 @@ const components = {};
 for (const type of Object.keys(PUCK_FIELDS)) {
   components[type] = {
     label: LABELS[type] || type,
+    icon: ICONS[type],
     fields: { ...PUCK_FIELDS[type], ...DESIGN_FIELD },
     defaultProps: DEFAULT_PROPS[type],
     render: LAYOUT_RENDER[type] || ((props) => <BlockPreview type={type} {...props} />),

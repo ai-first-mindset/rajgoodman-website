@@ -5,6 +5,7 @@
 import { createRoot } from 'react-dom/client';
 import { Puck } from '@puckeditor/core';
 import '@puckeditor/core/puck.css';
+import './theme.css';
 import { config } from './config.jsx';
 import { toPuck, toBlocks } from './adapter.js';
 
