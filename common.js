@@ -578,6 +578,35 @@
     });
   }
 
+  /* ---- Cross-page anchor fix. The browser's native fragment jump does not
+     fire on this site (pre-existing: /#work from blog pages landed at the
+     top too), and even when it does the target sits under the fixed nav.
+     Position #hash targets ourselves: instantly at DOMContentLoaded, and
+     again at load (fonts/images shift layout) unless the user has already
+     scrolled away. Mirrors the -76px nav offset used by initSmoothScroll,
+     plus the promo bar height when shown. */
+  function initHashScroll() {
+    var hash = window.location.hash;
+    if (!hash || hash.length < 2) return;
+    var t;
+    try { t = document.querySelector(hash); } catch (_) { return; }
+    if (!t) return;
+    var lastPlaced = -1;
+    function place() {
+      var bar = document.querySelector('.pbar');
+      var off = 76 + (bar ? bar.offsetHeight : 0);
+      var y = Math.max(0, t.getBoundingClientRect().top + window.pageYOffset - off);
+      window.scrollTo(0, y);
+      lastPlaced = y;
+    }
+    place();
+    window.addEventListener('load', function () {
+      requestAnimationFrame(function () {
+        if (Math.abs(window.pageYOffset - lastPlaced) < 4) place();
+      });
+    });
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -592,6 +621,7 @@
     initBackToTop();
     initPromoBar();
     initFoundingCopy();
+    initHashScroll();
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -599,5 +629,5 @@
   }
   /* Exposed for unit tests under Node (CommonJS); a no-op in the browser,
      where `module` is undefined. */
-  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms, initFaq: initFaq, initBackToTop: initBackToTop, initPromoBar: initPromoBar, initFoundingCopy: initFoundingCopy, promoDaysLeft: promoDaysLeft };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { initLinkedIn: initLinkedIn, initDownloads: initDownloads, initForms: initForms, initFaq: initFaq, initBackToTop: initBackToTop, initPromoBar: initPromoBar, initFoundingCopy: initFoundingCopy, promoDaysLeft: promoDaysLeft, initHashScroll: initHashScroll };
 })();

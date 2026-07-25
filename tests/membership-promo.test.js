@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 import { renderPost, membershipCta } from '../api/_post-template.js';
 
 const require = createRequire(import.meta.url);
-const { initPromoBar, initFoundingCopy, promoDaysLeft } = require('../common.js');
+const { initPromoBar, initFoundingCopy, promoDaysLeft, initHashScroll } = require('../common.js');
 
 const BEFORE = new Date('2026-07-25T12:00:00Z');            // founding window open
 const AFTER = new Date('2026-09-16T12:00:00+04:00');        // offer over
@@ -25,6 +25,7 @@ class El {
     this.tagName = String(tag).toUpperCase(); this.classList = new ClassList();
     this._a = {}; this.children = []; this._h = {}; this._q = {};
     this.parentNode = null; this.offsetHeight = 40; this.textContent = '';
+    this._top = 0;
     const props = {};
     this.style = {
       _p: props, display: '',
@@ -32,6 +33,7 @@ class El {
       removeProperty(k) { delete props[k]; },
     };
   }
+  getBoundingClientRect() { return { top: this._top }; }
   set className(v) { this.classList = new ClassList(); String(v).split(/\s+/).filter(Boolean).forEach((c) => this.classList.add(c)); }
   get className() { return [...this.classList.s].join(' '); }
   set innerHTML(v) { this._a.html = v; }
@@ -54,7 +56,7 @@ class El {
     return null;
   }
 }
-function install({ dismissed = false, qsa = {} } = {}) {
+function install({ dismissed = false, qsa = {}, qs = {}, hash = '' } = {}) {
   const head = new El('head'); const body = new El('body'); const docEl = new El('html');
   const store = {};
   if (dismissed) store.rg_promo_founding2026_dismissed = '1';
@@ -62,15 +64,19 @@ function install({ dismissed = false, qsa = {} } = {}) {
   global.document = {
     head, body, documentElement: docEl,
     createElement: (t) => new El(t),
-    querySelector: (sel) => (sel === '.pbar' ? body.children.find((c) => c.classList.contains('pbar')) || null : null),
+    querySelector: (sel) => {
+      if (sel in qs) return qs[sel];
+      return sel === '.pbar' ? body.children.find((c) => c.classList.contains('pbar')) || null : null;
+    },
     querySelectorAll: (sel) => qsa[sel] || [],
   };
   const handlers = {};
   global.window = {
     pageYOffset: 0,
-    location: { pathname: '/' },
+    location: { pathname: '/', hash },
     addEventListener: (t, fn) => { (handlers[t] = handlers[t] || []).push(fn); },
     removeEventListener: (t, fn) => { if (handlers[t]) handlers[t] = handlers[t].filter((f) => f !== fn); },
+    scrollTo: (x, y) => { global.window._scrolledTo = y; global.window.pageYOffset = y; },
     _fire: (t) => (handlers[t] || []).forEach((fn) => fn()),
   };
   return { head, body, docEl, store };
@@ -159,6 +165,32 @@ test('after the deadline: founding copy hidden, standard copy shown, counter cle
   assert.equal(days.textContent, '');
   assert.equal(foundingOnly.style.display, 'none');
   assert.equal(standardOnly.style.display, '');
+});
+
+/* ---- initHashScroll (cross-page anchor fix) ---- */
+
+test('scrolls the #hash target under the fixed nav (76px offset, no bar)', () => {
+  const target = new El('section'); target._top = 3600;
+  install({ hash: '#chapter-terms', qs: { '#chapter-terms': target } });
+  initHashScroll();
+  assert.equal(global.window._scrolledTo, 3600 - 76);
+});
+
+test('adds the promo bar height to the anchor offset when the bar is shown', () => {
+  const target = new El('section'); target._top = 3600;
+  install({ hash: '#chapter-terms', qs: { '#chapter-terms': target } });
+  initPromoBar(BEFORE); // injects a 40px-tall bar
+  initHashScroll();
+  assert.equal(global.window._scrolledTo, 3600 - 76 - 40);
+});
+
+test('no hash or missing target: no scroll', () => {
+  install({ hash: '' });
+  initHashScroll();
+  assert.equal(global.window._scrolledTo, undefined);
+  install({ hash: '#nope' });
+  initHashScroll();
+  assert.equal(global.window._scrolledTo, undefined);
 });
 
 /* ---- blog end-of-post CTA ---- */
