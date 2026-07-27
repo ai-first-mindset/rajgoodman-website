@@ -21,6 +21,7 @@ import { createCanvas } from './canvas.js';
 import { createOutline } from './outline.js';
 import { createInspector } from './inspector.js';
 import { createInserter } from './inserter.js';
+import { createCodeView } from './code.js';
 
 let current = null;
 
@@ -79,6 +80,31 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
   const outline = createOutline(left, editor);
   const canvas = createCanvas(stage, editor);
   const inspector = createInspector(right, editor);
+  const code = createCodeView(stage, editor);
+
+  // Design | Code, and a fullscreen toggle. The builder is embedded in a card
+  // in the admin page, which is far too little room to lay a page out in.
+  let mode = 'design';
+  function setMode(next) {
+    mode = next;
+    shell.classList.toggle('is-code', mode === 'code');
+    designTab.classList.toggle('is-on', mode === 'design');
+    codeTab.classList.toggle('is-on', mode === 'code');
+    if (mode === 'code') code.render(); else canvas.render();
+  }
+  const designTab = el('button', { type: 'button', class: 'pb-tool pb-mode is-on', text: 'Design', onclick: () => setMode('design') });
+  const codeTab = el('button', { type: 'button', class: 'pb-tool pb-mode', text: 'Code', onclick: () => setMode('code') });
+  const fullBtn = el('button', {
+    type: 'button', class: 'pb-tool', text: 'Fullscreen', title: 'Expand the builder (Esc to exit)',
+    onclick: () => toggleFull(),
+  });
+  function toggleFull(force) {
+    const on = force === undefined ? !shell.classList.contains('is-full') : force;
+    shell.classList.toggle('is-full', on);
+    document.body.classList.toggle('pb-full-open', on);
+    fullBtn.textContent = on ? 'Exit fullscreen' : 'Fullscreen';
+    if (mode === 'design') canvas.render();
+  }
 
   const undoBtn = el('button', { type: 'button', class: 'pb-tool', text: 'Undo', onclick: () => { history.undo(); } });
   const redoBtn = el('button', { type: 'button', class: 'pb-tool', text: 'Redo', onclick: () => { history.redo(); } });
@@ -110,8 +136,10 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
 
   const status = el('span', { class: 'pb-status' });
   bar.append(
+    designTab, codeTab, el('span', { class: 'pb-sep' }),
     undoBtn, redoBtn, convertBtn, status,
     el('span', { class: 'pb-spacer' }),
+    fullBtn,
     el('button', {
       type: 'button', class: 'pb-tool pb-primary', text: 'Publish',
       onclick: () => onPublish && onPublish(serialize(history.doc)),
@@ -144,7 +172,7 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
     inserter.render();
     outline.render();
     inspector.render();
-    renderCanvas();
+    if (mode === 'code') code.render(); else renderCanvas();
     if (onChange) onChange(serialize(history.doc));
   }
 
@@ -158,7 +186,10 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
   // Keyboard: undo/redo and delete, dispatched like everything else.
   function onKey(e) {
     const typing = /input|textarea|select/i.test((e.target.tagName || ''));
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+    if (e.key === 'Escape' && shell.classList.contains('is-full')) {
+      e.preventDefault();
+      toggleFull(false);
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       if (e.shiftKey) history.redo(); else history.undo();
     } else if (!typing && (e.key === 'Delete' || e.key === 'Backspace') && selection) {
@@ -172,6 +203,7 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
     host,
     destroy() {
       document.removeEventListener('keydown', onKey);
+      document.body.classList.remove('pb-full-open');
       clear(host);
     },
     setData(next) { history.reset(normalize(parse(next).doc, registry)); },

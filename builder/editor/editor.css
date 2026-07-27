@@ -38,8 +38,33 @@
 .pb-inserter { flex: 0 1 auto; min-height: 120px; overflow-y: auto; }
 .pb-outline { flex: 1 1 45%; min-height: 120px; overflow-y: auto; }
 .pb-middle { display: flex; flex-direction: column; min-width: 0; }
-.pb-stage { flex: 1; min-height: 0; background: #201600; }
+.pb-stage { flex: 1; min-height: 0; background: #201600; position: relative; }
 .pb-canvas { width: 100%; height: 100%; border: 0; display: block; }
+
+/* Fullscreen: the builder is embedded in a card on a scrolling admin page,
+   which is nowhere near enough room to lay a page out in. */
+.pb-shell.is-full { position: fixed; inset: 0; height: auto; z-index: 9999;
+  border-radius: 0; border: 0; }
+body.pb-full-open { overflow: hidden; }
+
+/* Code view replaces the canvas; the side panels stay put so the layer tree is
+   still there for orientation. */
+.pb-code { display: none; position: absolute; inset: 0; flex-direction: column; background: #fff; }
+.pb-shell.is-code .pb-code { display: flex; }
+.pb-shell.is-code .pb-canvas { visibility: hidden; }
+.pb-code-bar { display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border-bottom: 1px solid var(--pb-line); background: var(--pb-bg); }
+.pb-code-tab { font: inherit; font-size: 12px; padding: 4px 12px; cursor: pointer;
+  background: #fff; border: 1px solid var(--pb-line); border-radius: 3px; color: var(--pb-tx); }
+.pb-code-tab.is-on { background: var(--pb-accent); border-color: var(--pb-accent); color: #fff; }
+.pb-code-note { font-size: 11px; color: var(--pb-tx-2); }
+.pb-code-area { flex: 1; width: 100%; border: 0; padding: 12px; resize: none;
+  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5;
+  color: var(--pb-tx); background: #fff; }
+.pb-code-area:focus { outline: 2px solid var(--pb-accent); outline-offset: -2px; }
+.pb-code-err { margin: 0; padding: 0 12px 10px; color: var(--pb-danger); font-size: 12px; min-height: 16px; }
+.pb-mode.is-on { background: var(--pb-accent); border-color: var(--pb-accent); color: #fff; }
+.pb-sep { width: 1px; align-self: stretch; background: var(--pb-line); margin: 0 2px; }
 
 /* toolbar */
 .pb-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px;

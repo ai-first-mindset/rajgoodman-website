@@ -8,6 +8,7 @@ import { visibleFields } from '../core/validate.js';
 import { arityOf, acceptedTypes } from '../core/policy.js';
 import { SetProp, SetStyle, InsertType, Remove, Move, Duplicate } from '../core/commands.js';
 import { isBinding, binding } from '../core/bindings.js';
+import { nodeLabel } from './label.js';
 
 const STYLE_GROUP_LABELS = { space: 'Top spacing', align: 'Alignment', surface: 'Background' };
 
@@ -166,11 +167,7 @@ export function createInspector(host, editor) {
   // A readable label for a child row, derived from the schema's first text
   // field -- generic, so no element supplies a summary function.
   function summarise(child, childDef, i) {
-    if (!childDef) return `${child.type} ${i + 1}`;
-    const first = childDef.schema.find((f) => f.control === 'text' || f.control === 'textarea');
-    const value = first && child.props[first.name];
-    const text = isBinding(value) ? `{${value.$bind}}` : value;
-    return text ? `${childDef.label}: ${String(text).slice(0, 38)}` : `${childDef.label} ${i + 1}`;
+    return childDef ? nodeLabel(child, childDef, 38) : `${child.type} ${i + 1}`;
   }
 
   function styleRow(node, slot) {

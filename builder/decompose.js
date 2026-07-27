@@ -54,7 +54,47 @@ const statBand = {
   },
 };
 
-export const RECOGNISERS = [statBand];
+// The standard `sec tight` section: head + heading + body. The body is kept as
+// a raw-html child rather than modelled field-by-field -- see the note on
+// pageSection. Runs after statBand so the counter variant is claimed first.
+const standardSection = {
+  type: 'page-section',
+  find(html) {
+    // The body must not run into the NEXT section: without that guard a lazy
+    // match whose own closing indentation differs swallows its neighbour.
+    const re = /<section class="sec tight"( id="[^"]*")?>\n {2}<div class="wrap">\n {4}<div class="shead" data-reveal>(?:(?!<section class=)[\s\S])*?\n {2}<\/div>\n<\/section>/g;
+    const m = re.exec(html);
+    return m ? { start: m.index, end: m.index + m[0].length, source: m[0] } : null;
+  },
+  build(source) {
+    const head = source.match(/<div class="shead" data-reveal>([\s\S]*?)<\/div>/);
+    if (!head) return null;
+    const pick = (re, from = head[1]) => { const m = from.match(re); return m ? unescapeText(m[1]) : ''; };
+    const h2 = source.match(/\n {4}<h2 data-reveal( style="([^"]*)")?>([\s\S]*?)<\/h2>/);
+
+    // Everything after the head/heading, VERBATIM (its own leading whitespace
+    // included -- the sections do not indent their bodies consistently), as an
+    // editable HTML child.
+    const headEnd = h2 ? source.indexOf('</h2>') + 5 : source.indexOf('</div>', source.indexOf('shead')) + 6;
+    const body = source.slice(headEnd, source.lastIndexOf('\n  </div>\n</section>'));
+
+    return {
+      id: newId('sec'),
+      type: 'page-section',
+      props: {
+        idx: pick(/<span class="idx">([\s\S]*?)<\/span>/),
+        kicker: pick(/<span class="kick">([\s\S]*?)<\/span>/),
+        heading: h2 ? unescapeText(h2[3]) : '',
+        showLine: head[1].includes('<span class="ln">'),
+        anchor: (source.match(/<section class="sec tight" id="([^"]*)"/) || [, ''])[1],
+        headingStyle: h2 && h2[2] ? h2[2] : '',
+      },
+      children: body ? [rawNode(body)] : [],
+    };
+  },
+};
+
+export const RECOGNISERS = [statBand, standardSection];
 
 // Text captured out of markup is escaped; props hold the unescaped value so the
 // author edits real text and the render re-escapes it.
@@ -74,8 +114,11 @@ export function decomposeHtml(html) {
     if (!hit) continue;
     const node = rec.build(hit.source);
     if (!node) continue;
-    const before = html.slice(0, hit.start).replace(/\s+$/, '');
-    const after = html.slice(hit.end).replace(/^\s+/, '');
+    // Siblings are joined with a single "\n" at render, so exactly one newline
+    // is removed at each split point and everything else -- including the
+    // authoring comments between sections -- is preserved verbatim.
+    const before = html.slice(0, hit.start).replace(/\n$/, '');
+    const after = html.slice(hit.end).replace(/^\n/, '');
     return [
       ...(before ? decomposeHtml(before) : []),
       node,

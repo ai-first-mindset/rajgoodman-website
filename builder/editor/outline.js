@@ -9,6 +9,7 @@ import { el, clear, icon } from './dom.js';
 import { canInsert } from '../core/validate.js';
 import { Move, InsertType } from '../core/commands.js';
 import { findParent } from '../core/node.js';
+import { nodeLabel } from './label.js';
 
 // What is being dragged, in editor terms. dataTransfer alone cannot be read
 // during dragover in every browser, so the intent is held here too.
@@ -49,7 +50,7 @@ export function createOutline(host, editor) {
       ondrop: (e) => onDrop(e, node),
     }, [
       el('span', { class: 'pb-row-icon' }, [icon(def ? def.icon : '')]),
-      el('span', { class: 'pb-row-label', text: def ? def.label : `${node.type} (unknown)` }),
+      el('span', { class: 'pb-row-label', text: nodeLabel(node, def), title: nodeLabel(node, def, 120) }),
       badgeFor(node),
     ]);
 

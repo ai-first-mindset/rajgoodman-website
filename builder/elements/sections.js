@@ -13,6 +13,49 @@ import { ICONS, text, area } from './shared.js';
 
 const ARROW = '→'; // the literal glyph the pages use, not &rarr;
 
+// The site's standard section: a numbered head, a heading, then a body. Eight
+// of the ten sections on /about/ share exactly this shape, so typing it makes
+// the headings editable and whole sections reorderable in one step.
+//
+// The body is CHILDREN, not props: whatever we have a typed element for becomes
+// one, and the rest stays as a raw-html child the author can edit in the Code
+// view. That is the deliberate trade -- modelling every bespoke inner style
+// attribute as a form field would cost far more than it is worth.
+export const pageSection = {
+  type: 'page-section',
+  label: 'Section',
+  category: 'Sections',
+  icon: ICONS.container,
+  schema: [
+    text('idx', 'Index label (e.g. [ 01 ])'),
+    text('kicker', 'Kicker'),
+    text('heading', 'Heading'),
+    { name: 'showLine', control: 'toggle', label: 'Divider line', default: true },
+    text('anchor', 'Anchor id (optional)'),
+    text('headingStyle', 'Heading style (advanced)'),
+  ],
+  childPolicy: { kind: 'any' },
+  render: (ctx) => {
+    const p = ctx.props;
+    const idx = p.idx ? `<span class="idx">${escText(p.idx)}</span>` : '';
+    const kick = p.kicker ? `<span class="kick">${escText(p.kicker)}</span>` : '';
+    const ln = p.showLine === false ? '' : '<span class="ln"></span>';
+    const head = (idx || kick || ln) ? `<div class="shead" data-reveal>${idx}${kick}${ln}</div>` : '';
+    const hStyle = p.headingStyle ? ` style="${esc(p.headingStyle)}"` : '';
+    const h2 = p.heading ? `${head ? '\n    ' : ''}<h2 data-reveal${hStyle}>${escText(p.heading)}</h2>` : '';
+    // Migrated bodies carry their own leading whitespace (the pages do not
+    // indent consistently), so only indent a body that has none of its own.
+    const inner = ctx.childCount ? ctx.renderChildren({ separator: '\n    ' }) : '';
+    const body = inner && !inner.startsWith('\n') ? `\n    ${inner}` : inner;
+    const anchor = p.anchor ? ` id="${esc(p.anchor)}"` : '';
+    return `<section class="sec tight"${anchor}>
+  <div class="wrap">
+    ${head}${h2}${body}
+  </div>
+</section>`;
+  },
+};
+
 // "Global Reach": a centred heading band wrapping an animated counter row.
 // Present on 11 of the 16 pages, which makes it the cheapest section to type.
 export const statBand = {
@@ -51,4 +94,4 @@ export const statBand = {
   },
 };
 
-export default [statBand];
+export default [pageSection, statBand];

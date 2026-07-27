@@ -71,6 +71,43 @@ test('editing a lifted stat now changes the page (it was frozen in the blob befo
   assert.doesNotMatch(html, /data-count="50"/);
 });
 
+test('the whole /about/ page decomposes into typed, editable sections', () => {
+  const after = decomposeDocument(parse(ABOUT).doc);
+  const typed = after.root.children.filter((c) => c.type !== 'raw-html');
+  // 8 standard sections + the stat band + the FAQ that was already typed.
+  assert.equal(typed.length, 10);
+  assert.deepEqual(
+    typed.filter((c) => c.type === 'page-section').map((c) => c.props.idx),
+    ['[ 01 ]', '[ 02 ]', '[ 03 ]', '[ 04 ]', '[ 06 ]', '[ 07 ]', '[ 08 ]', '[ ✦ ]'],
+  );
+  // Every typed section carries an editable heading.
+  for (const s of typed.filter((c) => c.type === 'page-section')) {
+    assert.ok(s.props.heading, `section ${s.props.idx} has no heading`);
+  }
+  // The anchor on the contact section is preserved (it is a link target).
+  assert.equal(typed.find((c) => c.props.idx === '[ ✦ ]').props.anchor, 'work');
+});
+
+test('section 05 is left as HTML: its footer button sits in a second wrap', () => {
+  // Documented limitation rather than a silent failure -- the element models
+  // one wrap, and contorting it for a single variant is not worth it.
+  const after = decomposeDocument(parse(ABOUT).doc);
+  const holding = after.root.children.find(
+    (c) => c.type === 'raw-html' && c.props.html.includes('[ 05 ]'),
+  );
+  assert.ok(holding, 'section 05 should still be present as raw HTML');
+  assert.match(holding.props.html, /tst-row/);
+});
+
+test('editing a decomposed section heading changes the page', () => {
+  const after = decomposeDocument(parse(ABOUT).doc);
+  const section = after.root.children.find((c) => c.props.idx === '[ 01 ]');
+  section.props.heading = 'A brand new heading';
+  const html = render(after);
+  assert.match(html, /<h2 data-reveal>A brand new heading<\/h2>/);
+  assert.doesNotMatch(html, /Some organizations thrive/);
+});
+
 test('markup with no recognised section is returned untouched, as one blob', () => {
   const html = '<section class="sec tight">\n  <div class="wrap">nothing typed here</div>\n</section>';
   const nodes = decomposeHtml(html);
