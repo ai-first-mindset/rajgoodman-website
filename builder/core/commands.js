@@ -6,7 +6,7 @@
 // node's type, which stays the invariant the whole engine is built on.
 
 import {
-  insertChild, removeChild, moveNode, setProps, setStyle,
+  insertChild, removeChild, moveNode, setProps, setStyle, updateNode,
   findNode, findParent, cloneWithNewIds, createNode,
 } from './node.js';
 import { canInsert, canRemove } from './validate.js';
@@ -18,6 +18,9 @@ export const Move = (nodeId, parentId, index) => ({ kind: 'move', nodeId, parent
 export const SetProp = (nodeId, name, value) => ({ kind: 'setProp', nodeId, name, value });
 export const SetStyle = (nodeId, slot, ref) => ({ kind: 'setStyle', nodeId, slot, ref });
 export const Duplicate = (nodeId) => ({ kind: 'duplicate', nodeId });
+// Swap a node's whole child list in one undoable step. Used when a
+// transformation rewrites a subtree wholesale (see builder/decompose.js).
+export const ReplaceChildren = (parentId, children) => ({ kind: 'replaceChildren', parentId, children });
 
 const HANDLERS = {
   insert(root, cmd, { registry }) {
@@ -52,6 +55,15 @@ const HANDLERS = {
 
   setProp(root, cmd) {
     return { root: setProps(root, cmd.nodeId, { [cmd.name]: cmd.value }) };
+  },
+
+  replaceChildren(root, cmd, { registry }) {
+    const illegal = cmd.children.filter((c) => !canInsert(registry, root, cmd.parentId, c.type).ok
+      && !findNode(root, c.id));
+    if (illegal.length) {
+      return { root, issues: [{ level: 'error', message: `${illegal[0].type} is not allowed here` }] };
+    }
+    return { root: updateNode(root, cmd.parentId, (p) => ({ ...p, children: cmd.children })) };
   },
 
   setStyle(root, cmd) {

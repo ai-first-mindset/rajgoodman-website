@@ -8,8 +8,9 @@ import layout from './layout.js';
 import content from './content.js';
 import media from './media.js';
 import marketing from './marketing.js';
+import sections from './sections.js';
 
-export const ELEMENTS = [...layout, ...content, ...media, ...marketing];
+export const ELEMENTS = [...layout, ...content, ...media, ...marketing, ...sections];
 
 export function createBuilderRegistry(extra = []) {
   return createRegistry().registerAll([...ELEMENTS, ...extra]);

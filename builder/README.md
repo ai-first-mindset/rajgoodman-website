@@ -19,9 +19,31 @@ builder/
     bindings.js   content bindings (props resolve from a data source)
     html.js       esc / stripTags
   elements/    the site's elements, one ElementDefinition each
+    sections.js  elements modelling the site's OWN recurring sections
   editor/      the admin UI: canvas, outline, inspector, inserter, controls
+  decompose.js turning legacy raw-html blobs into typed nodes
+  sanitize.js  allowlist HTML sanitiser (write path)
   seo.js       domain code: FAQPage extraction, html-field derivation
 ```
+
+## Decomposing imported pages
+
+Pages migrated from the static site arrived as one opaque `raw-html` block, so
+none of their sections are editable. `decompose.js` holds a recogniser per
+section type: it finds that section inside a blob and replaces it with a typed
+node, splitting the surrounding markup into smaller raw-html blocks.
+
+The gate is byte-parity — `verifyDecomposition()` renders the tree before and
+after and refuses the change unless the output is identical. The editor's
+"Convert sections" button runs it and declines rather than risk altering a
+published page. Anything unrecognised is left as raw-html, so the process is
+additive and safe to repeat.
+
+Adding a section type: write the ElementDefinition in `elements/sections.js`
+emitting the live markup exactly, add a recogniser to `decompose.js`, and add a
+case to `tests/builder-sections.test.js`. Note these renders use `escText()`
+rather than `esc()` for text nodes — `esc()` escapes apostrophes, which would
+rewrite the site's copy and break parity.
 
 ## Adding an element
 

@@ -51,6 +51,7 @@
 .pb-tool:disabled { opacity: .45; cursor: default; }
 .pb-primary { background: var(--pb-accent); border-color: var(--pb-accent); color: #fff; }
 .pb-primary:hover { background: #2f47c4; border-color: #2f47c4; color: #fff; }
+.pb-tool.hide { display: none; }
 .pb-status { color: var(--pb-tx-2); font-size: 12px; }
 .pb-status.is-error { color: var(--pb-danger); font-weight: 600; }
 

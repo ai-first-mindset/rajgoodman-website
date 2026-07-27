@@ -7,6 +7,16 @@ export function esc(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// Text-node escaping. Only &, < and > are significant in element content --
+// quotes are not, and escaping them (as esc() does, correctly, for attribute
+// values) would rewrite every apostrophe in the site's copy as &#39; and break
+// byte-parity with the hand-authored markup. Use esc() inside attributes and
+// escText() between tags.
+export function escText(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 export function stripTags(s) {
   return String(s == null ? '' : s).replace(/<[^>]+>/g, ' ')
     .replace(/&amp;/g, '&').replace(/&#0?39;|&rsquo;|&#8217;/g, "'").replace(/&quot;/g, '"')

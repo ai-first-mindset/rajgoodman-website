@@ -11,7 +11,9 @@ import { registry } from '../elements/index.js';
 import { createTheme } from '../core/tokens.js';
 import { pageSources } from '../core/bindings.js';
 import { parse, serialize, normalize } from '../core/document.js';
-import { createHistory, Remove } from '../core/commands.js';
+import { createHistory, Remove, ReplaceChildren } from '../core/commands.js';
+import { decomposeDocument, verifyDecomposition } from '../decompose.js';
+import { renderDocument, createEnv } from '../core/render.js';
 import { findNode as findIn } from '../core/node.js';
 import { validateTree } from '../core/validate.js';
 import { createControlRegistry } from './controls.js';
@@ -80,9 +82,35 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
 
   const undoBtn = el('button', { type: 'button', class: 'pb-tool', text: 'Undo', onclick: () => { history.undo(); } });
   const redoBtn = el('button', { type: 'button', class: 'pb-tool', text: 'Redo', onclick: () => { history.redo(); } });
+
+  // Pages imported from the static site arrive as one opaque raw-html block.
+  // This converts the sections we have typed elements for into real, editable
+  // nodes -- but only if the page still renders to exactly the same bytes.
+  const convertBtn = el('button', {
+    type: 'button', class: 'pb-tool', text: 'Convert sections',
+    title: 'Turn imported HTML into editable elements',
+    onclick: () => {
+      const before = history.doc;
+      const after = decomposeDocument(before);
+      if (after.root.children.length === before.root.children.length) {
+        toast('Nothing further to convert on this page');
+        return;
+      }
+      const env = createEnv({ registry, theme, data });
+      const check = verifyDecomposition(before, after, (d) => renderDocument(d, env));
+      if (!check.ok) {
+        toast('Conversion refused: it would change the published page');
+        return;
+      }
+      const gained = after.root.children.length - before.root.children.length;
+      editor.dispatch(ReplaceChildren(before.root.id, after.root.children));
+      toast(`Converted ${gained} section${gained === 1 ? '' : 's'} into editable elements`);
+    },
+  });
+
   const status = el('span', { class: 'pb-status' });
   bar.append(
-    undoBtn, redoBtn, status,
+    undoBtn, redoBtn, convertBtn, status,
     el('span', { class: 'pb-spacer' }),
     el('button', {
       type: 'button', class: 'pb-tool pb-primary', text: 'Publish',
@@ -107,6 +135,9 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
     issues = validateTree(history.doc, registry);
     undoBtn.disabled = !history.canUndo;
     redoBtn.disabled = !history.canRedo;
+    const convertible = decomposeDocument(history.doc).root.children.length
+      - history.doc.root.children.length;
+    convertBtn.classList.toggle('hide', convertible <= 0);
     const errors = issues.filter((i) => i.level === 'error').length;
     status.textContent = errors ? `${errors} issue${errors === 1 ? '' : 's'}` : '';
     status.className = `pb-status${errors ? ' is-error' : ''}`;
