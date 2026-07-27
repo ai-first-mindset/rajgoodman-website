@@ -39,6 +39,26 @@ after and refuses the change unless the output is identical. The editor's
 published page. Anything unrecognised is left as raw-html, so the process is
 additive and safe to repeat.
 
+### How far this generalises: not far, yet
+
+Measured across all 16 static pages (`tests/builder-generalisation.test.js`):
+**only `/about/` decomposes byte-exactly.** The recognisers were written against
+its markup and the other pages differ. Two causes, in order of size:
+
+1. **Hero variants.** `page-hero` hard-codes /about/'s shape (crumbs ->
+   `phero-grid` -> text column + image column). Pages like privacy-policy and
+   events have a simpler hero with no grid and no image, so they diverge before
+   any section is reached.
+2. **Line endings.** The repo's `.html` files and the stored `/about/` record in
+   Supabase use CRLF; element templates emit LF. Decomposition moves structural
+   markup from stored content (CRLF) into generated templates (LF), so the bytes
+   change. Note the committed fixture is LF-normalised and therefore does NOT
+   match production byte-for-byte — deciding what to do about that is open.
+
+None of this is dangerous: `verifyDecomposition()` refuses on any page it cannot
+reproduce, so "Convert sections" simply declines rather than altering a page.
+But it does mean the feature currently only works on /about/.
+
 Adding a section type: write the ElementDefinition in `elements/sections.js`
 emitting the live markup exactly, add a recogniser to `decompose.js`, and add a
 case to `tests/builder-sections.test.js`. Note these renders use `escText()`
