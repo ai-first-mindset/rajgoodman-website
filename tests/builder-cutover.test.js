@@ -7,7 +7,10 @@ import assert from 'node:assert/strict';
 import { extractFaqItems, htmlFieldsByType } from '../builder/seo.js';
 import { sanitizeBlocks, sanitizeHtml } from '../api/_sanitize.js';
 import { parse, serialize } from '../builder/core/document.js';
+import { renderPageBlocks } from '../builder/index.js';
 import { renderPage } from '../api/_page-template.js';
+
+const renderPageBlocksFor = (stored, page) => renderPageBlocks(stored, { page });
 
 const LEGACY_FAQ = [{
   type: 'faq', kicker: 'FAQs', heading: 'Q',
@@ -98,6 +101,48 @@ test('sanitisation never drops unknown shapes or unknown element types', () => {
   const clean = sanitizeBlocks(future);
   assert.equal(clean.root.children[0].props.keep, 'me');
   assert.doesNotMatch(clean.root.children[0].props.html, /<script/i);
+});
+
+/* ---- bindings must never become markup ----
+   Write-time sanitisation only sees literal strings, so a prop holding a
+   Binding passes through it untouched. Without escaping at render, the resolved
+   value (or its author-supplied fallback) would be injected raw into an
+   html-controlled field: stored XSS straight past the sanitiser. */
+
+function boundDoc(fieldValue, type = 'rich-text', field = 'html') {
+  const { doc } = parse([{ type, [field]: '' }]);
+  const stored = serialize(doc);
+  stored.root.children[0].props[field] = fieldValue;
+  return stored;
+}
+
+test('a binding resolved into an html field is escaped, not injected', () => {
+  const stored = sanitizeBlocks(boundDoc({ $bind: 'page.title' }));
+  const html = renderPage({ slug: 'x', title: 'T', blocks: stored, meta_description: '' });
+  const rendered = renderPageBlocksFor(stored, { title: '<script>alert(1)</script>' });
+  assert.doesNotMatch(rendered, /<script>alert\(1\)<\/script>/);
+  assert.match(rendered, /&lt;script&gt;/);
+  assert.ok(html.length > 0);
+});
+
+test('a binding FALLBACK cannot smuggle markup either', () => {
+  const stored = sanitizeBlocks(boundDoc({ $bind: 'page.nothing', fallback: '<img src=x onerror=alert(1)>' }));
+  const rendered = renderPageBlocksFor(stored, {});
+  assert.doesNotMatch(rendered, /<img/);
+  assert.match(rendered, /&lt;img/);
+});
+
+test('bindings are escaped in every html-controlled field, not just rich-text', () => {
+  for (const [type, field] of [['el-text', 'html'], ['raw-html', 'html'], ['el-split', 'html']]) {
+    const stored = sanitizeBlocks(boundDoc({ $bind: 'page.title' }, type, field));
+    const rendered = renderPageBlocksFor(stored, { title: '<script>alert(1)</script>' });
+    assert.doesNotMatch(rendered, /<script>/, `${type}.${field} injected raw markup`);
+  }
+});
+
+test('a literal html field is still rendered as markup (the fix is binding-only)', () => {
+  const rendered = renderPageBlocksFor([{ type: 'rich-text', html: '<p><strong>bold</strong></p>' }], {});
+  assert.match(rendered, /<strong>bold<\/strong>/);
 });
 
 test('the page template renders a v2 document, with FAQ structured data', () => {

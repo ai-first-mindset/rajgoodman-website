@@ -10,7 +10,7 @@
 // ordered fold of the whole tree.
 
 import { esc } from './html.js';
-import { resolveDeep, createDataScope } from './bindings.js';
+import { resolveDeep, createDataScope, isBinding } from './bindings.js';
 import { createTheme } from './tokens.js';
 
 // Build the environment threaded through the fold.
@@ -40,6 +40,25 @@ function renderUnknown(node) {
   // Wording matches the legacy renderer's marker so output stays byte-identical
   // for any document that already contains one.
   return `<!-- unsupported-block:${esc(node.type || 'unknown')} -->`;
+}
+
+// A BINDING ALWAYS YIELDS TEXT, never markup.
+//
+// Write-time sanitisation only sees literal strings: a prop holding a Binding is
+// an object, passes through untouched, and its value (or its author-supplied
+// fallback) would otherwise be substituted raw into an html-controlled field at
+// render time -- a stored-XSS path straight past the sanitiser. Every data
+// source is plain text anyway, so bound values are escaped here. Which fields
+// are HTML comes from the schema, so this needs no knowledge of any element.
+function escapeBoundHtml(def, rawProps, resolvedProps) {
+  let out = resolvedProps;
+  for (const field of def.schema) {
+    if (field.control !== 'html') continue;
+    if (!isBinding(rawProps[field.name])) continue;
+    if (out === resolvedProps) out = { ...resolvedProps };
+    out[field.name] = esc(out[field.name]);
+  }
+  return out;
 }
 
 // Token classes wrap the element's own output. Applied generically here, so no
@@ -72,10 +91,11 @@ export function renderNode(node, env, position = {}) {
   if (!def) return applyStyle(renderUnknown(node), node, env);
 
   const children = Array.isArray(node.children) ? node.children : [];
+  const rawProps = node.props || {};
   const ctx = {
     node,
     id: node.id,
-    props: resolveDeep(node.props || {}, env.data),
+    props: escapeBoundHtml(def, rawProps, resolveDeep(rawProps, env.data)),
     // Structural facts (arity, position) are fair game; a parent still never
     // reads a child's props.
     childCount: children.length,
