@@ -16,9 +16,6 @@
   header.bar { display:flex; align-items:center; justify-content:space-between; padding:14px 22px; background:#fff; border-bottom:1px solid var(--bd); position:sticky; top:0; z-index:5 }
   header.bar h1 { font-size:16px; margin:0 } header.bar .sub { color:var(--mut); font-weight:400 }
   .wrap { max-width:980px; margin:0 auto; padding:24px 22px }
-  /* The page builder is a working surface, not a form field: give it the room
-     the 980px reading width denies it. */
-  #pageBuilderView { max-width:min(1800px, calc(100vw - 44px)) }
   /* WordPress 7 button system: secondary = indigo outline, primary = indigo fill */
   button { font:inherit; cursor:pointer; display:inline-block; font-size:13px; font-weight:500; line-height:2.30769231; min-height:32px; padding:0 12px; border:1px solid var(--acc); border-radius:2px; background:transparent; color:var(--acc); white-space:nowrap; transition:background .1s,border-color .1s,color .1s }
   button:hover { background:rgba(56,88,233,.04); border-color:var(--acc-dd); color:var(--acc-dd) }
@@ -114,6 +111,10 @@
   #app.folded #adminmenu { width:46px } #app.folded #adminmenu .label { opacity:0; pointer-events:none }
   #app.folded #wpbody { margin-left:46px }
   #wpbody .wrap { max-width:1180px; margin:0; padding:22px 24px }
+  /* The page builder is a working surface, not a reading column. It must beat
+     the rule above, which is why it is scoped to #wpbody too — an id alone
+     loses to "#wpbody .wrap" on specificity. */
+  #wpbody #pageBuilderView { max-width:none; padding:16px }
   .wp-heading { font-size:23px; font-weight:400; color:#1d2327; margin:0 0 18px }
   .card > h2, .card > h3 { font-size:14px; font-weight:600; color:var(--ink) } /* direct children only: post headings inside the editor surface keep their article styling (blog-content.css) */
   .glance { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px }
