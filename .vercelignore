@@ -1,6 +1,6 @@
-# Out-of-tree admin build toolchain — never part of the Vercel deploy.
-# The built artifact is committed to /assets/pages-builder.bundle.{js,css}.
-# Keeping this dir (and node_modules) out ensures Vercel stays zero-config static
-# (no root package.json → no build step).
-tools/
+# The site stays zero-config static: no root package.json, no build step.
+#
+# NOTE: /builder is deliberately NOT ignored. It is plain ESM with no
+# dependencies, served as-is to the admin and imported directly by the
+# serverless page renderer — the same modules on both sides, no build artifact.
 node_modules/

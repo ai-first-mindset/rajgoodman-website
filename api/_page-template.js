@@ -1,8 +1,12 @@
-// Renders a CMS page record (block array) into a complete, SEO-faithful
-// interior page that matches the static marketing pages: chrome injected by
-// chrome.js, styling via site.css, blocks rendered by api/_blocks.js.
+// Renders a CMS page record into a complete, SEO-faithful interior page that
+// matches the static marketing pages: chrome injected by chrome.js, styling via
+// site.css, content rendered by the page builder engine (../builder).
+//
+// `page.blocks` may hold either a v2 builder document or the legacy flat
+// blocks[] array; the engine migrates on read, so both render identically.
 
-import { renderBlocks, extractFaqItems, esc } from './_blocks.js';
+import { renderPageBlocks, esc } from '../builder/index.js';
+import { extractFaqItems } from '../builder/seo.js';
 
 const SITE = 'https://rajgoodman.com';
 const SITE_NAME = 'Raj Goodman';
@@ -96,7 +100,7 @@ export function renderPage(page) {
 <div class="bg-grid"></div>
 <div class="scan"></div>
 <main>
-${renderBlocks(page.blocks)}
+${renderPageBlocks(page.blocks, { page, site: { name: SITE_NAME, contact_url: `${SITE}/#contact` } })}
 </main>
 <script src="/chrome.js"></script>
 <script src="/common.js"></script>

@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderBlocks } from '../api/_blocks.js';
-import { toPuck, toBlocks } from '../tools/pages-builder/src/adapter.js';
+import { parse, serialize } from '../builder/core/document.js';
 
 const nested = [
   {
@@ -14,8 +14,12 @@ const nested = [
   },
 ];
 
-test('a Columns block with nested elements round-trips through the adapter', () => {
-  assert.deepEqual(toBlocks(toPuck(nested)), nested);
+test('a Columns block migrates its column slots to Column children', () => {
+  const { doc } = parse(nested);
+  const columns = doc.root.children[0];
+  assert.deepEqual(columns.children.map((c) => c.type), ['column', 'column']);
+  assert.deepEqual(columns.children.map((c) => c.children[0].type), ['el-heading', 'el-button']);
+  assert.deepEqual(parse(serialize(doc)).doc, doc);
 });
 
 test('Columns renders a responsive grid with its nested elements server-side', () => {
@@ -31,5 +35,9 @@ test('deeply nested columns (columns inside a column) round-trip', () => {
     col0: [{ type: 'columns', id: 'inner', cols: 2, col0: [{ type: 'el-text', id: 't', html: '<p>hi</p>' }], col1: [], col2: [], col3: [] }],
     col1: [], col2: [], col3: [],
   }];
-  assert.deepEqual(toBlocks(toPuck(deep)), deep);
+  const { doc } = parse(deep);
+  const inner = doc.root.children[0].children[0].children[0];
+  assert.equal(inner.type, 'columns');
+  assert.equal(inner.children[0].children[0].props.html, '<p>hi</p>');
+  assert.deepEqual(parse(serialize(doc)).doc, doc);
 });

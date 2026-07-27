@@ -186,8 +186,8 @@ function fillPage(p){
   $('pg_meta_description').value = p.meta_description || '';
   $('pg_canonical_url').value = p.canonical_url || '';
   $('pg_noindex').checked = /noindex/i.test(p.robots || '');
-  PAGE_BLOCKS = Array.isArray(p.blocks) ? p.blocks.slice() : [];
-  remountPuck();
+  PAGE_BLOCKS = p.blocks || [];
+  remountBuilder();
   const isPub = p.status==='published';
   $('pageStatusPill').textContent = p.id ? (isPub?'published':'draft') : 'new';
   $('pageStatusPill').className = 'pill '+(p.id?p.status:'');
@@ -197,15 +197,28 @@ function fillPage(p){
   $('pgSlugPreview').textContent = p.slug ? '→ /'+p.slug+'/' : '';
 }
 
-// Mount (or re-mount) the Puck visual editor into #pgPuck with the current
-// page's blocks. onChange keeps PAGE_BLOCKS current so the existing collectPage/
-// savePage persistence is reused unchanged; Puck's Publish → savePage('published').
-function remountPuck(){
+// Mount (or re-mount) the page builder into #pgBuilder with the current page's
+// stored content. onChange keeps PAGE_BLOCKS current (now a versioned document
+// rather than a flat array) so the existing collectPage/savePage persistence is
+// reused unchanged; the builder's Publish → savePage('published').
+function remountBuilder(){
   if(!window.PagesBuilder){ toast('Editor failed to load — reload the page'); return; }
   window.PagesBuilder.unmount();
-  window.PagesBuilder.mount($('pgPuck'), PAGE_BLOCKS,
-    function(blocks){ PAGE_BLOCKS = blocks; },
-    function(){ savePage('published'); });
+  window.PagesBuilder.mount($('pgBuilder'), PAGE_BLOCKS,
+    function(doc){ PAGE_BLOCKS = doc; },
+    function(){ savePage('published'); },
+    { page: collectPageMeta(), site: { name:'Raj Goodman', contact_url:'/#contact' } });
+}
+
+// Page fields the builder exposes to content bindings.
+function collectPageMeta(){
+  return {
+    title: $('pg_title').value.trim(),
+    slug: $('pg_slug').value.trim(),
+    seo_title: $('pg_seo_title').value.trim(),
+    meta_description: $('pg_meta_description').value.trim(),
+    canonical_url: $('pg_canonical_url').value.trim(),
+  };
 }
 
 function collectPage(){

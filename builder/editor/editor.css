@@ -1,0 +1,150 @@
+/* Page builder chrome. Scoped under .pb-shell so it cannot leak into the admin.
+   Accent matches the wp-admin shell the builder is embedded in (WP indigo). */
+
+.pb-shell {
+  --pb-accent: #3858e9;
+  --pb-accent-soft: #eef1fd;
+  --pb-bg: #f6f7f7;
+  --pb-panel: #fff;
+  --pb-line: #dcdcde;
+  --pb-tx: #1d2327;
+  --pb-tx-2: #646970;
+  --pb-danger: #b32d2e;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr) 300px;
+  height: min(78vh, 900px);
+  min-height: 520px;
+  border: 1px solid var(--pb-line);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--pb-bg);
+  color: var(--pb-tx);
+  font-size: 13px;
+}
+
+/* The admin shell does not set a global border-box, and the builder's inputs are
+   width:100% inside padded panels -- without this the side panels scroll
+   horizontally. */
+.pb-shell *, .pb-shell *::before, .pb-shell *::after { box-sizing: border-box; }
+
+.pb-left, .pb-right { background: var(--pb-panel); min-width: 0; }
+.pb-left { border-right: 1px solid var(--pb-line); display: flex; flex-direction: column; overflow: hidden; }
+.pb-right { border-left: 1px solid var(--pb-line); overflow-y: auto; overflow-x: hidden; }
+
+/* Element library on top, layer tree below: both stay reachable without
+   scrolling one past the other. */
+.pb-inserter { flex: 0 1 auto; min-height: 120px; overflow-y: auto; }
+.pb-outline { flex: 1 1 45%; min-height: 120px; overflow-y: auto; }
+.pb-middle { display: flex; flex-direction: column; min-width: 0; }
+.pb-stage { flex: 1; min-height: 0; background: #201600; }
+.pb-canvas { width: 100%; height: 100%; border: 0; display: block; }
+
+/* toolbar */
+.pb-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  background: var(--pb-panel); border-bottom: 1px solid var(--pb-line); }
+.pb-spacer { flex: 1; }
+.pb-tool { font: inherit; padding: 5px 12px; border: 1px solid var(--pb-line);
+  border-radius: 3px; background: #fff; color: var(--pb-tx); cursor: pointer; }
+.pb-tool:hover:not(:disabled) { border-color: var(--pb-accent); color: var(--pb-accent); }
+.pb-tool:disabled { opacity: .45; cursor: default; }
+.pb-primary { background: var(--pb-accent); border-color: var(--pb-accent); color: #fff; }
+.pb-primary:hover { background: #2f47c4; border-color: #2f47c4; color: #fff; }
+.pb-status { color: var(--pb-tx-2); font-size: 12px; }
+.pb-status.is-error { color: var(--pb-danger); font-weight: 600; }
+
+/* inserter */
+.pb-inserter-head { display: flex; align-items: center; gap: 8px; padding: 10px;
+  font-weight: 600; border-bottom: 1px solid var(--pb-line); position: sticky; top: 0;
+  background: var(--pb-panel); z-index: 1; }
+.pb-search { flex: 1; min-width: 0; }
+.pb-cat { padding: 10px 10px 4px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--pb-tx-2); }
+.pb-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 10px 8px; }
+.pb-el { display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 4px; font: inherit; font-size: 11px; text-align: center; cursor: grab;
+  background: #fff; border: 1px solid var(--pb-line); border-radius: 3px; color: var(--pb-tx); }
+.pb-el:hover:not(.is-disabled) { border-color: var(--pb-accent); color: var(--pb-accent);
+  background: var(--pb-accent-soft); }
+.pb-el.is-disabled { opacity: .38; cursor: not-allowed; }
+
+/* outline */
+.pb-outline { border-top: 1px solid var(--pb-line); padding-bottom: 12px; }
+.pb-outline-head { padding: 10px; font-weight: 600; position: sticky; top: 0;
+  background: var(--pb-panel); z-index: 1; }
+.pb-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; cursor: pointer;
+  border: 1px solid transparent; border-radius: 3px; margin: 1px 6px; }
+.pb-row:hover { background: var(--pb-bg); }
+.pb-row.is-selected { background: var(--pb-accent-soft); border-color: var(--pb-accent); color: var(--pb-accent); }
+.pb-row.is-root { font-weight: 600; }
+.pb-row-icon { display: flex; opacity: .7; }
+.pb-row-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-row-badge { font-size: 10px; padding: 1px 5px; border-radius: 8px; background: #f0c33c; color: #1d2327; }
+.pb-row-badge.is-error { background: var(--pb-danger); color: #fff; }
+.pb-drop-before { box-shadow: inset 0 2px 0 var(--pb-accent); }
+.pb-drop-after { box-shadow: inset 0 -2px 0 var(--pb-accent); }
+.pb-drop-inside { background: var(--pb-accent-soft); border-color: var(--pb-accent); border-style: dashed; }
+
+/* inspector */
+.pb-inspector { padding-bottom: 20px; }
+.pb-insp-head { display: flex; align-items: center; gap: 8px; padding: 10px;
+  border-bottom: 1px solid var(--pb-line); position: sticky; top: 0; background: var(--pb-panel); z-index: 1; }
+.pb-insp-icon { display: flex; opacity: .7; }
+.pb-insp-title { font-weight: 600; flex: 1; }
+.pb-insp-actions { display: flex; gap: 4px; }
+.pb-group { border-bottom: 1px solid var(--pb-line); }
+.pb-group-head { width: 100%; text-align: left; font: inherit; font-weight: 600; cursor: pointer;
+  padding: 9px 10px; background: none; border: 0; color: var(--pb-tx); }
+.pb-group-head::after { content: "\2212"; float: right; color: var(--pb-tx-2); }
+.pb-group.is-collapsed .pb-group-head::after { content: "+"; }
+.pb-group.is-collapsed .pb-group-body { display: none; }
+.pb-group-body { padding: 0 10px 12px; }
+.pb-field { margin-bottom: 10px; }
+.pb-field-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pb-label { display: block; font-size: 12px; color: var(--pb-tx-2); margin-bottom: 3px; }
+.pb-bind { font: inherit; font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
+  padding: 1px 6px; border: 1px solid var(--pb-line); border-radius: 8px; background: #fff;
+  color: var(--pb-tx-2); cursor: pointer; }
+.pb-bind.is-on { background: var(--pb-accent); border-color: var(--pb-accent); color: #fff; }
+.pb-bindrow { display: grid; gap: 4px; }
+.pb-empty { padding: 16px 12px; color: var(--pb-tx-2); }
+.pb-issues { padding: 10px; }
+.pb-issue { margin: 0 0 6px; padding: 6px 8px; border-radius: 3px; font-size: 12px;
+  background: #fcf3d6; border-left: 3px solid #f0c33c; }
+.pb-issue-error { background: #fcf0f1; border-left-color: var(--pb-danger); }
+
+/* child list */
+.pb-childrow { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.pb-childname { flex: 1; min-width: 0; text-align: left; font: inherit; font-size: 12px;
+  padding: 5px 7px; background: var(--pb-bg); border: 1px solid var(--pb-line); border-radius: 3px;
+  cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-childname:hover { border-color: var(--pb-accent); color: var(--pb-accent); }
+.pb-adders { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+
+/* controls */
+.pbi-input { width: 100%; font: inherit; font-size: 13px; padding: 5px 7px;
+  border: 1px solid var(--pb-line); border-radius: 3px; background: #fff; color: var(--pb-tx); }
+.pbi-input:focus { outline: 2px solid var(--pb-accent); outline-offset: -1px; border-color: var(--pb-accent); }
+.pbi-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+.pbi-btn { font: inherit; font-size: 12px; padding: 4px 9px; border: 1px solid var(--pb-line);
+  border-radius: 3px; background: #fff; color: var(--pb-tx); cursor: pointer; }
+.pbi-btn:hover:not(:disabled) { border-color: var(--pb-accent); color: var(--pb-accent); }
+.pbi-btn:disabled { opacity: .4; cursor: default; }
+.pbi-icon { padding: 4px 7px; line-height: 1; }
+.pbi-danger:hover:not(:disabled) { border-color: var(--pb-danger); color: var(--pb-danger); }
+.pbi-toggle { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.pbi-media { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pbi-media .pbi-input { flex: 1; min-width: 120px; }
+.pbi-thumb { width: 100%; max-height: 90px; object-fit: contain; border: 1px solid var(--pb-line);
+  border-radius: 3px; background: var(--pb-bg); }
+
+/* toast */
+.pb-toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(8px);
+  background: #1d2327; color: #fff; padding: 8px 14px; border-radius: 3px; font-size: 12px;
+  opacity: 0; pointer-events: none; transition: .18s; max-width: 70%; }
+.pb-toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 1100px) {
+  .pb-shell { grid-template-columns: 220px minmax(0, 1fr) 260px; }
+}

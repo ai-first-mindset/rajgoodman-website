@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderBlock, renderBlocks } from '../api/_blocks.js';
-import { toPuck, toBlocks } from '../tools/pages-builder/src/adapter.js';
+import { parse, serialize } from '../builder/core/document.js';
 
 test('container renders a section wrapping its child blocks', () => {
   const html = renderBlocks([{ type: 'container', id: 'c', content: [{ type: 'el-heading', id: 'h', text: 'Hi', level: 2 }] }]);
@@ -11,9 +11,13 @@ test('container renders a section wrapping its child blocks', () => {
   assert.match(html, /<h2 data-reveal>Hi<\/h2>/);
 });
 
-test('container round-trips through the adapter (content slot)', () => {
-  const b = [{ type: 'container', id: 'c', content: [{ type: 'el-text', id: 't', html: '<p>x</p>' }] }];
-  assert.deepEqual(toBlocks(toPuck(b)), b);
+test('a container migrates its content slot to children and round-trips', () => {
+  const { doc } = parse([{ type: 'container', id: 'c', content: [{ type: 'el-text', id: 't', html: '<p>x</p>' }] }]);
+  const container = doc.root.children[0];
+  assert.equal(container.children.length, 1);
+  assert.equal(container.children[0].type, 'el-text');
+  assert.equal(container.props.content, undefined);
+  assert.deepEqual(parse(serialize(doc)).doc, doc);
 });
 
 test('design controls wrap a block in token classes; absent design leaves it unchanged', () => {

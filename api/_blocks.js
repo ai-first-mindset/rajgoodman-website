@@ -1,11 +1,19 @@
-// Block registry for the Pages CMS: the single source of truth that turns a
-// page's ordered `blocks` array (see the `pages` table) into the site's exact
-// interior-page markup. Imported by the serverless renderer (_page-template.js)
-// and mirrored for field metadata by the admin (admin/blocks-ui.js).
+// FROZEN v1 RENDERER -- NOT ON THE SERVING PATH.
 //
-// Every block renders its own top-level <section> (or verbatim markup), so the
-// blocks array is flat and reordering is trivial. Rich fields are sanitised on
-// write (api/admin/pages.js); plain-text fields are escaped here at render time.
+// Pages are now rendered by the schema-driven builder engine (../builder), which
+// migrates this file's flat `blocks[]` shape to a v2 document on read. This
+// implementation is kept as the REGRESSION ORACLE: tests/builder-parity.test.js
+// renders every element type and the real published /about/ document through
+// both and asserts the output is byte-identical, which is what guarantees the
+// cutover changed no published markup.
+//
+// Do not add elements here -- add an ElementDefinition to builder/elements/.
+// Do not change this file's output: doing so silently redefines "parity".
+//
+// Original notes: every block renders its own top-level <section> (or verbatim
+// markup), so the blocks array is flat and reordering is trivial. Rich fields
+// are sanitised on write (api/admin/pages.js); plain-text fields are escaped
+// here at render time.
 
 function esc(s) {
   return String(s == null ? '' : s)
