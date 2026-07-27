@@ -9,8 +9,9 @@ import content from './content.js';
 import media from './media.js';
 import marketing from './marketing.js';
 import sections from './sections.js';
+import blocks from './blocks.js';
 
-export const ELEMENTS = [...layout, ...content, ...media, ...marketing, ...sections];
+export const ELEMENTS = [...layout, ...content, ...media, ...marketing, ...sections, ...blocks];
 
 export function createBuilderRegistry(extra = []) {
   return createRegistry().registerAll([...ELEMENTS, ...extra]);

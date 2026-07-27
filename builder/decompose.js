@@ -76,6 +76,7 @@ const standardSection = {
     // included -- the sections do not indent their bodies consistently), as an
     // editable HTML child.
     const headEnd = h2 ? source.indexOf('</h2>') + 5 : source.indexOf('</div>', source.indexOf('shead')) + 6;
+
     const body = source.slice(headEnd, source.lastIndexOf('\n  </div>\n</section>'));
 
     // If the body cannot be expressed as indented children, decline the whole
@@ -134,6 +135,50 @@ const BODY_TYPES = [
       style: m[5] === 'btn-y' ? 'y' : 'line',
       label: unescapeText(m[6]),
     }),
+  },
+  {
+    type: 'alt-row',
+    re: /^<div class="altrow( flip)?" data-reveal>\n {6}<div class="alt-media hud duo"><div class="pic"><img src="([^"]*)" alt="([^"]*)" loading="lazy" \/><\/div><\/div>\n {6}<div class="alt-body">(?:\n {8}<span class="tag">([\s\S]*?)<\/span>)?(?:\n {8}<h3>([\s\S]*?)<\/h3>)?([\s\S]*?)\n {6}<\/div>\n {4}<\/div>(\s*)$/,
+    build: (m) => ({
+      flip: Boolean(m[1]),
+      image: m[2],
+      imageAlt: unescapeText(m[3]),
+      tag: unescapeText(m[4] || ''),
+      heading: unescapeText(m[5] || ''),
+      body: m[6] || '',
+      trail: m[7] || '',
+    }),
+  },
+  {
+    type: 'shorts-gallery',
+    re: /^<div class="gal"( style="([^"]*)")?>\n {6}([\s\S]*)\n {4}<\/div>$/,
+    build: (m) => ({ style: m[2] || '' }),
+    children: (m) => [...m[3].matchAll(
+      /<a href="([^"]*)" target="_blank" rel="noopener" data-reveal(?: data-delay="\d+")? style="grid-column:auto;grid-row:auto;aspect-ratio:9\/16"><img src="([^"]*)" alt="([^"]*)" loading="lazy"\/><span class="pl"><span><\/span><\/span><span class="gcap">([\s\S]*?)<\/span><\/a>/g,
+    )].map((c) => ({
+      id: newId('it'),
+      type: 'short-item',
+      props: { url: c[1], image: c[2], alt: unescapeText(c[3]), caption: unescapeText(c[4]) },
+      children: [],
+    })),
+  },
+  {
+    type: 'testimonial-marquee',
+    re: /^<div class="tst-row( rev)?" data-reveal>\n {4}<div class="tst-track">\n {6}([\s\S]*)\n {4}<\/div>\n {2}<\/div>$/,
+    build: (m) => ({ reverse: Boolean(m[1]) }),
+    children: (m) => [...m[2].matchAll(
+      /<div class="quote"><div class="top"><span class="stars">★★★★★<\/span>(?:<span>([\s\S]*?)<\/span>)?<\/div><p>([\s\S]*?)<\/p><div class="who">([\s\S]*?)(?:<span>([\s\S]*?)<\/span>)?<\/div><\/div>/g,
+    )].map((c) => ({
+      id: newId('it'),
+      type: 'marquee-quote',
+      props: {
+        org: unescapeText(c[1] || ''),
+        quote: unescapeText(c[2]),
+        name: unescapeText(c[3]),
+        role: unescapeText(c[4] || ''),
+      },
+      children: [],
+    })),
   },
   {
     type: 'el-features',
@@ -201,7 +246,96 @@ export function splitSectionBody(body) {
   return { lead, children: rest.map((chunk) => typeBodyChunk(chunk) || rawNode(chunk)) };
 }
 
-export const RECOGNISERS = [statBand, standardSection];
+// The testimonial section: head inside the wrap, marquee outside it, footer
+// link in a second wrap. Claimed before standardSection, which cannot express
+// content sitting outside the main wrap.
+const marqueeSection = {
+  type: 'marquee-section',
+  find(html) {
+    // Guarded so a lazy match cannot run past this section into the next one.
+    const inner = '(?:(?!<section class=)[\\s\\S])*?';
+    const re = new RegExp(
+      `<section class="sec tight">\\n {2}<div class="wrap">\\n {4}<div class="shead" data-reveal>${inner}<\\/div>`
+      + `\\n {2}<div class="tst-row" data-reveal>${inner}<\\/div>\\n {2}<\\/div>`
+      + `(?:\\n {2}<div class="wrap"(?: style="[^"]*")?><a${inner}<\\/a><\\/div>)?\\n<\\/section>`,
+      'g',
+    );
+    const m = re.exec(html);
+    return m ? { start: m.index, end: m.index + m[0].length, source: m[0] } : null;
+  },
+  build(source) {
+    const head = source.match(/<div class="shead" data-reveal>([\s\S]*?)<\/div>/);
+    const quotes = [...source.matchAll(
+      /<div class="quote"><div class="top"><span class="stars">★★★★★<\/span>(?:<span>([\s\S]*?)<\/span>)?<\/div><p>([\s\S]*?)<\/p><div class="who">([\s\S]*?)(?:<span>([\s\S]*?)<\/span>)?<\/div><\/div>/g,
+    )].map((c) => ({
+      id: newId('it'),
+      type: 'marquee-quote',
+      props: {
+        org: unescapeText(c[1] || ''),
+        quote: unescapeText(c[2]),
+        name: unescapeText(c[3]),
+        role: unescapeText(c[4] || ''),
+      },
+      children: [],
+    }));
+    if (!head || !quotes.length) return null;
+    const pick = (re, from) => { const m = from.match(re); return m ? unescapeText(m[1]) : ''; };
+    const foot = source.match(/\n {2}<div class="wrap"(?: style="([^"]*)")?><a href="([^"]*)" class="btn btn-line" data-reveal>([\s\S]*?) <span class="ar">→<\/span><\/a><\/div>\n<\/section>$/);
+    const sub = source.match(/\n {4}<p class="sub" data-reveal>([\s\S]*?)<\/p>\n {2}<\/div>/);
+    return {
+      id: newId('sec'),
+      type: 'marquee-section',
+      props: {
+        idx: pick(/<span class="idx">([\s\S]*?)<\/span>/, head[1]),
+        kicker: pick(/<span class="kick">([\s\S]*?)<\/span>/, head[1]),
+        heading: pick(/\n {4}<h2 data-reveal>([\s\S]*?)<\/h2>/, source),
+        sub: sub ? sub[1] : '',
+        showLine: head[1].includes('<span class="ln">'),
+        footerStyle: foot ? (foot[1] || '') : '',
+        footerUrl: foot ? foot[2] : '',
+        footerLabel: foot ? unescapeText(foot[3]) : '',
+      },
+      children: quotes,
+    };
+  },
+};
+
+// The page hero: every page opens with one.
+const pageHeroRec = {
+  type: 'page-hero',
+  find(html) {
+    const m = /<header class="phero">[\s\S]*?<\/header>/.exec(html);
+    return m ? { start: m.index, end: m.index + m[0].length, source: m[0] } : null;
+  },
+  build(source) {
+    const pick = (re) => { const m = source.match(re); return m ? m[1] : ''; };
+    const img = source.match(/<div class="pic"><img src="([^"]*)" alt="([^"]*)" loading="eager"/);
+    const links = [...source.matchAll(/<a href="([^"]*)" class="btn (btn-y|btn-line)">([\s\S]*?)(?: <span class="ar">→<\/span>)?<\/a>/g)];
+    const primary = links.find((l) => l[2] === 'btn-y');
+    const secondary = links.find((l) => l[2] === 'btn-line');
+    const heading = pick(/<h1 data-reveal data-delay="60">([\s\S]*?)<\/h1>/);
+    if (!heading) return null;
+    return {
+      id: newId('sec'),
+      type: 'page-hero',
+      props: {
+        crumb: unescapeText(pick(/<span class="sep">\/<\/span><span>([\s\S]*?)<\/span>/)),
+        eyebrow: unescapeText(pick(/<span class="live"><\/span>([\s\S]*?)<\/span>/)),
+        heading,
+        lede: unescapeText(pick(/<p class="lede" data-reveal data-delay="120">([\s\S]*?)<\/p>/)),
+        ctaLabel: primary ? unescapeText(primary[3]) : '',
+        ctaUrl: primary ? primary[1] : '',
+        altLabel: secondary ? unescapeText(secondary[3]) : '',
+        altUrl: secondary ? secondary[1] : '',
+        image: img ? img[1] : '',
+        imageAlt: img ? unescapeText(img[2]) : '',
+      },
+      children: [],
+    };
+  },
+};
+
+export const RECOGNISERS = [statBand, marqueeSection, standardSection, pageHeroRec];
 
 // Text captured out of markup is escaped; props hold the unescaped value so the
 // author edits real text and the render re-escapes it.

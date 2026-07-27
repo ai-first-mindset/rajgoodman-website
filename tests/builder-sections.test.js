@@ -74,42 +74,86 @@ test('editing a lifted stat now changes the page (it was frozen in the blob befo
 test('the whole /about/ page decomposes into typed, editable sections', () => {
   const after = decomposeDocument(parse(ABOUT).doc);
   const typed = after.root.children.filter((c) => c.type !== 'raw-html');
-  // 8 standard sections + the stat band + the FAQ that was already typed.
-  assert.equal(typed.length, 10);
-  assert.deepEqual(
-    typed.filter((c) => c.type === 'page-section').map((c) => c.props.idx),
-    ['[ 01 ]', '[ 02 ]', '[ 03 ]', '[ 04 ]', '[ 06 ]', '[ 07 ]', '[ 08 ]', '[ ✦ ]'],
-  );
-  // Every typed section carries an editable heading.
+  assert.deepEqual(typed.map((c) => c.type), [
+    'page-hero', 'page-section', 'page-section', 'page-section', 'page-section',
+    'marquee-section', 'page-section', 'page-section', 'page-section',
+    'stat-band', 'faq', 'page-section',
+  ]);
+  // Every numbered section, including the CTA, carries an editable heading.
   for (const s of typed.filter((c) => c.type === 'page-section')) {
     assert.ok(s.props.heading, `section ${s.props.idx} has no heading`);
   }
-  // The anchor on the contact section is preserved (it is a link target).
   assert.equal(typed.find((c) => c.props.idx === '[ ✦ ]').props.anchor, 'work');
 });
 
-test('section BODIES are split into individually editable pieces', () => {
+test('MOST OF THE PAGE is editable as form fields, not HTML', () => {
+  // The number that actually matters: how much of the content an author can
+  // reach without touching markup. Node counts flatter this; bytes do not.
   const after = decomposeDocument(parse(ABOUT).doc);
-  const byIdx = (idx) => after.root.children.find((c) => c.props.idx === idx);
+  let form = 0;
+  let raw = 0;
+  const walk = (n) => n.children.forEach((c) => {
+    if (c.type === 'raw-html') raw += (c.props.html || '').length;
+    else {
+      form += Object.values(c.props || {}).filter((v) => typeof v === 'string').join('').length;
+      walk(c);
+    }
+  });
+  walk(after.root);
+  const share = form / (form + raw);
+  assert.ok(share > 0.7, `only ${(share * 100).toFixed(0)}% of content is form-editable`);
+});
 
-  // Prose, feature cards, sub text and buttons are all typed.
-  assert.deepEqual(byIdx('[ 01 ]').children.map((c) => c.type), ['prose-block']);
-  assert.deepEqual(byIdx('[ 07 ]').children.map((c) => c.type), ['sub-text', 'button-row']);
+test('the page hero is typed, so its headline and CTAs are editable', () => {
+  const hero = decomposeDocument(parse(ABOUT).doc).root.children
+    .find((c) => c.type === 'page-hero');
+  assert.ok(hero, 'no page-hero produced');
+  assert.equal(hero.props.crumb, 'About');
+  assert.equal(hero.props.eyebrow, 'About Raj Goodman');
+  assert.match(hero.props.heading, /human-first/);
+  assert.equal(hero.props.ctaLabel, 'Consult Raj for your event');
+  assert.equal(hero.props.altLabel, 'EO & YPO impact');
+  assert.match(hero.props.lede, /^Raj Goodman is a futurist keynote speaker/);
+  assert.match(hero.props.image, /^\/assets\//);
+});
 
-  const cards = byIdx('[ 02 ]').children[0];
-  assert.equal(cards.type, 'el-features');
-  assert.deepEqual(cards.children.map((c) => c.props.ix), ['01', '02', '03']);
-  assert.equal(cards.children[0].props.title, 'People power companies');
+test('the testimonial marquee became individually editable quotes', () => {
+  const sec = decomposeDocument(parse(ABOUT).doc).root.children
+    .find((c) => c.type === 'marquee-section');
+  assert.ok(sec.children.length >= 8, `only ${sec.children.length} quotes lifted`);
+  assert.ok(sec.children.every((c) => c.type === 'marquee-quote'));
+  assert.equal(sec.children[0].props.name, 'Vijay Binwani');
+  assert.equal(sec.children[0].props.org, 'EO');
+  assert.equal(sec.props.footerLabel, 'See all testimonials');
+});
 
-  // A body we have no element for is still split per top-level piece rather
-  // than left as one blob -- five alternating rows, separately editable.
-  assert.equal(byIdx('[ 03 ]').children.length, 5);
-  assert.ok(byIdx('[ 03 ]').children.every((c) => c.type === 'raw-html'));
+test("section 03's alternating rows are typed image + text pairs", () => {
+  const sec = decomposeDocument(parse(ABOUT).doc).root.children
+    .find((c) => c.props.idx === '[ 03 ]');
+  const rows = sec.children.filter((c) => c.type === 'alt-row');
+  assert.equal(rows.length, 5);
+  assert.equal(rows[0].props.tag, '01 - The Builder');
+  assert.match(rows[0].props.heading, /Founder of Multiple Tech Ventures/);
+  assert.equal(rows[1].props.flip, true);
+});
 
-  // Buttons that open in a new tab keep target/rel.
-  const linkedin = byIdx('[ 08 ]').children.find((c) => c.type === 'button-row');
-  assert.equal(linkedin.props.newTab, true);
-  assert.equal(linkedin.props.label, 'Connect on LinkedIn');
+test('the shorts gallery became typed video items', () => {
+  const sec = decomposeDocument(parse(ABOUT).doc).root.children
+    .find((c) => c.props.idx === '[ 04 ]');
+  const gal = sec.children.find((c) => c.type === 'shorts-gallery');
+  assert.equal(gal.children.length, 5);
+  assert.match(gal.children[0].props.url, /youtube\.com\/shorts/);
+  assert.ok(gal.children[0].props.caption);
+});
+
+test('the contact form and LinkedIn widget are deliberately left as HTML', () => {
+  // Functional widgets managed elsewhere; typing them adds risk, not value.
+  const after = decomposeDocument(parse(ABOUT).doc);
+  const raws = [];
+  const walk = (n) => n.children.forEach((c) => { if (c.type === 'raw-html') raws.push(c.props.html); else walk(c); });
+  walk(after.root);
+  assert.ok(raws.some((h) => h.includes('data-form="contact"')), 'contact form kept');
+  assert.ok(raws.some((h) => h.includes('data-li-grid')), 'LinkedIn grid kept');
 });
 
 test('editing decomposed body content changes the page', () => {
@@ -119,17 +163,6 @@ test('editing decomposed body content changes the page', () => {
   const html = render(after);
   assert.match(html, /<h3>Listening is the superpower<\/h3>/);
   assert.doesNotMatch(html, /Empathy is a superpower/);
-});
-
-test('section 05 is left as HTML: its footer button sits in a second wrap', () => {
-  // Documented limitation rather than a silent failure -- the element models
-  // one wrap, and contorting it for a single variant is not worth it.
-  const after = decomposeDocument(parse(ABOUT).doc);
-  const holding = after.root.children.find(
-    (c) => c.type === 'raw-html' && c.props.html.includes('[ 05 ]'),
-  );
-  assert.ok(holding, 'section 05 should still be present as raw HTML');
-  assert.match(holding.props.html, /tst-row/);
 });
 
 test('editing a decomposed section heading changes the page', () => {

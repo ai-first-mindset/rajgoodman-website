@@ -8,7 +8,7 @@
 // rather than esc() in text nodes). tests/builder-sections.test.js checks each
 // against the real published markup.
 
-import { esc, escText, safeUrl } from '../core/html.js';
+import { esc, escAttr, escText, safeUrl } from '../core/html.js';
 import { ICONS, text, area, html } from './shared.js';
 
 const ARROW = '→'; // the literal glyph the pages use, not &rarr;
@@ -33,6 +33,12 @@ export const pageSection = {
     { name: 'showLine', control: 'toggle', label: 'Divider line', default: true },
     text('anchor', 'Anchor id (optional)'),
     text('headingStyle', 'Heading style (advanced)'),
+    // Some sections close with a second wrap holding a single link ("See all
+    // testimonials"). Modelling it here is what lets those sections be typed
+    // at all rather than staying as raw HTML.
+    text('footerLabel', 'Footer link label'),
+    text('footerUrl', 'Footer link URL'),
+    text('footerStyle', 'Footer style (advanced)'),
   ],
   childPolicy: { kind: 'any' },
   render: (ctx) => {
@@ -41,7 +47,7 @@ export const pageSection = {
     const kick = p.kicker ? `<span class="kick">${escText(p.kicker)}</span>` : '';
     const ln = p.showLine === false ? '' : '<span class="ln"></span>';
     const head = (idx || kick || ln) ? `<div class="shead" data-reveal>${idx}${kick}${ln}</div>` : '';
-    const hStyle = p.headingStyle ? ` style="${esc(p.headingStyle)}"` : '';
+    const hStyle = p.headingStyle ? ` style="${escAttr(p.headingStyle)}"` : '';
     const h2 = p.heading ? `${head ? '\n    ' : ''}<h2 data-reveal${hStyle}>${escText(p.heading)}</h2>` : '';
     // Every child sits on its own indented line. `lead` carries any extra blank
     // line a migrated section had before its body -- mechanical formatting the
@@ -49,11 +55,15 @@ export const pageSection = {
     const body = ctx.childCount
       ? `${p.lead || ''}\n    ${ctx.renderChildren({ separator: '\n    ' })}`
       : '';
-    const anchor = p.anchor ? ` id="${esc(p.anchor)}"` : '';
+    const anchor = p.anchor ? ` id="${escAttr(p.anchor)}"` : '';
+    const fStyle = p.footerStyle ? ` style="${escAttr(p.footerStyle)}"` : '';
+    const footer = p.footerLabel
+      ? `\n  <div class="wrap"${fStyle}><a href="${esc(safeUrl(p.footerUrl) || '#')}" class="btn btn-line" data-reveal>${escText(p.footerLabel)} <span class="ar">${ARROW}</span></a></div>`
+      : '';
     return `<section class="sec tight"${anchor}>
   <div class="wrap">
     ${head}${h2}${body}
-  </div>
+  </div>${footer}
 </section>`;
   },
 };
@@ -110,7 +120,7 @@ export const subText = {
   schema: [html('html', 'Text (HTML)', ''), text('style', 'Inline style (advanced)')],
   childPolicy: { kind: 'none' },
   render: (ctx) => {
-    const style = ctx.props.style ? ` style="${esc(ctx.props.style)}"` : '';
+    const style = ctx.props.style ? ` style="${escAttr(ctx.props.style)}"` : '';
     return `<p class="sub" data-reveal${style}>${ctx.props.html || ''}</p>`;
   },
 };
@@ -130,8 +140,8 @@ export const proseBlock = {
   childPolicy: { kind: 'none' },
   render: (ctx) => {
     const p = ctx.props;
-    const delay = p.delay ? ` data-delay="${esc(p.delay)}"` : '';
-    const style = p.style ? ` style="${esc(p.style)}"` : '';
+    const delay = p.delay ? ` data-delay="${escAttr(p.delay)}"` : '';
+    const style = p.style ? ` style="${escAttr(p.style)}"` : '';
     return `<div class="prose" data-reveal${delay}${style}>${p.html || ''}</div>`;
   },
 };
@@ -152,7 +162,7 @@ export const buttonRow = {
   childPolicy: { kind: 'none' },
   render: (ctx) => {
     const p = ctx.props;
-    const wrap = p.wrapStyle ? ` style="${esc(p.wrapStyle)}"` : '';
+    const wrap = p.wrapStyle ? ` style="${escAttr(p.wrapStyle)}"` : '';
     const cls = p.style === 'y' ? 'btn btn-y' : 'btn btn-line';
     const target = p.newTab ? ' target="_blank" rel="noopener"' : '';
     return `<div${wrap} data-reveal><a href="${esc(safeUrl(p.url) || '#')}"${target} class="${cls}">${escText(p.label)} <span class="ar">${ARROW}</span></a></div>`;

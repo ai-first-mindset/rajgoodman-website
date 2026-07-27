@@ -17,6 +17,15 @@ export function escText(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Attribute escaping for DOUBLE-quoted attributes: quotes matter, apostrophes
+// do not. esc() also escapes ' (needed if a value were single-quoted), which
+// would rewrite every apostrophe in the site's alt text as &#39;.
+export function escAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export function stripTags(s) {
   return String(s == null ? '' : s).replace(/<[^>]+>/g, ' ')
     .replace(/&amp;/g, '&').replace(/&#0?39;|&rsquo;|&#8217;/g, "'").replace(/&quot;/g, '"')
