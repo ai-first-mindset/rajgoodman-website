@@ -88,6 +88,39 @@ test('the whole /about/ page decomposes into typed, editable sections', () => {
   assert.equal(typed.find((c) => c.props.idx === '[ ✦ ]').props.anchor, 'work');
 });
 
+test('section BODIES are split into individually editable pieces', () => {
+  const after = decomposeDocument(parse(ABOUT).doc);
+  const byIdx = (idx) => after.root.children.find((c) => c.props.idx === idx);
+
+  // Prose, feature cards, sub text and buttons are all typed.
+  assert.deepEqual(byIdx('[ 01 ]').children.map((c) => c.type), ['prose-block']);
+  assert.deepEqual(byIdx('[ 07 ]').children.map((c) => c.type), ['sub-text', 'button-row']);
+
+  const cards = byIdx('[ 02 ]').children[0];
+  assert.equal(cards.type, 'el-features');
+  assert.deepEqual(cards.children.map((c) => c.props.ix), ['01', '02', '03']);
+  assert.equal(cards.children[0].props.title, 'People power companies');
+
+  // A body we have no element for is still split per top-level piece rather
+  // than left as one blob -- five alternating rows, separately editable.
+  assert.equal(byIdx('[ 03 ]').children.length, 5);
+  assert.ok(byIdx('[ 03 ]').children.every((c) => c.type === 'raw-html'));
+
+  // Buttons that open in a new tab keep target/rel.
+  const linkedin = byIdx('[ 08 ]').children.find((c) => c.type === 'button-row');
+  assert.equal(linkedin.props.newTab, true);
+  assert.equal(linkedin.props.label, 'Connect on LinkedIn');
+});
+
+test('editing decomposed body content changes the page', () => {
+  const after = decomposeDocument(parse(ABOUT).doc);
+  const cards = after.root.children.find((c) => c.props.idx === '[ 02 ]').children[0];
+  cards.children[1].props.title = 'Listening is the superpower';
+  const html = render(after);
+  assert.match(html, /<h3>Listening is the superpower<\/h3>/);
+  assert.doesNotMatch(html, /Empathy is a superpower/);
+});
+
 test('section 05 is left as HTML: its footer button sits in a second wrap', () => {
   // Documented limitation rather than a silent failure -- the element models
   // one wrap, and contorting it for a single variant is not worth it.

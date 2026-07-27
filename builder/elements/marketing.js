@@ -2,7 +2,7 @@
 // none contains any repeater-specific code, because a repeater is just a
 // childPolicy.
 
-import { esc, safeUrl } from '../core/html.js';
+import { esc, escText, safeUrl } from '../core/html.js';
 import { ICONS, sectionHead, HEAD_FIELDS, text, area, html, toggle } from './shared.js';
 
 export const cta = {
@@ -111,12 +111,17 @@ export const featureCard = {
   category: 'Items',
   icon: ICONS.features,
   standalone: false,
-  schema: [text('title', 'Title', 'Feature'), area('text', 'Text', 'Describe the feature here.')],
+  schema: [
+    text('title', 'Title', 'Feature'),
+    area('text', 'Text', 'Describe the feature here.'),
+    text('ix', 'Index label (e.g. 01)'),
+  ],
   childPolicy: { kind: 'none' },
   render: (ctx) => {
-    const { title, text: body } = ctx.props;
+    const { title, text: body, ix } = ctx.props;
     const delay = ctx.index ? ` data-delay="${ctx.index * 80}"` : '';
-    return `<article class="feat" data-reveal${delay}><span class="ct tl"></span><span class="ct br"></span><h3>${esc(title)}</h3><p>${esc(body)}</p></article>`;
+    const index = ix ? `<span class="ix">${escText(ix)}</span>` : '';
+    return `<article class="feat" data-reveal${delay}><span class="ct tl"></span><span class="ct br"></span>${index}<h3>${escText(title)}</h3><p>${escText(body)}</p></article>`;
   },
 };
 
@@ -125,9 +130,20 @@ export const elFeatures = {
   label: 'Feature cards',
   category: 'Marketing',
   icon: ICONS.features,
-  schema: [],
+  schema: [
+    { name: 'reveal', control: 'toggle', label: 'Animate on scroll', default: true },
+    // The hand-authored grids put each card on its own indented line; the
+    // generated ones do not. Kept as a prop so both round-trip byte-for-byte.
+    { name: 'indent', control: 'toggle', label: 'Indent cards (source formatting)', default: false },
+  ],
   childPolicy: { kind: 'repeater', item: 'feature-card' },
-  render: (ctx) => `<div class="feat-grid" data-reveal>${ctx.renderChildren({ separator: '' })}</div>`,
+  render: (ctx) => {
+    const reveal = ctx.props.reveal === false ? '' : ' data-reveal';
+    const cards = ctx.props.indent
+      ? `\n      ${ctx.renderChildren({ separator: '\n      ' })}\n    `
+      : ctx.renderChildren({ separator: '' });
+    return `<div class="feat-grid"${reveal}>${cards}</div>`;
+  },
 };
 
 export default [cta, faqItem, faq, elTestimonial, statItem, elStats, featureCard, elFeatures];

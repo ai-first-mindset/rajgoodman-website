@@ -14,11 +14,9 @@
   position: relative;
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr) 300px;
-  /* Fill the viewport it is given rather than sitting in a small box: the
-     canvas is the thing being worked on. */
-  height: calc(100vh - 220px);
-  min-height: 560px;
-  max-height: 1200px;
+  /* Sized from the screen, not a fixed box. Focus mode is then a preference,
+     not the fix for a cramped default. */
+  height: clamp(460px, calc(100vh - 210px), 1400px);
   border: 1px solid var(--pb-line);
   border-radius: 4px;
   overflow: hidden;

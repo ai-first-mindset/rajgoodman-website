@@ -78,6 +78,10 @@ const standardSection = {
     const headEnd = h2 ? source.indexOf('</h2>') + 5 : source.indexOf('</div>', source.indexOf('shead')) + 6;
     const body = source.slice(headEnd, source.lastIndexOf('\n  </div>\n</section>'));
 
+    // If the body cannot be expressed as indented children, decline the whole
+    // section rather than reformat it -- it stays raw-html and nothing is lost.
+    const split = body ? splitSectionBody(body) : null;
+    if (body && !split) return null;
     return {
       id: newId('sec'),
       type: 'page-section',
@@ -88,11 +92,114 @@ const standardSection = {
         showLine: head[1].includes('<span class="ln">'),
         anchor: (source.match(/<section class="sec tight" id="([^"]*)"/) || [, ''])[1],
         headingStyle: h2 && h2[2] ? h2[2] : '',
+        lead: split ? split.lead : '',
       },
-      children: body ? [rawNode(body)] : [],
+      children: split ? split.children : (body ? [rawNode(body)] : []),
     };
   },
 };
+
+// --- Section bodies --------------------------------------------------------
+//
+// A section whose body is one big raw-html child only makes its HEADING
+// editable. Splitting that body into its top-level pieces is what makes the
+// CONTENT editable: each piece becomes its own node, typed where we recognise
+// it and a much smaller raw-html block where we do not.
+//
+// The pages indent each top-level body element on its own line, and
+// page-section renders children joined by exactly that indent, so splitting on
+// it round-trips precisely.
+const BODY_SPLIT = '\n    ';
+
+// One typed body element per recognised shape. `test` must match the WHOLE
+// chunk, so a partial match can never silently drop markup.
+const BODY_TYPES = [
+  {
+    type: 'sub-text',
+    re: /^<p class="sub" data-reveal( style="([^"]*)")?>([\s\S]*)<\/p>$/,
+    build: (m) => ({ html: m[3], style: m[2] || '' }),
+  },
+  {
+    type: 'prose-block',
+    re: /^<div class="prose" data-reveal( data-delay="([^"]*)")?( style="([^"]*)")?>([\s\S]*)<\/div>$/,
+    build: (m) => ({ html: m[5], delay: m[2] || '', style: m[4] || '' }),
+  },
+  {
+    type: 'button-row',
+    re: /^<div( style="([^"]*)")? data-reveal><a href="([^"]*)"( target="_blank" rel="noopener")? class="btn (btn-line|btn-y)">([\s\S]*?) <span class="ar">→<\/span><\/a><\/div>$/,
+    build: (m) => ({
+      wrapStyle: m[2] || '',
+      url: m[3],
+      newTab: Boolean(m[4]),
+      style: m[5] === 'btn-y' ? 'y' : 'line',
+      label: unescapeText(m[6]),
+    }),
+  },
+  {
+    type: 'el-features',
+    re: /^<div class="feat-grid">\n {6}([\s\S]*)\n {4}<\/div>$/,
+    build: () => ({ reveal: false, indent: true }),
+    children: (m) => [...m[1].matchAll(
+      /<article class="feat" data-reveal(?: data-delay="\d+")?><span class="ct tl"><\/span><span class="ct br"><\/span>(?:<span class="ix">([^<]*)<\/span>)?<h3>([\s\S]*?)<\/h3><p>([\s\S]*?)<\/p><\/article>/g,
+    )].map((c) => ({
+      id: newId('it'),
+      type: 'feature-card',
+      props: { ix: unescapeText(c[1] || ''), title: unescapeText(c[2]), text: unescapeText(c[3]) },
+      children: [],
+    })),
+  },
+];
+
+function typeBodyChunk(chunk) {
+  for (const shape of BODY_TYPES) {
+    const m = chunk.match(shape.re);
+    if (!m) continue;
+    const children = shape.children ? shape.children(m) : [];
+    if (shape.children && !children.length) continue; // never lose repeated content
+    return { id: newId('el'), type: shape.type, props: shape.build(m), children };
+  }
+  return null;
+}
+
+// Depth-aware split: only break at an indent that is between top-level
+// elements, never inside one.
+function splitTopLevel(body) {
+  const chunks = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < body.length; i += 1) {
+    if (body[i] === '<') {
+      if (body.startsWith('<!--', i)) { i = body.indexOf('-->', i) + 2; continue; }
+      if (body[i + 1] === '/') depth -= 1;
+      else if (/[a-zA-Z]/.test(body[i + 1] || '')) {
+        const end = body.indexOf('>', i);
+        if (end > 0 && body[end - 1] !== '/' && !VOID_HTML.test(body.slice(i, end))) depth += 1;
+      }
+    } else if (depth === 0 && body.startsWith(BODY_SPLIT, i)) {
+      chunks.push(body.slice(start, i));
+      start = i + BODY_SPLIT.length;
+      i += BODY_SPLIT.length - 1;
+    }
+  }
+  chunks.push(body.slice(start));
+  return chunks;
+}
+
+const VOID_HTML = /<(br|hr|img|input|meta|link|source|track|col|area|base|embed|param|wbr)\b/i;
+
+// A section's raw body -> its child nodes, plus any leading whitespace that
+// belongs to the section rather than to a child.
+export function splitSectionBody(body) {
+  const chunks = splitTopLevel(body);
+  if (chunks.length < 2) return null;
+  const lead = chunks[0];
+  // Anything but whitespace before the first indented element means the body is
+  // not shaped the way we assume; leave it whole rather than risk mangling it.
+  if (lead.trim() !== '') return null;
+  const rest = chunks.slice(1).filter((c) => c !== '');
+  if (!rest.length) return null;
+  return { lead, children: rest.map((chunk) => typeBodyChunk(chunk) || rawNode(chunk)) };
+}
 
 export const RECOGNISERS = [statBand, standardSection];
 

@@ -9,7 +9,7 @@
 // against the real published markup.
 
 import { esc, escText, safeUrl } from '../core/html.js';
-import { ICONS, text, area } from './shared.js';
+import { ICONS, text, area, html } from './shared.js';
 
 const ARROW = '→'; // the literal glyph the pages use, not &rarr;
 
@@ -43,10 +43,12 @@ export const pageSection = {
     const head = (idx || kick || ln) ? `<div class="shead" data-reveal>${idx}${kick}${ln}</div>` : '';
     const hStyle = p.headingStyle ? ` style="${esc(p.headingStyle)}"` : '';
     const h2 = p.heading ? `${head ? '\n    ' : ''}<h2 data-reveal${hStyle}>${escText(p.heading)}</h2>` : '';
-    // Migrated bodies carry their own leading whitespace (the pages do not
-    // indent consistently), so only indent a body that has none of its own.
-    const inner = ctx.childCount ? ctx.renderChildren({ separator: '\n    ' }) : '';
-    const body = inner && !inner.startsWith('\n') ? `\n    ${inner}` : inner;
+    // Every child sits on its own indented line. `lead` carries any extra blank
+    // line a migrated section had before its body -- mechanical formatting the
+    // author never needs to see, kept so decomposition stays byte-exact.
+    const body = ctx.childCount
+      ? `${p.lead || ''}\n    ${ctx.renderChildren({ separator: '\n    ' })}`
+      : '';
     const anchor = p.anchor ? ` id="${esc(p.anchor)}"` : '';
     return `<section class="sec tight"${anchor}>
   <div class="wrap">
@@ -94,4 +96,67 @@ export const statBand = {
   },
 };
 
-export default [pageSection, statBand];
+// --- Section bodies --------------------------------------------------------
+// The pieces that sit inside a section. Splitting a body into these is what
+// makes the CONTENT editable rather than just the heading above it.
+
+// The standing paragraph under a section heading. Rich text, because several
+// carry inline links.
+export const subText = {
+  type: 'sub-text',
+  label: 'Sub text',
+  category: 'Sections',
+  icon: ICONS.paragraph,
+  schema: [html('html', 'Text (HTML)', ''), text('style', 'Inline style (advanced)')],
+  childPolicy: { kind: 'none' },
+  render: (ctx) => {
+    const style = ctx.props.style ? ` style="${esc(ctx.props.style)}"` : '';
+    return `<p class="sub" data-reveal${style}>${ctx.props.html || ''}</p>`;
+  },
+};
+
+// A body copy block. data-delay and margin tweaks vary per instance, so they
+// are props rather than being baked in.
+export const proseBlock = {
+  type: 'prose-block',
+  label: 'Prose',
+  category: 'Sections',
+  icon: ICONS.paragraph,
+  schema: [
+    html('html', 'Content (HTML)', ''),
+    text('delay', 'Reveal delay (ms)'),
+    text('style', 'Inline style (advanced)'),
+  ],
+  childPolicy: { kind: 'none' },
+  render: (ctx) => {
+    const p = ctx.props;
+    const delay = p.delay ? ` data-delay="${esc(p.delay)}"` : '';
+    const style = p.style ? ` style="${esc(p.style)}"` : '';
+    return `<div class="prose" data-reveal${delay}${style}>${p.html || ''}</div>`;
+  },
+};
+
+// A standalone call-to-action link under a section body.
+export const buttonRow = {
+  type: 'button-row',
+  label: 'Button row',
+  category: 'Sections',
+  icon: ICONS.button,
+  schema: [
+    text('label', 'Button label'),
+    text('url', 'Button URL'),
+    { name: 'style', control: 'select', label: 'Style', default: 'line', options: [{ label: 'Outline', value: 'line' }, { label: 'Solid', value: 'y' }] },
+    { name: 'newTab', control: 'toggle', label: 'Open in a new tab', default: false },
+    text('wrapStyle', 'Inline style (advanced)'),
+  ],
+  childPolicy: { kind: 'none' },
+  render: (ctx) => {
+    const p = ctx.props;
+    const wrap = p.wrapStyle ? ` style="${esc(p.wrapStyle)}"` : '';
+    const cls = p.style === 'y' ? 'btn btn-y' : 'btn btn-line';
+    const target = p.newTab ? ' target="_blank" rel="noopener"' : '';
+    return `<div${wrap} data-reveal><a href="${esc(safeUrl(p.url) || '#')}"${target} class="${cls}">${escText(p.label)} <span class="ar">${ARROW}</span></a></div>`;
+  },
+};
+
+export default [pageSection, statBand, subText, proseBlock, buttonRow];

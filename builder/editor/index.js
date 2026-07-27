@@ -94,15 +94,17 @@ export function mount(host, stored, onChange, onPublish, options = {}) {
   }
   const designTab = el('button', { type: 'button', class: 'pb-tool pb-mode is-on', text: 'Design', onclick: () => setMode('design') });
   const codeTab = el('button', { type: 'button', class: 'pb-tool pb-mode', text: 'Code', onclick: () => setMode('code') });
+  // The shell sizes itself from the viewport; this is a preference for
+  // distraction-free work, not a workaround for a cramped default.
   const fullBtn = el('button', {
-    type: 'button', class: 'pb-tool', text: 'Fullscreen', title: 'Expand the builder (Esc to exit)',
+    type: 'button', class: 'pb-tool', text: 'Focus', title: 'Distraction-free editing (Esc to exit)',
     onclick: () => toggleFull(),
   });
   function toggleFull(force) {
     const on = force === undefined ? !shell.classList.contains('is-full') : force;
     shell.classList.toggle('is-full', on);
     document.body.classList.toggle('pb-full-open', on);
-    fullBtn.textContent = on ? 'Exit fullscreen' : 'Fullscreen';
+    fullBtn.textContent = on ? 'Exit focus' : 'Focus';
     if (mode === 'design') canvas.render();
   }
 
