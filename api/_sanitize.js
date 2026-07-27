@@ -5,17 +5,11 @@
 // fields happens at render time in the builder (esc).
 
 import { htmlFieldsByType } from '../builder/seo.js';
+import { sanitizeHtml } from '../builder/sanitize.js';
 
-// Strip <script>/<style>, inline event handlers, and javascript:/vbscript: URLs.
-export function sanitizeHtml(html) {
-  if (typeof html !== 'string') return html;
-  return html
-    .replace(/<\s*script\b[\s\S]*?<\/\s*script\s*>/gi, '')
-    .replace(/<\s*script\b[^>]*>/gi, '')
-    .replace(/<\s*style\b[\s\S]*?<\/\s*style\s*>/gi, '')
-    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/(href|src)\s*=\s*("|')\s*(?:javascript|vbscript):[^"']*\2/gi, '$1=$2#$2');
-}
+// Allowlist sanitiser: everything is removed unless explicitly permitted, and
+// clean markup comes back byte-identical. See builder/sanitize.js.
+export { sanitizeHtml };
 
 // Which props are HTML is DERIVED FROM THE SCHEMAS (every field whose control is
 // `html`), so an element added to the registry is sanitised without anyone

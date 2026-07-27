@@ -2,7 +2,7 @@
 // the `blocks` JSONB array (see api/_blocks.js) instead of body_html; every
 // rich field inside the blocks is sanitised on write.
 
-import { requireUser } from '../_auth.js';
+import { requireUser, requireAdmin } from '../_auth.js';
 import { readBody } from '../_body.js';
 import { sanitizeBlocks } from '../_sanitize.js';
 
@@ -29,7 +29,11 @@ function getId(req) {
 }
 
 export default async function handler(req, res) {
-  if (!(await requireUser(req, res))) return;
+  // Reading the page list is fine for any signed-in user; WRITING is not.
+  // Page content becomes markup on public pages, so a page write is effectively
+  // "publish HTML to rajgoodman.com" and is restricted to admins.
+  const guard = req.method === 'GET' ? requireUser : requireAdmin;
+  if (!(await guard(req, res))) return;
   if (!SB_URL || !SB_KEY) return res.status(500).json({ ok: false, error: 'db-not-configured' });
 
   try {

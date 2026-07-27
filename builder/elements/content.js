@@ -1,7 +1,7 @@
 // Content elements: section-level blocks that emit their own <section>, and the
 // bare elements meant to sit inside a Container or Column.
 
-import { esc } from '../core/html.js';
+import { esc, safeUrl } from '../core/html.js';
 import { ICONS, sectionHead, HEAD_FIELDS, text, html, select, toggle } from './shared.js';
 
 export const sectionHeading = {
@@ -76,7 +76,7 @@ export const elButton = {
   render: (ctx) => {
     const { style, url, label } = ctx.props;
     const cls = style === 'line' ? 'btn btn-line' : 'btn btn-y';
-    return `<div data-reveal><a href="${esc(url || '#')}" class="${cls}">${esc(label)} <span class="ar">&rarr;</span></a></div>`;
+    return `<div data-reveal><a href="${esc(safeUrl(url) || '#')}" class="${cls}">${esc(label)} <span class="ar">&rarr;</span></a></div>`;
   },
 };
 

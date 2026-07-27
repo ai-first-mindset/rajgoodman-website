@@ -17,3 +17,39 @@ export function stripTags(s) {
 export function attr(name, value) {
   return value == null || value === '' ? '' : ` ${name}="${esc(value)}"`;
 }
+
+// --- URL safety -------------------------------------------------------------
+//
+// esc() makes a value safe to sit inside an attribute, but it does NOT stop
+// `javascript:` — no quotes are needed to write a scheme. Any value that becomes
+// an href/src/action must go through safeUrl().
+
+// Schemes are compared after decoding entities and stripping the whitespace and
+// control characters browsers ignore, so `java&#09;script:` cannot slip past.
+function decodeForScheme(value) {
+  return String(value)
+    .replace(/&#x([0-9a-f]+);?/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#(\d+);?/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&tab;|&newline;/gi, ' ')
+    .replace(/&colon;/gi, ':')
+    .replace(/[\u0000-\u0020\u00a0\u1680\u2000-\u200f\u2028-\u202f\u205f\u3000\ufeff]/g, '');
+}
+
+const SAFE_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:', 'sms:', 'ftp:']);
+const SAFE_DATA_IMAGE = /^data:image\/(png|jpe?g|gif|webp|avif|bmp|x-icon);/i;
+
+// True for relative URLs, anchors, and the schemes above. data: is allowed only
+// for raster images (never image/svg+xml, which can carry script).
+export function isSafeUrl(value, { allowDataImage = false } = {}) {
+  const v = decodeForScheme(value == null ? '' : value);
+  if (v === '') return true;
+  const scheme = v.match(/^([a-z][a-z0-9+.-]*):/i);
+  if (!scheme) return true;                       // relative, #anchor, //host
+  if (allowDataImage && SAFE_DATA_IMAGE.test(v)) return true;
+  return SAFE_SCHEMES.has(scheme[0].toLowerCase());
+}
+
+// The value to actually emit: the original when safe, otherwise a dead link.
+export function safeUrl(value, opts) {
+  return isSafeUrl(value, opts) ? String(value == null ? '' : value) : '#';
+}

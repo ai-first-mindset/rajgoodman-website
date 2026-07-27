@@ -2,7 +2,7 @@
 // none contains any repeater-specific code, because a repeater is just a
 // childPolicy.
 
-import { esc } from '../core/html.js';
+import { esc, safeUrl } from '../core/html.js';
 import { ICONS, sectionHead, HEAD_FIELDS, text, area, html, toggle } from './shared.js';
 
 export const cta = {
@@ -17,7 +17,7 @@ export const cta = {
     const p = ctx.props;
     const head = sectionHead({ ...p, showLine: false }, ctx.ordinal);
     const sub = p.text ? `\n    <p class="sub" style="margin:1rem auto 0">${esc(p.text)}</p>` : '';
-    const btn = p.label ? `\n    <a href="${esc(p.url || '#')}" class="btn btn-y">${esc(p.label)} <span class="ar">&rarr;</span></a>` : '';
+    const btn = p.label ? `\n    <a href="${esc(safeUrl(p.url) || '#')}" class="btn btn-y">${esc(p.label)} <span class="ar">&rarr;</span></a>` : '';
     return `<section class="sec reach">
   <div class="wrap" data-reveal>
     ${head}${sub}${btn}
