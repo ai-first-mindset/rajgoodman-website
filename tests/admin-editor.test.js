@@ -159,6 +159,37 @@ test('typing in the alt input is not clobbered by editor transactions', () => {
   assert.equal(els['tt-altinput'].value, 'half-typed new alt');
 });
 
+/* ---- FAQ blocks ---- */
+
+test('the FAQ button appends a new item instead of no-opping inside one', () => {
+  // setDetails() only wraps the CURRENT block, so once the cursor was inside an
+  // FAQ the button silently did nothing and you could add only one at a time.
+  assert.match(SRC, /function addFaqItem\(\)/);
+  assert.match(SRC, /cmd==='faq'\) addFaqItem\(\)/);
+  assert.doesNotMatch(SRC, /cmd==='faq'\) c\.setDetails/, 'the old no-op path must be gone');
+  // It inserts markup so it goes through the same parser that reads FAQs on load.
+  assert.match(SRC, /FAQ_TEMPLATE/);
+  assert.match(SRC, /details class="faq-item"/);
+  assert.match(SRC, /data-type="detailsContent"/);
+  assert.match(SRC, /insertContentAt\(editor\.state\.doc\.content\.size, FAQ_TEMPLATE\)/);
+});
+
+test('blog FAQ styling matches the site .faq pattern, and survives the admin', () => {
+  const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'blog-content.css'), 'utf8');
+  const site = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'site.css'), 'utf8');
+  // the site's pattern: continuous list with hairline dividers + a 26px marker
+  assert.match(site, /\.faq details\{border-bottom:1px solid var\(--line\)\}/);
+  assert.match(css, /\.post-body details, \.ProseMirror \.faq-item\[data-type="details"\]/);
+  assert.match(css, /border-bottom: 1px solid var\(--line/);
+  assert.match(css, /width: 26px; height: 26px/);
+  assert.match(css, /\.post-body details \+ details \{ border-top: 0; \}/, 'runs must share dividers');
+  // The admin does NOT load site.css, so every token needs a concrete fallback
+  // or the rule silently disappears in the editor.
+  const declarations = css.replace(/\/\*[\s\S]*?\*\//g, '');   // comments explain the rule; don't scan them
+  const bareVars = (declarations.match(/var\(--[a-z0-9-]+\)/g) || []);
+  assert.deepEqual(bareVars, [], `bare var() in blog-content.css breaks the editor: ${bareVars.join(', ')}`);
+});
+
 /* ---- the alt bar floats beside the image, not at the top of the editor ---- */
 
 test('the alt bar is positioned against the selected image, with a docked fallback', () => {

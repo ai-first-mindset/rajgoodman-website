@@ -240,7 +240,7 @@ function ttCmd(cmd){
     else editor.chain().focus().extendMarkRange('link').setLink({ href:url }).run();
   }
   else if(cmd==='image') openMedia((url,f)=>{ const at={ src:url }; if(f&&f.alt) at.alt=f.alt; editor.chain().focus().setImage(at).run(); if(!at.alt) editImageAlt(url); });
-  else if(cmd==='faq') c.setDetails().run();
+  else if(cmd==='faq') addFaqItem();
   else if(cmd==='video'){ const bar=$('tt-videobar'); bar.style.display='flex'; const inp=$('tt-videourl'); inp.value=''; inp.focus(); return; }
   else if(cmd==='cta'){ const bar=$('tt-ctabar'); bar.style.display='flex'; $('cta-h').focus(); return; }
   else if(cmd==='form'){ $('tt-formbar').style.display='flex'; return; }
@@ -306,6 +306,26 @@ function positionAltBar(){
   bar.style.borderRadius='4px';
   bar.style.boxShadow='0 6px 20px rgba(0,0,0,.18)';
 }
+// Add an FAQ. setDetails() is a no-op when the cursor is already inside one, so
+// clicking FAQ repeatedly used to add only the first: you had to click out of
+// the block each time. Step out to the end of the current FAQ first, so the
+// button always adds another one and a whole set can be built in a few clicks.
+// Append another FAQ to the end of the post.
+//
+// setDetails() only wraps the CURRENT block, so it is a no-op once the cursor
+// is inside an FAQ — which meant the button added the first item and then
+// appeared to do nothing. Inserting the markup instead goes through the same
+// parser that reads FAQs when a post loads, so it works from anywhere in the
+// document and each click reliably adds one.
+const FAQ_TEMPLATE = '<details class="faq-item"><summary>New question</summary>'
+  + '<div data-type="detailsContent"><p>Answer goes here.</p></div></details>';
+function addFaqItem(){
+  if(!editor) return;
+  editor.chain().focus()
+    .insertContentAt(editor.state.doc.content.size, FAQ_TEMPLATE)
+    .run();
+}
+
 function applyImageAlt(){
   if(!editor || !editor.isActive('image')) return;
   editor.chain().focus().updateAttributes('image', { alt: $('tt-altinput').value.trim() }).run();
