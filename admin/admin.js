@@ -259,6 +259,52 @@ function updateToolbarActive(){
   const altBar=$('tt-altbar'), onImg=editor.isActive('image');
   if(onImg && document.activeElement!==$('tt-altinput')) $('tt-altinput').value = editor.getAttributes('image').alt || '';
   altBar.style.display = onImg ? 'flex' : 'none';
+  if(onImg) positionAltBar(); else dockAltBar(altBar);
+}
+
+// The alt bar floats beside the image being edited rather than sitting at the
+// top of the editor: on a long post the image you clicked is often nowhere near
+// the toolbar, and scrolling up to type alt text and back down is miserable.
+// Falls back to the docked position if the image element cannot be located.
+function selectedImageEl(){
+  const view = editor && editor.view;
+  const dom = view && view.dom;
+  if(!dom || !dom.querySelector) return null;
+  // ProseMirror marks the node-selected element; fall back to matching on src.
+  let img = dom.querySelector('img.ProseMirror-selectednode');
+  if(!img){
+    const src = (editor.getAttributes('image')||{}).src;
+    if(src && dom.querySelectorAll){
+      const all = dom.querySelectorAll('img');
+      for(let i=0;i<all.length;i++){ if(all[i].getAttribute('src')===src){ img=all[i]; break; } }
+    }
+  }
+  return img && img.getBoundingClientRect ? img : null;
+}
+function dockAltBar(bar){
+  if(!bar || !bar.style) return;
+  bar.style.position=''; bar.style.left=''; bar.style.top=''; bar.style.width='';
+  bar.style.zIndex=''; bar.style.boxShadow=''; bar.style.borderRadius=''; bar.style.borderBottom='';
+}
+function positionAltBar(){
+  const bar=$('tt-altbar');
+  if(!bar || !bar.style) return;
+  const img=selectedImageEl();
+  if(!img || typeof window==='undefined'){ dockAltBar(bar); return; }
+  const r=img.getBoundingClientRect();
+  const w=Math.max(260, Math.min(520, window.innerWidth-24));
+  let left=r.left+(r.width-w)/2;
+  left=Math.max(12, Math.min(left, window.innerWidth-w-12));
+  // Prefer just under the image; flip above if that would fall off-screen.
+  let top=r.bottom+8;
+  if(top+64 > window.innerHeight) top=Math.max(12, r.top-64);
+  bar.style.position='fixed'; bar.style.zIndex='40';
+  bar.style.left=Math.round(left)+'px'; bar.style.top=Math.round(top)+'px';
+  bar.style.width=Math.round(w)+'px';
+  bar.style.borderBottom='1px solid var(--acc)';
+  bar.style.border='1px solid var(--acc)';
+  bar.style.borderRadius='4px';
+  bar.style.boxShadow='0 6px 20px rgba(0,0,0,.18)';
 }
 function applyImageAlt(){
   if(!editor || !editor.isActive('image')) return;
@@ -761,7 +807,16 @@ $('tt-toolbar').addEventListener('click', e=>{ const b=e.target.closest('button[
 $('tt-videoembed').addEventListener('click', embedVideo);
 $('tt-videocancel').addEventListener('click', ()=>{ $('tt-videobar').style.display='none'; $('tt-videourl').value=''; });
 $('tt-altapply').addEventListener('click', applyImageAlt);
-$('tt-altinput').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); applyImageAlt(); } });
+$('tt-altinput').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); applyImageAlt(); if(editor) editor.chain().focus().run(); }
+  else if(e.key==='Escape'){ e.preventDefault(); if(editor) editor.chain().focus().run(); }
+});
+// The bar is positioned against the image's viewport rect, so it has to follow
+// the image when anything scrolls or the window resizes. Capture phase catches
+// scrolling inside the editor pane as well as the page.
+['scroll','resize'].forEach(ev=>window.addEventListener(ev, ()=>{
+  if(editor && editor.isActive && editor.isActive('image')) positionAltBar();
+}, true));
 $('tt-ctabar').addEventListener('click', e=>{ const p=e.target.closest('.cta-preset'); if(p) insertCTA(p.dataset.h,p.dataset.t,p.dataset.l,p.dataset.u); });
 $('cta-insert').addEventListener('click', ()=> insertCTA($('cta-h').value.trim(),$('cta-t').value.trim(),$('cta-l').value.trim(),$('cta-u').value.trim()));
 $('cta-cancel').addEventListener('click', ()=>{ $('tt-ctabar').style.display='none'; });

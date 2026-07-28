@@ -159,6 +159,39 @@ test('typing in the alt input is not clobbered by editor transactions', () => {
   assert.equal(els['tt-altinput'].value, 'half-typed new alt');
 });
 
+/* ---- the alt bar floats beside the image, not at the top of the editor ---- */
+
+test('the alt bar is positioned against the selected image, with a docked fallback', () => {
+  // Source guards: the behaviour needs a real layout to exercise, so assert the
+  // pieces are wired rather than pretending a stub DOM proves it.
+  assert.match(SRC, /function positionAltBar\(\)/);
+  assert.match(SRC, /function dockAltBar\(bar\)/);
+  assert.match(SRC, /if\(onImg\) positionAltBar\(\); else dockAltBar\(altBar\);/);
+  // It must anchor to the image's own rect, and flip above when it would fall
+  // off the bottom of the viewport.
+  assert.match(SRC, /getBoundingClientRect\(\)/);
+  assert.match(SRC, /bar\.style\.position='fixed'/);
+  assert.match(SRC, /ProseMirror-selectednode/);
+  // and follow the image while anything scrolls
+  assert.match(SRC, /\['scroll','resize'\]\.forEach/);
+});
+
+test('positioning degrades safely when the image element cannot be found', () => {
+  // updateToolbarActive runs on every transaction. If the editor has no view
+  // (as in these tests) it must not throw — it should simply stay docked.
+  resetEls(['tt-altbar', 'tt-altinput']);
+  admin.__test.setEditor(stubEditor({ onImage: true, attrs: { alt: 'x' } }));
+  assert.doesNotThrow(() => admin.updateToolbarActive());
+  assert.equal(els['tt-altbar'].style.display, 'flex');
+  // dockAltBar clears the floating styles rather than leaving them stale
+  assert.equal(els['tt-altbar'].style.position, '');
+});
+
+test('Escape and Enter both return focus to the document, not the bar', () => {
+  assert.match(SRC, /e\.key==='Escape'/);
+  assert.match(SRC, /if\(e\.key==='Enter'\)\{ e\.preventDefault\(\); applyImageAlt\(\);/);
+});
+
 test('applyImageAlt writes the trimmed alt onto the image node; no-op off-image', () => {
   resetEls(['tt-altbar', 'tt-altinput']);
   const ed = stubEditor({ onImage: true });
