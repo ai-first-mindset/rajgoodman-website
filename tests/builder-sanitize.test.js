@@ -99,6 +99,45 @@ for (const [name, payload] of PAYLOADS) {
   });
 }
 
+/* ---- SVG surface widened for the AIFM deployment: prove it stayed safe ---- */
+
+test('SVG drawing, text and SMIL animation survive (needed by aifirstmindset.ai)', () => {
+  const svg = '<svg viewBox="0 0 10 10"><defs><path id="sw" d="M0 0"/></defs>'
+    + '<use href="#sw" class="swirl" transform="translate(1,2) scale(1.5)"/>'
+    + '<text class="lbl" x="9" y="3" text-anchor="middle" font-size="4">HELLO</text>'
+    + '<animate attributeName="stroke-dashoffset" values="660;0" dur="2s" repeatCount="indefinite"/>'
+    + '</svg>';
+  assert.equal(sanitizeHtml(svg), svg);
+});
+
+test('SMIL cannot be used to animate an href into a javascript: URL', () => {
+  // <a><animate attributeName="href" to="javascript:..."/></a> is a real bypass.
+  const evil = '<svg><a href="/safe"><animate attributeName="href" to="javascript:alert(1)" dur="1s"/></a></svg>';
+  const out = sanitizeHtml(evil);
+  assert.doesNotMatch(out, /attributeName="href"/i, 'href must not be animatable');
+  assert.doesNotMatch(out, /javascript:/i);
+  assert.match(out, /href="\/safe"/, 'the legitimate href is kept');
+});
+
+test('SMIL cannot animate any other URL-bearing attribute either', () => {
+  for (const attr of ['src', 'action', 'formaction', 'xlink:href', 'srcdoc']) {
+    const out = sanitizeHtml(`<svg><animate attributeName="${attr}" to="javascript:alert(1)"/></svg>`);
+    assert.doesNotMatch(out, new RegExp(`attributeName="${attr}"`, 'i'), `${attr} must not be animatable`);
+  }
+});
+
+test('the widened SVG surface still refuses handlers and scripts', () => {
+  const out = sanitizeHtml('<svg onload="alert(1)"><text onclick="alert(2)">x</text><script>alert(3)</script></svg>');
+  assert.doesNotMatch(out, /onload|onclick|<script/i);
+  assert.match(out, /<text>x<\/text>/);
+});
+
+test('foreignObject content is still sanitised, not trusted', () => {
+  const out = sanitizeHtml('<svg><foreignObject><div onclick="alert(1)">hi</div><script>x()</script></foreignObject></svg>');
+  assert.doesNotMatch(out, /onclick|<script/i);
+  assert.match(out, /hi/);
+});
+
 test('a stray angle bracket in prose is escaped, not treated as a tag', () => {
   assert.equal(sanitizeHtml('5 < 6 and 7 > 4'), '5 &lt; 6 and 7 > 4');
 });

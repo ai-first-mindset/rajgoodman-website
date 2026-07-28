@@ -230,9 +230,19 @@
     bot.appendChild(link);
   }
 
+  // In-page "Cookie settings" buttons (the privacy policy has one in prose).
+  // Bound here rather than with an inline onclick, which a Content-Security-
+  // Policy without 'unsafe-inline' blocks outright.
+  function bindInlineOpeners() {
+    if (!document.querySelectorAll) return;
+    var nodes = document.querySelectorAll('.cc-open-inline');
+    for (var i = 0; i < nodes.length; i += 1) nodes[i].addEventListener('click', openPanel);
+  }
+
   // ---- init ----
   function init() {
     injectFooterLink();
+    bindInlineOpeners();
     var stored = load();
     if (stored && stored.consent) { applyConsent(stored.consent); }
     else { showBanner(); }

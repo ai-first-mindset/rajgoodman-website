@@ -31,6 +31,10 @@ const ALLOWED_TAGS = new Set([
   'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse', 'g', 'defs',
   'use', 'symbol', 'title', 'desc', 'tspan', 'clippath', 'mask', 'pattern',
   'lineargradient', 'radialgradient', 'stop', 'filter', 'fegaussianblur', 'femerge', 'femergenode',
+  // SMIL animation. Declarative and script-free, but see ANIMATABLE below:
+  // animating an href is a documented XSS vector and is blocked.
+  'animate', 'animatetransform', 'animatemotion', 'set', 'mpath',
+  'text', 'textpath', 'marker', 'image', 'switch', 'metadata', 'view', 'foreignobject',
 ]);
 
 // Removed along with everything inside them: unwrapping their content would
@@ -76,6 +80,10 @@ const TAG_ATTRS = {
 
 // SVG presentation/geometry attributes, allowed on any svg element.
 const SVG_ATTRS = new Set([
+  // `href` on <use> is how SVG references a symbol/def. It is still checked as
+  // a URL below, so href="javascript:..." is rejected; only xlink:href (which
+  // predates that checking and is easy to smuggle) stays banned outright.
+  'href',
   'viewbox', 'xmlns', 'xmlns:xlink', 'version', 'preserveaspectratio', 'focusable',
   'fill', 'fill-rule', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-linecap',
   'stroke-linejoin', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-opacity', 'opacity',
@@ -83,10 +91,27 @@ const SVG_ATTRS = new Set([
   'width', 'height', 'offset', 'stop-color', 'stop-opacity', 'gradientunits', 'gradienttransform',
   'clip-path', 'clip-rule', 'mask', 'marker-end', 'marker-start', 'vector-effect',
   'stddeviation', 'result', 'in', 'in2', 'patternunits', 'maskunits',
+  // SMIL timing/animation attributes
+  'attributename', 'attributetype', 'values', 'keytimes', 'keysplines', 'dur',
+  'begin', 'end', 'repeatcount', 'repeatdur', 'from', 'to', 'by', 'calcmode',
+  'additive', 'accumulate', 'restart', 'type', 'path', 'rotate',
+  // typography + geometry used by <text>/<marker>/<image>
+  'dx', 'dy', 'text-anchor', 'dominant-baseline', 'alignment-baseline', 'baseline-shift',
+  'font-size', 'font-family', 'font-weight', 'font-style', 'letter-spacing', 'word-spacing',
+  'writing-mode', 'textlength', 'lengthadjust', 'startoffset', 'xml:space',
+  'markerwidth', 'markerheight', 'refx', 'refy', 'orient', 'markerunits', 'spreadmethod',
+  'pathlength', 'shape-rendering', 'paint-order', 'mix-blend-mode', 'isolation',
 ]);
+
+// An <animate> may not target a URL-bearing attribute:
+//   <a><animate attributeName="href" to="javascript:..."/></a>
+// is a real bypass. Dropping attributeName leaves the animation inert.
+const NON_ANIMATABLE = new Set(['href', 'xlink:href', 'src', 'action', 'formaction', 'data', 'srcdoc']);
 const SVG_TAGS = new Set(['svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse',
   'g', 'defs', 'use', 'symbol', 'title', 'desc', 'tspan', 'clippath', 'mask', 'pattern',
-  'lineargradient', 'radialgradient', 'stop', 'filter', 'fegaussianblur', 'femerge', 'femergenode']);
+  'lineargradient', 'radialgradient', 'stop', 'filter', 'fegaussianblur', 'femerge', 'femergenode',
+  'animate', 'animatetransform', 'animatemotion', 'set', 'mpath',
+  'text', 'textpath', 'marker', 'image', 'switch', 'metadata', 'view', 'foreignobject']);
 
 // Void elements have no closing tag, so a dropped one must remove only itself.
 // Scanning for a close tag that can never appear would swallow the rest of the
@@ -95,7 +120,11 @@ const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'i
   'link', 'meta', 'param', 'source', 'track', 'wbr']);
 
 // Attributes whose value is a URL, and must clear isSafeUrl().
-const URL_ATTRS = new Set(['href', 'src', 'action', 'poster', 'cite', 'formaction', 'data', 'xlink:href']);
+// SMIL's to/from/by/values carry the value being animated INTO an attribute, so
+// they can smuggle a scheme. Legitimate animation values ("660;0", "5", a
+// transform) contain no scheme and pass untouched.
+const URL_ATTRS = new Set(['href', 'src', 'action', 'poster', 'cite', 'formaction', 'data', 'xlink:href',
+  'to', 'from', 'by', 'values']);
 
 // Never permitted regardless of element: srcdoc smuggles a whole document,
 // http-equiv drives meta refresh, and every on* is an event handler.
@@ -121,6 +150,7 @@ function styleIsClean(value) {
 
 function valueAllowed(tag, name, value) {
   if (value == null) return true;                       // boolean attribute
+  if (name === 'attributename') return !NON_ANIMATABLE.has(String(value).toLowerCase().trim());
   if (name === 'style') return styleIsClean(value);
   if (name === 'srcset') {
     return String(value).split(',').every((part) => isSafeUrl(part.trim().split(/\s+/)[0], { allowDataImage: true }));
