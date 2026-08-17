@@ -655,7 +655,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['252','Tests'],['247','Passed'],['5','Env-gated skips'],['29','Suites'],['76.5%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['255','Tests'],['250','Passed'],['5','Env-gated skips'],['29','Suites'],['76.7%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
@@ -669,7 +669,7 @@ const COVERAGE = {
     { f:'api/subscribe.js', l:100, b:100, fn:50, n:'subscribe-api' },
     { g:'Admin API (auth-gated)' },
     { f:'api/admin/fetch-meta.js', l:54.3, b:100, fn:40, n:'fetch-meta · extraction only, handler unexercised' },
-    { f:'api/admin/linkedin.js', l:78.8, b:50, fn:100, n:'' },
+    { f:'api/admin/linkedin.js', l:85, b:75.5, fn:100, n:'' },
     { f:'api/admin/login.js', l:100, b:83.3, fn:100, n:'' },
     { f:'api/admin/media.js', l:96.3, b:61.5, fn:100, n:'' },
     { f:'api/admin/posts.js', l:97.3, b:81, fn:100, n:'admin-posts-api' },
