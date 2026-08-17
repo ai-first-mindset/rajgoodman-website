@@ -79,4 +79,6 @@ jobs:
         with:
           node-version: '24'
       - name: Deploy to Vercel production
-        run: npx vercel@latest deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        # Pinned: vercel@59 (17 Aug 2026) fails env-linked CI deploys with
+        # "Could not retrieve Project Settings"; 58 was the last green major.
+        run: npx vercel@58 deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
