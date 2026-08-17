@@ -174,15 +174,73 @@ test('media replace: admin-only, repoints LinkedIn + posts, removes the orphaned
 });
 
 /* ---- LinkedIn admin ---- */
+const LI_URL = 'https://www.linkedin.com/feed/update/urn:li:activity:7487532804604497920/';
+
 test('linkedin POST: url required; non-allow-listed fields are stripped', async () => {
   let res = makeRes();
   await linkedin(req('POST', { body: { title: 'no url' } }), res);
   assert.equal(res.body.error, 'url-required');
   res = makeRes();
-  await linkedin(req('POST', { body: { url: 'https://li/x', title: 'T', evil: 'x', id: 'attacker' } }), res);
+  await linkedin(req('POST', { body: { url: LI_URL, title: 'T', evil: 'x', id: 'attacker' } }), res);
   assert.equal(res.statusCode, 201);
   const create = calls.find((c) => c.method === 'POST' && c.url.endsWith('/rest/v1/linkedin_posts'));
-  assert.deepEqual(create.body, { url: 'https://li/x', title: 'T' });
+  assert.deepEqual(create.body, { url: LI_URL, title: 'T' });
+});
+
+/* The homepage assigns url -> a.href and image_url -> img.src with no CSP, and
+   this endpoint is driven by the unattended sync agent that reads untrusted
+   text off linkedin.com. So both fields are constrained server-side. */
+test('linkedin POST: url must be an https www.linkedin.com URL', async () => {
+  for (const url of [
+    'javascript:alert(document.cookie)',
+    'data:text/html,<script>alert(1)</script>',
+    'https://evil.example.com/phish',
+    'http://www.linkedin.com/feed/update/urn:li:activity:1/',
+    'https://www.linkedin.com.evil.example.com/x',
+    'not a url',
+  ]) {
+    const res = makeRes();
+    await linkedin(req('POST', { body: { url, title: 'T' } }), res);
+    assert.equal(res.statusCode, 422, `should reject ${url}`);
+    assert.ok(/^url-(invalid|not-linkedin)$/.test(res.body.error), `${url} -> ${res.body.error}`);
+  }
+});
+
+test('linkedin POST: image_url must be site-relative or our own bucket', async () => {
+  for (const image_url of [
+    'https://tracker.example.com/beacon.gif',
+    '//tracker.example.com/beacon.gif',
+    'javascript:alert(1)',
+    'https://sb.evil.com/storage/v1/object/public/blog-media/x.jpg',
+  ]) {
+    const res = makeRes();
+    await linkedin(req('POST', { body: { url: LI_URL, image_url } }), res);
+    assert.equal(res.statusCode, 422, `should reject ${image_url}`);
+    assert.equal(res.body.error, 'image-url-not-allowed');
+  }
+  for (const image_url of [PUB + 'ok.jpg', '/assets/li/card.png', '']) {
+    const res = makeRes();
+    await linkedin(req('POST', { body: { url: LI_URL, image_url } }), res);
+    assert.equal(res.statusCode, 201, `should accept ${JSON.stringify(image_url)}`);
+  }
+});
+
+test('linkedin PATCH: validates only the fields being patched', async () => {
+  // The visibility toggle and reorder arrows send id + one field, and must
+  // not start failing just because they carry no url/image_url.
+  let res = makeRes();
+  await linkedin(req('PATCH', { body: { id: 5, visible: false } }), res);
+  assert.equal(res.statusCode, 200);
+  res = makeRes();
+  await linkedin(req('PATCH', { body: { id: 5, sort_order: 3 } }), res);
+  assert.equal(res.statusCode, 200);
+  // But a hostile value on PATCH is rejected like it is on POST.
+  res = makeRes();
+  await linkedin(req('PATCH', { body: { id: 5, url: 'javascript:alert(1)' } }), res);
+  assert.equal(res.statusCode, 422);
+  res = makeRes();
+  await linkedin(req('PATCH', { body: { id: 5, image_url: 'https://tracker.example.com/b.gif' } }), res);
+  assert.equal(res.statusCode, 422);
 });
 
 test('linkedin PATCH: changing the image cleans up the orphaned old file', async () => {

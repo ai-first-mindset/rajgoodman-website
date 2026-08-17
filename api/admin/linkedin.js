@@ -18,6 +18,32 @@ function pick(body) {
   return row;
 }
 
+// The homepage widget assigns these straight to a.href and img.src, and the
+// site sends no CSP - so an off-domain or javascript: value stored here is
+// XSS / a visitor-IP beacon on every homepage load. Validate server-side
+// rather than at the caller: this endpoint is also driven by the unattended
+// LinkedIn sync agent, which reads untrusted post text off linkedin.com and
+// so must not be the only thing standing between a bad string and the DB.
+function rejectReason(row) {
+  if ('url' in row) {
+    let u;
+    try { u = new URL(String(row.url)); } catch { return 'url-invalid'; }
+    const host = u.hostname.toLowerCase();
+    if (u.protocol !== 'https:') return 'url-not-linkedin';
+    if (host !== 'www.linkedin.com' && host !== 'linkedin.com') return 'url-not-linkedin';
+  }
+  if ('image_url' in row && row.image_url) {
+    const v = String(row.image_url);
+    // Either site-relative (/assets/...) or our own public bucket, which is
+    // what the Upload and Library buttons produce. A leading '//' is an
+    // off-domain URL wearing a relative disguise, so it has to fail.
+    const relative = v.startsWith('/') && !v.startsWith('//');
+    const ourBucket = v.startsWith(`${SB_URL}/storage/v1/object/public/`);
+    if (!relative && !ourBucket) return 'image-url-not-allowed';
+  }
+  return null;
+}
+
 export default async function handler(req, res) {
   const user = await requireUser(req, res);
   if (!user) return;
@@ -34,8 +60,11 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       if (!body.url) return res.status(422).json({ ok: false, error: 'url-required' });
+      const row = pick(body);
+      const bad = rejectReason(row);
+      if (bad) return res.status(422).json({ ok: false, error: bad });
       const r = await fetch(`${SB_URL}/rest/v1/linkedin_posts`, {
-        method: 'POST', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(pick(body)),
+        method: 'POST', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
       });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'create-failed', detail: await r.text() });
       return res.status(201).json({ ok: true, post: (await r.json())[0] });
@@ -44,6 +73,10 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       if (!body.id) return res.status(422).json({ ok: false, error: 'id-required' });
       const row = pick(body);
+      // Only the fields actually being patched are checked, so the visibility
+      // toggle and the reorder arrows (id + one field) stay unaffected.
+      const bad = rejectReason(row);
+      if (bad) return res.status(422).json({ ok: false, error: bad });
       // If the image is changing, capture the current one so the old file can
       // be cleaned up (same as the media library's Replace) once it's orphaned.
       let oldImage = null;
