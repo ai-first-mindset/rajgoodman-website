@@ -45,16 +45,29 @@ jobs:
         run: |
           node --check admin/admin.js
           node --test tests/admin-editor.test.js
-      - name: Commit the refreshed snapshot if it changed
+      # The homepage's static .li-card fallback is what crawlers and the pre-JS
+      # paint see, but the LinkedIn sync agent only writes the database - so the
+      # cards drift (found six weeks stale, Aug 2026). Refreshing here piggybacks
+      # on a bot commit that already happens, so drift is bounded by push cadence
+      # with no extra schedule, credential or deploy. Reads the public
+      # /api/linkedin (no secrets) and leaves index.html untouched on any
+      # failure, hence the non-fatal ||.
+      - name: Refresh the homepage LinkedIn fallback cards
+        run: node scripts/sync-linkedin-fallback.mjs || echo "Fallback sync skipped - index.html left as-is."
+
+      - name: Commit the refreshed files if they changed
         run: |
-          if ! git diff --quiet -- admin/index.html admin/admin.js; then
+          CHANGED=""
+          git diff --quiet -- admin/index.html admin/admin.js || CHANGED="admin coverage snapshot"
+          git diff --quiet -- index.html || CHANGED="${CHANGED:+$CHANGED + }LinkedIn fallback cards"
+          if [ -n "$CHANGED" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add admin/index.html admin/admin.js
-            git commit -m "Auto-update admin coverage snapshot"
+            git add admin/index.html admin/admin.js index.html
+            git commit -m "Auto-update $CHANGED"
             git push
           else
-            echo "Snapshot already current."
+            echo "Snapshot and fallback cards already current."
           fi
       - name: Record the exact commit to deploy
         id: sha

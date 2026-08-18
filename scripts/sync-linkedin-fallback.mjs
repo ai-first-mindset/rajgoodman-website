@@ -5,7 +5,9 @@
 // Run after changing LinkedIn posts/images in the admin, then commit index.html:
 //   node scripts/sync-linkedin-fallback.mjs
 //
-// Reads SUPABASE_URL / SUPABASE_SECRET_KEY from .env (same as the API). Node 18+.
+// Two sources, same four rows. With .env present (a laptop) it reads PostgREST
+// directly; with no Supabase secrets (CI) it reads the site's own public
+// /api/linkedin, which runs exactly this query server-side. Node 18+.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -27,18 +29,28 @@ function loadEnv() {
 const env = loadEnv();
 const SB = env.SUPABASE_URL;
 const KEY = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
-if (!SB || !KEY) {
-  console.error('Missing SUPABASE_URL / SUPABASE_SECRET_KEY in .env');
-  process.exit(1);
-}
+const PUBLIC_API = process.env.LINKEDIN_API || 'https://rajgoodman.com/api/linkedin/';
 
-// Same query the public widget API uses: first 4 visible posts by sort order.
-const res = await fetch(
-  `${SB}/rest/v1/linkedin_posts?select=url,image_url&visible=eq.true&order=sort_order.asc&limit=4`,
-  { headers: { apikey: KEY, authorization: `Bearer ${KEY}` } },
-);
-if (!res.ok) { console.error('Fetch failed:', res.status, await res.text()); process.exit(1); }
-const posts = await res.json();
+// Same four rows either way: first 4 visible posts by sort order. api/linkedin.js
+// runs this identical query, so the keyless path is not an approximation - it is
+// the same select, filter, order and limit, just executed server-side.
+let posts;
+if (SB && KEY) {
+  const res = await fetch(
+    `${SB}/rest/v1/linkedin_posts?select=url,image_url&visible=eq.true&order=sort_order.asc&limit=4`,
+    { headers: { apikey: KEY, authorization: `Bearer ${KEY}` } },
+  );
+  if (!res.ok) { console.error('Fetch failed:', res.status, await res.text()); process.exit(1); }
+  posts = await res.json();
+} else {
+  // No secrets (CI). Cache-bust: /api/linkedin sets a 60s s-maxage, and a stale
+  // copy would rewrite the cards back to the previous four.
+  const res = await fetch(`${PUBLIC_API}?cb=${Date.now().toString(36)}`).catch(() => null);
+  if (!res || !res.ok) { console.error('Public API unreachable:', res ? res.status : 'network error'); process.exit(1); }
+  const body = await res.json().catch(() => null);
+  if (!body) { console.error('Public API returned a non-JSON body - leaving index.html alone.'); process.exit(1); }
+  posts = body.posts || [];
+}
 if (!posts.length) { console.error('No visible LinkedIn posts — refusing to blank the fallback.'); process.exit(1); }
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
