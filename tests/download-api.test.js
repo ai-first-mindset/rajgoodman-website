@@ -14,16 +14,26 @@ function makeRes() {
 }
 const post = (body) => ({ method: 'POST', body, headers: {}, socket: {} });
 
-// fetch stub: first call is Turnstile siteverify, later calls are EmailOctopus.
+// fetch stub: Turnstile siteverify, EmailOctopus, and the resources mirror are
+// routed apart so each sink can be asserted (and failed) independently.
 const realFetch = globalThis.fetch;
 let eoCalls;
-function stubFetch({ human = true, eoFail = false } = {}) {
+let mirrorCalls;
+function stubFetch({ human = true, eoFail = false, eoThrow = false, mirrorOk = true } = {}) {
   eoCalls = [];
+  mirrorCalls = [];
   globalThis.fetch = async (url, opts) => {
-    if (String(url).includes('challenges.cloudflare.com')) {
+    const u = String(url);
+    if (u.includes('challenges.cloudflare.com')) {
       return { ok: true, json: async () => ({ success: human }) };
     }
-    eoCalls.push({ url: String(url), body: JSON.parse(opts.body) });
+    if (u.includes('newsletter-subscribe')) {
+      mirrorCalls.push({ url: u, body: JSON.parse(opts.body) });
+      if (!mirrorOk) return { ok: false, status: 500, json: async () => ({ ok: false, error: 'nope' }) };
+      return { ok: true, json: async () => ({ ok: true, created: true, status: 'subscribed' }) };
+    }
+    if (eoThrow) throw new Error('boom');
+    eoCalls.push({ url: u, body: JSON.parse(opts.body) });
     if (eoFail) return { ok: false, status: 500, json: async () => ({ error: { code: 'X' } }) };
     return { ok: true, json: async () => ({ status: 'PENDING' }) };
   };
@@ -116,4 +126,66 @@ test('non-POST -> 405', async () => {
   const res = makeRes();
   await handler({ method: 'GET', headers: {}, socket: {} }, res);
   assert.equal(res.statusCode, 405);
+});
+
+/* ---- dual-write: EmailOctopus + the AIFM resources platform ---- */
+
+test('the download lead is mirrored to the resources platform as well as EO', async () => {
+  stubFetch();
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', name: 'Ada Lovelace', email: 'ada@example.com', asset: 'ebook-ai-era' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.url, ASSETS['ebook-ai-era'].url, 'the file is still delivered');
+  assert.equal(eoCalls.length, 1);
+  assert.equal(mirrorCalls.length, 1);
+  assert.equal(mirrorCalls[0].body.email, 'ada@example.com');
+  assert.equal(mirrorCalls[0].body.first_name, 'Ada');
+  assert.equal(mirrorCalls[0].body.last_name, 'Lovelace');
+  // a book download is a different consent surface from a newsletter signup
+  assert.equal(mirrorCalls[0].body.source, 'rajgoodman-ebook');
+  assert.equal(mirrorCalls[0].body.secret, 'test-key');
+  assert.deepEqual(res.body.sinks, { resources: true, emailoctopus: true });
+});
+
+test('a double opt-in EO signup is mirrored as pending, not subscribed', async () => {
+  stubFetch();               // EO replies PENDING
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', name: 'Ada', email: 'ada@example.com', asset: 'ebook-ai-era' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(mirrorCalls[0].body.status, 'pending', 'never claim subscribed before they confirm');
+});
+
+test('EmailOctopus down but mirror up -> file still delivered, lead still captured', async () => {
+  stubFetch({ eoThrow: true });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', name: 'Ada', email: 'ada@example.com', asset: 'ebook-ai-era' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 200);
+  assert.ok(res.body.url);
+  assert.deepEqual(res.body.sinks, { resources: true, emailoctopus: false });
+});
+
+test('mirror down but EmailOctopus up -> file still delivered', async () => {
+  stubFetch({ mirrorOk: false });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', name: 'Ada', email: 'ada@example.com', asset: 'ebook-ai-era' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 200);
+  assert.ok(res.body.url);
+  assert.deepEqual(res.body.sinks, { resources: false, emailoctopus: true });
+});
+
+test('with the mirror unconfigured the download is unchanged (no network call)', async () => {
+  stubFetch();               // AIFM_SUBSCRIBE_KEY deliberately unset
+  const res = makeRes();
+  await handler(post({ token: 't', name: 'Ada', email: 'ada@example.com', asset: 'ebook-ai-era' }), res);
+  assert.equal(res.statusCode, 200);
+  assert.ok(res.body.url);
+  assert.equal(mirrorCalls.length, 0, 'no key, no call - keeps local runs and CI offline');
+  assert.deepEqual(res.body.sinks, { resources: false, emailoctopus: true });
 });

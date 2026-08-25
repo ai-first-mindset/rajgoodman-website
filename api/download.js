@@ -1,10 +1,17 @@
-// Gated downloads: verifies the human (Turnstile), captures the lead in
-// EmailOctopus (tagged per asset; list double opt-in applies), then returns
-// the file URL. The registry lives here server-side so download URLs never
+// Gated downloads: verifies the human (Turnstile), captures the lead in BOTH
+// sinks - EmailOctopus (tagged per asset; list double opt-in applies) and the
+// AIFM resources platform, which is the system of record for the newsletter -
+// then returns the file URL.
+//
+// The mirror carries source 'rajgoodman-ebook' so a book download stays
+// distinguishable from a newsletter signup there: they are different consent
+// surfaces. Neither sink can block the download; the human is verified and was
+// promised a file. The registry lives here server-side so download URLs never
 // appear in page markup - the form is the only way to obtain them.
 
 import { verifyTurnstile, clientIp } from './_turnstile.js';
 import { readBody, isValidEmail } from './_body.js';
+import { mirrorToResources } from './_newsletter-mirror.js';
 
 const STORAGE = 'https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/downloads';
 
@@ -52,6 +59,7 @@ export default async function handler(req, res) {
   // Capture the lead. A failure here is logged loudly but never blocks the
   // download - the human is verified and was promised a file.
   let pending = false;
+  let eoOk = false;
   const apiKey = process.env.EMAILOCTOPUS_API_KEY;
   const listId = process.env.EMAILOCTOPUS_LIST_ID;
   if (apiKey && listId) {
@@ -69,8 +77,11 @@ export default async function handler(req, res) {
       });
       const body = await resp.json().catch(() => ({}));
       if (resp.ok) {
+        eoOk = true;
         pending = body.status === 'PENDING';
-      } else if (body && body.error && body.error.code !== 'MEMBER_EXISTS_WITH_EMAIL_ADDRESS') {
+      } else if (body && body.error && body.error.code === 'MEMBER_EXISTS_WITH_EMAIL_ADDRESS') {
+        eoOk = true; // already on the list - the address is captured either way
+      } else if (body && body.error) {
         console.error('download: EmailOctopus capture failed', resp.status, body, { email, asset, source_page });
       }
     } catch (err) {
@@ -80,5 +91,23 @@ export default async function handler(req, res) {
     console.error('CONFIG ERROR: EmailOctopus not configured; download lead NOT stored:', { email, asset });
   }
 
-  return res.status(200).json({ ok: true, url: item.url, title: item.title, pending });
+  // Mirror into the resources platform. Best-effort and never throws; it
+  // no-ops when AIFM_SUBSCRIBE_KEY is unset, so local runs and tests stay
+  // offline. Assume 'pending' when EO refused, rather than over-subscribing.
+  const [firstName, ...rest] = String(name).trim().split(/\s+/);
+  const mirror = await mirrorToResources({
+    email,
+    firstName,
+    lastName: rest.join(' '),
+    source: 'rajgoodman-ebook',
+    status: eoOk ? (pending ? 'pending' : 'subscribed') : 'pending',
+  });
+
+  return res.status(200).json({
+    ok: true,
+    url: item.url,
+    title: item.title,
+    pending,
+    sinks: { resources: mirror.ok, emailoctopus: eoOk },
+  });
 }
