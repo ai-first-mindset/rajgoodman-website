@@ -611,6 +611,44 @@
     });
   }
 
+  /* ---- Books slider ----
+     The books sit on one row that scrolls horizontally instead of wrapping.
+     The scrolling and snapping are pure CSS, so touch swipe works with no JS
+     and the row still works if this script never runs; all this adds is the
+     desktop arrows and their disabled states. Scrolls by whole cards. */
+  function initBookSlider() {
+    var root = document.querySelector('[data-book-slider]');
+    if (!root) return;
+    var track = root.querySelector('[data-book-track]');
+    var prev = root.querySelector('[data-bs-prev]');
+    var next = root.querySelector('[data-bs-next]');
+    if (!track || !prev || !next) return;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function step() {
+      var card = track.querySelector('.book');
+      if (!card) return track.clientWidth;
+      var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 14;
+      return card.getBoundingClientRect().width + gap;
+    }
+    function update() {
+      // 1px of slack: sub-pixel widths mean scrollLeft rarely lands exactly on max
+      var max = track.scrollWidth - track.clientWidth;
+      prev.disabled = track.scrollLeft <= 1;
+      next.disabled = track.scrollLeft >= max - 1;
+      // nothing to scroll (everything already fits) - hide the controls entirely
+      root.classList.toggle('is-static', max <= 1);
+    }
+    function go(dir) {
+      track.scrollBy({ left: dir * step(), behavior: reduce ? 'auto' : 'smooth' });
+    }
+    prev.addEventListener('click', function () { go(-1); });
+    next.addEventListener('click', function () { go(1); });
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
   function init() {
     initReveal();
     initCounters();
@@ -623,6 +661,7 @@
     initDownloads();
     initFaq();
     initBackToTop();
+    initBookSlider();
     initPromoBar();
     initFoundingCopy();
     initHashScroll();
