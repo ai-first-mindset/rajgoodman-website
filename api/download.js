@@ -28,6 +28,10 @@ export const ASSETS = {
     title: 'The AI-First Mindset® - Building Trust in the Digital Age',
     url: `${STORAGE}/ebook-building-trust-in-the-digital-age.pdf`,
   },
+  'ebook-aifm-os': {
+    title: 'AIFM OS - The Operating System for AI-First Manufacturing',
+    url: `${STORAGE}/ebook-ai-first-mindset-operating-system.pdf`,
+  },
   'audiobook-embracing-the-future': {
     title: 'The AI-First Mindset® - Embracing the Future Today (Audiobook)',
     url: `${STORAGE}/audiobook-ai-first-mindset-embracing-the-future.mp3`,
