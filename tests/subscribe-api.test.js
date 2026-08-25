@@ -1,6 +1,7 @@
-// Tests for the newsletter endpoint: Turnstile-first gating, EmailOctopus
-// list add (list setting decides double opt-in — PENDING surfaces to the form),
-// member-exists treated as success, loud-but-graceful when unconfigured.
+// Tests for the newsletter endpoint: Turnstile-first gating, the DUAL WRITE
+// to the resources platform + EmailOctopus (success when either sink takes
+// the address, failure only when both refuse), list setting decides double
+// opt-in (PENDING surfaces to the form), member-exists treated as success.
 // Run: node --test 'tests/**/*.test.js'
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,11 +19,18 @@ const post = (body) => ({ method: 'POST', body, headers: {}, socket: {} });
 // fetch stub: Turnstile siteverify first, EmailOctopus after.
 const realFetch = globalThis.fetch;
 let eoCalls;
-function stubFetch({ human = true, eoStatus = 'PENDING', eoHttpFail = false, eoErrorCode = null, eoThrow = false } = {}) {
+let mirrorCalls;
+function stubFetch({ human = true, eoStatus = 'PENDING', eoHttpFail = false, eoErrorCode = null, eoThrow = false, mirrorOk = true } = {}) {
   eoCalls = [];
+  mirrorCalls = [];
   globalThis.fetch = async (url, opts) => {
     if (String(url).includes('challenges.cloudflare.com')) {
       return { ok: true, json: async () => ({ success: human }) };
+    }
+    if (String(url).includes('newsletter-subscribe')) {
+      mirrorCalls.push({ url: String(url), body: JSON.parse(opts.body) });
+      if (!mirrorOk) return { ok: false, status: 502, json: async () => ({ ok: false, error: 'nope' }) };
+      return { ok: true, json: async () => ({ ok: true, created: true, status: 'subscribed' }) };
     }
     if (eoThrow) throw new Error('boom');
     eoCalls.push({ url: String(url), body: JSON.parse(opts.body) });
@@ -44,7 +52,9 @@ test('happy path: contact stored with names, pending flag surfaces DOI', async (
   const res = makeRes();
   await handler(post({ token: 't', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' }), res);
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.body, { ok: true, stored: true, pending: true });
+  assert.equal(res.body.ok, true);
+  assert.equal(res.body.stored, true);
+  assert.equal(res.body.pending, true);
   assert.equal(eoCalls.length, 1);
   assert.match(eoCalls[0].url, /lists\/list-1\/contacts$/);
   assert.equal(eoCalls[0].body.email_address, 'ada@example.com');
@@ -96,21 +106,86 @@ test('other EO API failure -> 502 subscribe-error', async () => {
   assert.equal(res.body.error, 'subscribe-error');
 });
 
-test('EO network throw -> 502 subscribe-unreachable', async () => {
+test('EO network throw with no mirror -> 502, nothing stored', async () => {
   stubFetch({ eoThrow: true });
   const res = makeRes();
   await handler(post({ token: 't', email: 'x@y.zz' }), res);
   assert.equal(res.statusCode, 502);
-  assert.equal(res.body.error, 'subscribe-unreachable');
+  assert.equal(res.body.error, 'subscribe-error');
+  assert.equal(res.body.stored, false);
 });
 
-test('unconfigured EO: accepted but marked stored:false (loud-config contract)', async () => {
+// The old contract answered 200 {ok:true, stored:false} here. The front end
+// checks `r.ok && j.ok`, so it told the visitor "you're subscribed" while the
+// address reached nobody. Failing is the honest answer.
+test('unconfigured EO and no mirror -> 502, never a false success', async () => {
   stubFetch();
   delete process.env.EMAILOCTOPUS_API_KEY;
   const res = makeRes();
   await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  assert.equal(res.statusCode, 502);
+  assert.equal(res.body.ok, false);
+  assert.equal(res.body.stored, false);
+});
+
+// ---- dual write ----
+
+test('mirror receives the signup alongside EmailOctopus', async () => {
+  stubFetch();
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', firstName: 'Ada', lastName: 'L', email: 'ada@example.com' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.body, { ok: true, stored: false });
+  assert.equal(mirrorCalls.length, 1);
+  assert.equal(eoCalls.length, 1);
+  assert.equal(mirrorCalls[0].body.email, 'ada@example.com');
+  assert.equal(mirrorCalls[0].body.source, 'rajgoodman-newsletter');
+  assert.equal(mirrorCalls[0].body.secret, 'test-key');
+  assert.deepEqual(res.body.sinks, { resources: true, emailoctopus: true });
+});
+
+test('EmailOctopus down but mirror up -> signup still succeeds', async () => {
+  stubFetch({ eoThrow: true });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.stored, true);
+  assert.deepEqual(res.body.sinks, { resources: true, emailoctopus: false });
+});
+
+test('mirror down but EmailOctopus up -> signup still succeeds', async () => {
+  stubFetch({ mirrorOk: false });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.stored, true);
+  assert.deepEqual(res.body.sinks, { resources: false, emailoctopus: true });
+});
+
+test('both sinks down -> 502, no false success', async () => {
+  stubFetch({ eoThrow: true, mirrorOk: false });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 502);
+  assert.equal(res.body.ok, false);
+});
+
+test('bot never reaches either sink', async () => {
+  stubFetch({ human: false });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 'bad', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(res.statusCode, 400);
+  assert.equal(mirrorCalls.length, 0);
+  assert.equal(eoCalls.length, 0);
 });
 
 test('non-POST -> 405 with Allow header', async () => {
