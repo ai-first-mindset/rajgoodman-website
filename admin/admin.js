@@ -660,7 +660,7 @@ const COVERAGE = {
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
     { f:'api/contact.js', l:100, b:95, fn:100, n:'contact-api' },
-    { f:'api/download.js', l:97.3, b:84.6, fn:50, n:'download-api' },
+    { f:'api/download.js', l:97.4, b:84.6, fn:50, n:'download-api' },
     { f:'api/feed.js', l:100, b:93.8, fn:100, n:'parity-surfaces' },
     { f:'api/linkedin.js', l:100, b:77.8, fn:100, n:'linkedin-api' },
     { f:'api/render-category.js', l:100, b:59.1, fn:85.7, n:'render-handlers' },
