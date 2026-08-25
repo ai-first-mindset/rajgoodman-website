@@ -655,7 +655,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['255','Tests'],['250','Passed'],['5','Env-gated skips'],['29','Suites'],['76.7%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['260','Tests'],['255','Passed'],['5','Env-gated skips'],['29','Suites'],['77.0%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
@@ -683,6 +683,7 @@ const COVERAGE = {
     { f:'api/_blog-index-template.js', l:100, b:100, fn:100, n:'via blog-index' },
     { f:'api/_body.js', l:100, b:100, fn:100, n:'read-body' },
     { f:'api/_media.js', l:100, b:87, fn:100, n:'media-library listing glue' },
+    { f:'api/_newsletter-mirror.js', l:93.2, b:76.9, fn:50, n:'' },
     { f:'api/_post-template.js', l:93.4, b:56.3, fn:83.3, n:'post-template, parity-surfaces' },
     { f:'api/_turnstile.js', l:100, b:100, fn:100, n:'turnstile' },
     { g:'Front-end' },
