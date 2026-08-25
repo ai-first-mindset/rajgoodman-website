@@ -269,7 +269,7 @@ main,nav,footer{position:relative;z-index:2}
 .co p{color:var(--tx-60);margin-bottom:1.4rem}
 
 /* books */
-.book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.book-slider{position:relative;margin-top:6px}.book-track{display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}.book-track::-webkit-scrollbar{display:none}.book-track>.book{flex:0 0 calc((100% - 28px)/3);scroll-snap-align:start}.book-track:focus-visible{outline:2px solid var(--blue-l);outline-offset:4px}.bs-nav{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:16px}.bs-arrow{width:42px;height:42px;flex:none;border:1px solid var(--line);border-radius:50%;background:var(--bg-2);color:var(--tx);font-size:1.2rem;line-height:1;display:grid;place-items:center;cursor:pointer;transition:border-color .2s,color .2s,opacity .2s}.bs-arrow:hover:not(:disabled){border-color:var(--blue-l);color:#fff}.bs-arrow:disabled{opacity:.32;cursor:default}.book-slider.is-static .bs-nav{display:none}@media(prefers-reduced-motion:reduce){.book-track{scroll-behavior:auto}}
 .book{border:1px solid var(--line);background:var(--bg-2);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s}
 .book:hover{border-color:var(--blue-l);transform:translateY(-4px)}
 .book .cov{aspect-ratio:1270/1726;display:grid;place-items:center;padding:26px;border-bottom:1px solid var(--line);overflow:hidden;background:repeating-linear-gradient(135deg,rgba(244,239,230,.045) 0 2px,transparent 2px 11px),radial-gradient(120% 90% at 50% 0%,rgba(244,239,230,.06),transparent 60%),var(--bg-2)}
@@ -338,19 +338,19 @@ footer a:hover{color:var(--yellow)}
 .switcher a{font-size:.76rem;font-weight:700;color:var(--tx-60);padding:.5em .85em;border-radius:999px;transition:.2s;white-space:nowrap}
 .switcher a.on{background:var(--yellow);color:var(--ink)}
 
-@media(max-width:980px){
+@media(max-width:980px){.book-track>.book{flex:0 0 calc((100% - 14px)/2)}
   .nav-links{display:none}.burger{display:flex}
   .hero-grid,.lead-grid,.about-grid,.work-grid{grid-template-columns:1fr;gap:38px}
   .svc-grid{grid-template-columns:1fr 1fr}.svc,.svc:nth-child(1),.svc:nth-child(2){grid-column:auto}
-  .cred-grid,.media-grid,.book-grid,.li-grid,.f-grid{grid-template-columns:1fr 1fr}
+  .cred-grid,.media-grid,.li-grid,.f-grid{grid-template-columns:1fr 1fr}
   .gal{grid-template-columns:1fr 1fr}.gal a,.gal a:nth-child(n){grid-column:auto;grid-row:auto;aspect-ratio:16/9}
   .chip.one{right:8px}.chip.two{left:8px}
   .mnav.open{display:block;position:fixed;top:74px;left:0;right:0;background:var(--bg-2);border-bottom:1px solid var(--line);padding:16px 34px;z-index:89}
   .mnav.open a{display:block;padding:.7em 0;font-family:var(--mono);font-weight:600;border-bottom:1px solid var(--line)}
 }
-@media(max-width:600px){
+@media(max-width:600px){.book-track>.book{flex:0 0 82%}
   .wrap{padding:0 18px}
-  .svc-grid,.cred-grid,.media-grid,.book-grid,.li-grid,.gal,.co-grid,.f-grid,.row2,.vmedia{grid-template-columns:1fr}
+  .svc-grid,.cred-grid,.media-grid,.li-grid,.gal,.co-grid,.f-grid,.row2,.vmedia{grid-template-columns:1fr}
   .work-quote,.work-form{padding:30px 22px}
   .readout,.reach .big{flex-wrap:wrap}.readout .cell{min-width:50%}
 }
@@ -683,11 +683,17 @@ footer a:hover{color:var(--yellow)}
     <div class="shead" data-reveal><span class="idx">[ 09 ]</span><span class="kick">Executive Learning Library</span><span class="ln"></span></div>
     <h2 data-reveal>Raj's eBooks &amp; Audiobooks: Practical AI &amp; Growth Insights</h2>
     <p class="sub" data-reveal>Your Executive Learning Library. Stay ahead in the AI-driven business world by learning at your own pace. Explore resources that are available anytime, anywhere, for professionals prepared to take the lead in the future.</p>
-    <div class="book-grid" style="margin-top:34px">
+    <div class="book-slider" data-book-slider style="margin-top:34px">
+      <div class="book-track" data-book-track tabindex="0" role="region" aria-label="Books and audiobooks, scrollable">
       <article class="book" data-reveal><div class="cov"><img loading="lazy" src="/assets/ebook-embracing.webp" alt="The AI-First Mindset - For Businesses Embracing the Future Today, by Raj Goodman Anand"/></div><div class="bd"><h3>The AI-First Mindset® - Embracing the Future Today</h3><p>Delve into the potential of AI and its impact on business. Prioritise AI for problem-solving to stay competitive and thrive.</p><div class="dl"><a class="p" href="#" data-download="ebook-embracing-the-future">eBook</a><a class="s" href="#" data-download="audiobook-embracing-the-future">Audiobook</a></div></div></article>
       <article class="book" data-reveal data-delay="80"><div class="cov"><img loading="lazy" src="/assets/ebook-ai-era.webp" alt="The AI Era: Adapting &amp; Thriving - Insights from the Industrial Revolution for Modern Businesses, by Raj Goodman Anand"/></div><div class="bd"><h3>The AI Era - Adapting &amp; Thriving</h3><p>Parallels the Industrial and AI Revolutions, emphasising mastery of AI technology, ethics, and regulation to build trust.</p><div class="dl"><a class="p" href="#" data-download="ebook-ai-era">eBook</a><a class="s" href="#" data-download="audiobook-ai-era">Audiobook</a></div></div></article>
       <article class="book" data-reveal data-delay="160"><div class="cov"><img loading="lazy" src="/assets/ebook-trust.webp" alt="The AI-First Mindset - Building Trust in the Digital Age, by Raj Goodman"/></div><div class="bd"><h3>The AI-First Mindset® - Building Trust in the Digital Age</h3><p>Examines trust challenges and opportunities in AI adoption across global business environments.</p><div class="dl"><a class="p" href="#" data-download="ebook-building-trust">eBook</a></div></div></article>
       <article class="book" data-reveal data-delay="240"><div class="cov"><img loading="lazy" src="/assets/ebook-aifm-os.webp" alt="AIFM OS - The Operating System for AI-First Manufacturing, by Raj Goodman Anand"/></div><div class="bd"><h3>AIFM OS - The Operating System for AI-First Manufacturing</h3><p>The complete operating system for AI transformation: vision, process, systems, org, scorecard and cadence, so pilots turn into production.</p><div class="dl"><a class="p" href="#" data-download="ebook-aifm-os">eBook</a></div></div></article>
+    </div>
+      <div class="bs-nav">
+        <button class="bs-arrow" type="button" data-bs-prev aria-label="Previous books">&#8249;</button>
+        <button class="bs-arrow" type="button" data-bs-next aria-label="Next books">&#8250;</button>
+      </div>
     </div>
   </div>
 </section>
