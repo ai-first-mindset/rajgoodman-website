@@ -31,12 +31,7 @@ export default async function handler(req, res) {
     return res.status(422).json({ ok: false, error: 'invalid-email' });
   }
 
-  // 1) Resources platform (system of record). Best effort, never throws.
-  const mirror = await mirrorToResources({
-    email, firstName, lastName, source: 'rajgoodman-newsletter',
-  });
-
-  // 2) EmailOctopus (v1.6). Re-subscribing an existing email is treated as
+  // 1) EmailOctopus (v1.6). Re-subscribing an existing email is treated as
   // success so the user never sees an error for already being on the list.
   const apiKey = process.env.EMAILOCTOPUS_API_KEY;
   const listId = process.env.EMAILOCTOPUS_LIST_ID;
@@ -75,6 +70,18 @@ export default async function handler(req, res) {
   } else {
     console.error('CONFIG ERROR: EmailOctopus not configured (need EMAILOCTOPUS_API_KEY + EMAILOCTOPUS_LIST_ID)');
   }
+
+  // 2) Resources platform (system of record). Runs AFTER EmailOctopus so it
+  // can inherit the double opt-in verdict: this list has DOI enabled, so a
+  // signup is PENDING until the person clicks the confirmation. Marking them
+  // subscribed here would mean mailing somebody who never confirmed.
+  //
+  // If EmailOctopus did not answer we cannot know, so we fall back to
+  // 'pending' rather than risk over-subscribing on a double opt-in list.
+  const mirrorStatus = eoOk ? (eoPending ? 'pending' : 'subscribed') : 'pending';
+  const mirror = await mirrorToResources({
+    email, firstName, lastName, source: 'rajgoodman-newsletter', status: mirrorStatus,
+  });
 
   if (mirror.ok || eoOk) {
     // Tell the form whether a confirmation step is pending so it can show

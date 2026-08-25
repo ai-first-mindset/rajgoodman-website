@@ -12,7 +12,7 @@
 const DEFAULT_URL =
   'https://rxjtyvvoubnkbpwwruwh.supabase.co/functions/v1/newsletter-subscribe';
 
-export async function mirrorToResources({ email, firstName, lastName, source }) {
+export async function mirrorToResources({ email, firstName, lastName, source, status }) {
   const key = process.env.AIFM_SUBSCRIBE_KEY;
   if (!key) return { ok: false, skipped: true, reason: 'not-configured' };
 
@@ -26,6 +26,10 @@ export async function mirrorToResources({ email, firstName, lastName, source }) 
         first_name: firstName || '',
         last_name: lastName || '',
         source: source || 'platform',
+        // 'pending' when the list uses double opt-in and the person has not
+        // confirmed yet. Without this the platform would mark them subscribed
+        // while EmailOctopus is still waiting for the confirmation click.
+        status: status === 'pending' ? 'pending' : 'subscribed',
         secret: key,
       }),
     });

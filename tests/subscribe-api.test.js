@@ -194,3 +194,36 @@ test('non-POST -> 405 with Allow header', async () => {
   assert.equal(res.statusCode, 405);
   assert.equal(res.headers.Allow, 'POST');
 });
+
+// ---- double opt-in consent (found by testing production, 25 Aug) ----
+// This list has DOI enabled, so EmailOctopus answers PENDING until the person
+// clicks the confirmation. The platform must record the same, or we would mail
+// somebody who never confirmed.
+
+test('DOI pending in EmailOctopus mirrors as pending, not subscribed', async () => {
+  stubFetch({ eoStatus: 'PENDING' });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(mirrorCalls[0].body.status, 'pending');
+  assert.equal(res.body.pending, true);
+});
+
+test('confirmed (SUBSCRIBED) mirrors as subscribed', async () => {
+  stubFetch({ eoStatus: 'SUBSCRIBED' });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(mirrorCalls[0].body.status, 'subscribed');
+});
+
+test('EmailOctopus unreachable falls back to pending on this DOI list', async () => {
+  stubFetch({ eoThrow: true });
+  process.env.AIFM_SUBSCRIBE_KEY = 'test-key';
+  const res = makeRes();
+  await handler(post({ token: 't', email: 'x@y.zz' }), res);
+  delete process.env.AIFM_SUBSCRIBE_KEY;
+  assert.equal(mirrorCalls[0].body.status, 'pending');
+});
