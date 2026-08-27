@@ -111,6 +111,15 @@
   #app.folded #adminmenu { width:46px } #app.folded #adminmenu .label { opacity:0; pointer-events:none }
   #app.folded #wpbody { margin-left:46px }
   #wpbody .wrap { max-width:1180px; margin:0; padding:22px 24px }
+  /* Rate-limit notice bar (see admin.js showRateLimitNotice) */
+  #retryBar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    margin:20px 24px 4px; padding:14px 18px; background:#fff; border:1px solid #c3c4c7;
+    border-left:4px solid #dba617; border-radius:3px; box-shadow:0 1px 1px rgba(0,0,0,.04);
+    font-size:13px; line-height:1.55 }
+  #retryBar.hide { display:none }
+  #retryBar .retry-head { margin:0 }
+  #retryBar .retry-dismiss { background:none; border:0; color:#646970; font-size:18px; line-height:1; cursor:pointer; padding:0 2px }
+  #retryBar .retry-dismiss:hover { color:#1d2327 }
   .wp-heading { font-size:23px; font-weight:400; color:#1d2327; margin:0 0 18px }
   .card > h2, .card > h3 { font-size:14px; font-weight:600; color:var(--ink) } /* direct children only: post headings inside the editor surface keep their article styling (blog-content.css) */
   .glance { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px }
@@ -173,6 +182,11 @@
     <div class="item collapse" id="collapseBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="label">Collapse menu</span></div>
   </nav>
   <div id="wpbody">
+
+  <!-- Rate-limit notice: shown when Supabase refuses an invite email
+       (admin.js showRateLimitNotice); dismissible, cleared on a successful send. -->
+  <div id="retryBar" class="hide"></div>
+
 
   <!-- DASHBOARD -->
   <div id="dashboardView" class="wrap">

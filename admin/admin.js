@@ -95,6 +95,37 @@ async function showDashboard(){
 
 
 // ---- Users panel (admin only) ----
+// Supabase's default email service only sends a handful of auth emails per
+// hour (~2/h until custom SMTP is configured), so auto-retrying a refused
+// send just counts down into the same wall. A rate-limited send is therefore
+// reported, not retried: the #retryBar notice states the hourly allowance and
+// roughly when the window reopens, and the admin resends manually.
+const INVITE_HOURLY_LIMIT = 2;   // Supabase default-SMTP allowance, emails/hour
+// Human wait time from the API's retryAfterSeconds. GoTrue only names a
+// figure for the short per-address throttle; when the hourly pool itself is
+// exhausted the API reports the full hour (3600).
+function rateLimitWait(seconds){
+  const s = Math.max(1, (seconds | 0) || 3600);
+  if (s >= 3600) return 'about an hour';
+  if (s >= 60) { const m = Math.ceil(s / 60); return `about ${m} minute${m > 1 ? 's' : ''}`; }
+  return `about ${s} seconds`;
+}
+function showRateLimitNotice(retryAfterSeconds, note){
+  const bar = $('retryBar');
+  if (!bar) return;
+  bar.innerHTML =
+    '<p class="retry-head" role="status"><b>Email rate limit reached — email not sent.</b> ' +
+    `Supabase's default email service sends at most ~${INVITE_HOURLY_LIMIT} auth emails per hour. ` +
+    `Try again in ${rateLimitWait(retryAfterSeconds)}` + (note ? ' — ' + esc(note) : '.') + '</p>' +
+    '<button type="button" class="retry-dismiss" aria-label="Dismiss notice">&times;</button>';
+  bar.querySelector('.retry-dismiss').addEventListener('click', hideRateLimitNotice);
+  bar.classList.remove('hide');
+}
+function hideRateLimitNotice(){
+  const bar = $('retryBar');
+  if (bar){ bar.classList.add('hide'); bar.innerHTML = ''; }
+}
+
 async function showUsers(){
   hideViews();
   $('usersView').classList.remove('hide'); setActiveMenu('usersBtn');
@@ -106,15 +137,62 @@ async function showUsers(){
     const tr = document.createElement('tr');
     const last = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : '—';
     const status = u.confirmed ? 'active' : 'invited';
+    const actionBtn = u.confirmed
+      ? `<button data-reset="${u.id}" data-email="${esc(u.email)}">Send password reset</button> `
+      : `<button data-resend="${u.id}" data-email="${esc(u.email)}">Resend invite</button> `;
     const delBtn = (u.email === (ME&&ME.email)) ? '' : `<button class="danger" data-del="${u.id}" data-email="${esc(u.email)}">Remove</button>`;
-    tr.innerHTML = `<td>${esc(u.email)}</td><td>${esc(u.role)}</td><td class="muted">${status}</td><td class="muted">${last}</td><td>${delBtn}</td>`;
+    tr.innerHTML = `<td>${esc(u.email)}</td><td>${esc(u.role)}</td><td class="muted">${status}</td><td class="muted">${last}</td><td>${actionBtn}${delBtn}</td>`;
     tb.appendChild(tr);
   });
+  tb.querySelectorAll('[data-resend]').forEach(b => b.addEventListener('click', () => resendInvite(b.dataset.resend, b.dataset.email, b)));
+  tb.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => sendReset(b.dataset.reset, b.dataset.email, b)));
   tb.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm(`Remove ${b.dataset.email}? They will lose access immediately.`)) return;
     const r = await api('/api/admin/users/', { method:'DELETE', body: JSON.stringify({ id: b.dataset.del }) });
     if (r.ok) showUsers(); else toast('Could not remove user');
   }));
+}
+
+// Re-send a pending invite (PATCH). A rate-limited send is reported via the
+// notice bar and left for the admin to retry manually. When the API had to
+// recreate the pending user before being limited (`recreate`), that row is
+// gone — prefill the invite form so the manual retry is one click away.
+async function resendInvite(id, email, btn){
+  if (btn) btn.disabled = true;
+  const r = await api('/api/admin/users/', { method:'PATCH', body: JSON.stringify({ id }) });
+  if (r.ok && r.body && r.body.ok) {
+    hideRateLimitNotice();
+    toast(`Invite re-sent to ${email}`);
+    showUsers();
+    return;
+  }
+  if (btn) btn.disabled = false;
+  if (r.status === 429 && r.body && r.body.error === 'rate-limited') {
+    if (r.body.recreate) {
+      $('inv_email').value = r.body.email;
+      $('inv_role').value = r.body.role;
+      showRateLimitNotice(r.body.retryAfterSeconds,
+        `the pending invite for ${r.body.email} was cleared along the way; the form above is prefilled — just hit "Send invite"`);
+      showUsers();   // that row no longer exists — don't leave a stale table
+    } else {
+      showRateLimitNotice(r.body.retryAfterSeconds);
+    }
+    return;
+  }
+  toast('Could not resend' + (r.body && r.body.detail ? ': ' + r.body.detail : ' — try again'));
+}
+
+// Password reset for an active user (PUT) — rescues accounts confirmed by the
+// old broken invite link that never got to choose a password, without
+// deleting anything. The reset link lands on /admin/, which already shows the
+// set-password screen for recovery tokens.
+async function sendReset(id, email, btn){
+  if (btn) btn.disabled = true;
+  const r = await api('/api/admin/users/', { method:'PUT', body: JSON.stringify({ id }) });
+  if (btn) btn.disabled = false;
+  if (r.ok && r.body && r.body.ok) { hideRateLimitNotice(); toast(`Password reset sent to ${email}`); return; }
+  if (r.status === 429 && r.body && r.body.error === 'rate-limited') { showRateLimitNotice(r.body.retryAfterSeconds); return; }
+  toast('Could not send reset' + (r.body && r.body.detail ? ': ' + r.body.detail : ' — try again'));
 }
 
 async function loadList() {
@@ -763,7 +841,7 @@ $('setpwForm').addEventListener('submit', async (e) => {
     const s = await api('/api/admin/session/');
     if (s.status === 200 && s.body && s.body.ok) { ME = s.body; showApp(); }
     else { $('setpw').classList.add('hide'); $('login').classList.remove('hide'); }
-  } else { err.textContent = 'Could not set password — the invite link may have expired.'; err.classList.remove('hide'); }
+  } else { err.textContent = 'Could not set password — the link may have expired. Ask an admin for a fresh invite or password reset.'; err.classList.remove('hide'); }
 });
 $('logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); await api('/api/admin/session/', { method:'DELETE' }); location.reload(); });
 $('usersBtn').addEventListener('click', showUsers);
@@ -775,8 +853,13 @@ $('inviteForm').addEventListener('submit', async (e) => {
   if (!email) return;
   const r = await api('/api/admin/users/', { method:'POST', body: JSON.stringify({ email, role: $('inv_role').value }) });
   if (r.ok && r.body && r.body.ok) {
+    hideRateLimitNotice();
     msg.textContent = `Invite sent to ${email}.`; msg.style.color=''; msg.classList.remove('hide');
     $('inv_email').value=''; showUsers();
+  } else if (r.status === 429 && r.body && r.body.error === 'rate-limited') {
+    showRateLimitNotice(r.body.retryAfterSeconds);
+    msg.textContent = 'Not sent — the email rate limit is in effect. The form is kept filled; try again in ' + rateLimitWait(r.body.retryAfterSeconds) + '.';
+    msg.style.color='#b42318'; msg.classList.remove('hide');
   } else {
     msg.textContent = 'Invite failed' + (r.body && r.body.detail ? ': ' + r.body.detail : '.'); msg.style.color='#b42318'; msg.classList.remove('hide');
   }
@@ -868,7 +951,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     slugify, esc, parseHash, collect, renderCats, addNewCat,
     applyImageAlt, updateToolbarActive, renderCoverage, wireAdmin, COVERAGE,
-    api, loadFailMsg, fetchMedia, compressImage,
+    api, loadFailMsg, fetchMedia, compressImage, showRateLimitNotice, rateLimitWait, sendReset,
     __test: {
       setEditor: (e) => { editor = e; },
       setCats: (all, sel) => { CAT_ALL = all; CAT_SEL = new Set(sel); },
