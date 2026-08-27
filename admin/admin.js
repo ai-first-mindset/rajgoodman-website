@@ -733,7 +733,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['268','Tests'],['263','Passed'],['5','Env-gated skips'],['29','Suites'],['76.7%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['274','Tests'],['269','Passed'],['5','Env-gated skips'],['29','Suites'],['75.8%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
@@ -754,7 +754,7 @@ const COVERAGE = {
     { f:'api/admin/session.js', l:100, b:100, fn:100, n:'' },
     { f:'api/admin/set-password.js', l:100, b:84.6, fn:100, n:'' },
     { f:'api/admin/upload.js', l:100, b:55, fn:100, n:'' },
-    { f:'api/admin/users.js', l:100, b:74.2, fn:100, n:'' },
+    { f:'api/admin/users.js', l:93.1, b:79.2, fn:100, n:'' },
     { g:'Shared helpers' },
     { f:'api/_auth.js', l:100, b:94.6, fn:100, n:'admin-posts-api' },
     { f:'api/_blog-data.js', l:100, b:93.8, fn:94.4, n:'render-handlers' },
@@ -768,7 +768,7 @@ const COVERAGE = {
     { f:'common.js', l:69.4, b:89.2, fn:81.5, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
     { f:'chrome.js', l:100, b:92.3, fn:100, n:'chrome · nav/footer injection smoke' },
     { f:'assets/cookie-consent.js', l:100, b:81.9, fn:96.4, n:'cookie-consent (helpers), cookie-consent-dom (banner/panel)' },
-    { f:'admin/admin.js', l:31.9, b:78.5, fn:34.9, n:'admin-editor · picker/alt-bar/helpers; view flows untested' },
+    { f:'admin/admin.js', l:31.2, b:78.5, fn:33, n:'admin-editor · picker/alt-bar/helpers; view flows untested' },
     { g:'Scripts' },
     { f:'scripts/sync-linkedin-fallback.mjs', none:true, n:'LinkedIn fallback-card generator' },
     { f:'scripts/update-coverage.mjs', none:true, n:'this generator (tooling)' },
