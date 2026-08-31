@@ -28,6 +28,21 @@ test('every public page and SSR template declares the site icon', () => {
   assert.deepEqual(missing, []);
 });
 
+/* ---- Google Search Console ownership ---- */
+
+// Verification lives in a meta tag, NOT the HTML file Google recommends:
+// cleanUrls 308-redirects every .html request (even ones that don't exist),
+// and Google won't verify a file it gets redirected to. Google REVOKES
+// ownership if the tag disappears, which silently kills the SEO reporting,
+// so pin the exact token here.
+test('homepage carries the Google Search Console verification tag', () => {
+  const html = read('index.html');
+  const m = html.match(/<meta\s+name="google-site-verification"\s+content="([^"]+)"\s*\/?>/i);
+  assert.ok(m, 'google-site-verification meta tag is missing from index.html');
+  assert.equal(m[1], '-KsprLkJPmXoUUFJ0oN0rGO3ByPpUS0PUuAlLdwrFz4', 'verification token changed');
+  assert.ok(html.indexOf(m[0]) < html.indexOf('<body'), 'tag must be inside <head>');
+});
+
 /* ---- vercel.json: the WP-era surface is redirected, feeds are wired ---- */
 
 test('vercel.json preserves the WordPress URL surface', () => {
