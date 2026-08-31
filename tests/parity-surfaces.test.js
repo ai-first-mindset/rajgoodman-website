@@ -35,12 +35,17 @@ test('every public page and SSR template declares the site icon', () => {
 // and Google won't verify a file it gets redirected to. Google REVOKES
 // ownership if the tag disappears, which silently kills the SEO reporting,
 // so pin the exact token here.
-test('homepage carries the Google Search Console verification tag', () => {
+test('homepage carries every Google Search Console verification tag', () => {
   const html = read('index.html');
-  const m = html.match(/<meta\s+name="google-site-verification"\s+content="([^"]+)"\s*\/?>/i);
-  assert.ok(m, 'google-site-verification meta tag is missing from index.html');
-  assert.equal(m[1], '-KsprLkJPmXoUUFJ0oN0rGO3ByPpUS0PUuAlLdwrFz4', 'verification token changed');
-  assert.ok(html.indexOf(m[0]) < html.indexOf('<body'), 'tag must be inside <head>');
+  const head = html.slice(0, html.indexOf('<body'));
+  const found = [...head.matchAll(/<meta\s+name="google-site-verification"\s+content="([^"]+)"\s*\/?>/gi)].map((m) => m[1]);
+  // One token per Google account; dropping either revokes that person's access.
+  for (const [who, token] of [
+    ['raj (rajeshwar.anand@gmail.com, owner)', 'CtywK5i0Ul8MCJwyyrz6_-0j-9QK5qqMDHqZegG82Yo'],
+    ['David', '-KsprLkJPmXoUUFJ0oN0rGO3ByPpUS0PUuAlLdwrFz4'],
+  ]) {
+    assert.ok(found.includes(token), `verification tag for ${who} is missing from <head>`);
+  }
 });
 
 /* ---- vercel.json: the WP-era surface is redirected, feeds are wired ---- */
