@@ -17,6 +17,7 @@
     { "source": "/blog/artificial-intelligence-benefits-to-society-and-the-economy/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/generative-ai-in-search/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-for-personalization/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/blog/ai-document-analysis/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/industries/", "destination": "/", "statusCode": 301 },
     { "source": "/industries/:path*/", "destination": "/", "statusCode": 301 },
     { "source": "/blog/author/:slug/", "destination": "/authors/", "statusCode": 301 },
