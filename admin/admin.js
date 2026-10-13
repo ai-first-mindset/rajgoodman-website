@@ -769,7 +769,7 @@ const COVERAGE = {
     { f:'common.js', l:64.7, b:89.1, fn:79.7, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
     { f:'chrome.js', l:100, b:92.3, fn:100, n:'chrome · nav/footer injection smoke' },
     { f:'assets/cookie-consent.js', l:100, b:81.9, fn:96.4, n:'cookie-consent (helpers), cookie-consent-dom (banner/panel)' },
-    { f:'admin/admin.js', l:31.2, b:78.5, fn:33, n:'admin-editor · picker/alt-bar/helpers; view flows untested' },
+    { f:'admin/admin.js', l:31.3, b:78.5, fn:33, n:'admin-editor · picker/alt-bar/helpers; view flows untested' },
     { g:'Scripts' },
     { f:'scripts/sync-linkedin-fallback.mjs', none:true, n:'LinkedIn fallback-card generator' },
     { f:'scripts/update-coverage.mjs', none:true, n:'this generator (tooling)' },
