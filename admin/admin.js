@@ -733,7 +733,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['265','Tests'],['260','Passed'],['5','Env-gated skips'],['29','Suites'],['75.3%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['275','Tests'],['270','Passed'],['5','Env-gated skips'],['30','Suites'],['75.8%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
@@ -742,7 +742,7 @@ const COVERAGE = {
     { f:'api/feed.js', l:100, b:93.8, fn:100, n:'parity-surfaces' },
     { f:'api/linkedin.js', l:100, b:77.8, fn:100, n:'linkedin-api' },
     { f:'api/render-category.js', l:100, b:59.1, fn:85.7, n:'render-handlers' },
-    { f:'api/render-post.js', l:100, b:81, fn:100, n:'render-handlers' },
+    { f:'api/render-post.js', l:100, b:78.3, fn:100, n:'render-handlers' },
     { f:'api/sitemap.js', l:100, b:85.7, fn:100, n:'route checked textually in parity tests only' },
     { f:'api/subscribe.js', l:100, b:100, fn:50, n:'subscribe-api' },
     { g:'Admin API (auth-gated)' },
@@ -760,9 +760,10 @@ const COVERAGE = {
     { f:'api/_blog-data.js', l:100, b:93.8, fn:94.4, n:'render-handlers' },
     { f:'api/_blog-index-template.js', l:100, b:100, fn:100, n:'via blog-index' },
     { f:'api/_body.js', l:100, b:100, fn:100, n:'read-body' },
+    { f:'api/_image-size.js', l:95.5, b:82.7, fn:88.9, n:'' },
     { f:'api/_media.js', l:100, b:87, fn:100, n:'media-library listing glue' },
     { f:'api/_newsletter-mirror.js', l:93.8, b:81.3, fn:50, n:'' },
-    { f:'api/_post-template.js', l:93.2, b:53.3, fn:83.3, n:'post-template, parity-surfaces' },
+    { f:'api/_post-template.js', l:93.4, b:68.6, fn:84.6, n:'post-template, parity-surfaces' },
     { f:'api/_turnstile.js', l:100, b:100, fn:100, n:'turnstile' },
     { g:'Front-end' },
     { f:'common.js', l:64.7, b:89.1, fn:79.7, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
