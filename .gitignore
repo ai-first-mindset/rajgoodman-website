@@ -18,3 +18,4 @@ _logos_new/
 _audit/
 _dist/
 GO-LIVE.pdf
+.env*
