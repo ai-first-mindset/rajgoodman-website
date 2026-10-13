@@ -118,6 +118,12 @@
 .post-body div[data-youtube-video] iframe, .ProseMirror div[data-youtube-video] iframe {
   width: 100%; height: 100%; border: 0; border-radius: 8px; display: block;
 }
+/* Vertical video (YouTube Shorts). The post template adds .yt-portrait when the
+   embed's iframe is taller than it is wide, so a Short plays as a centred 9:16
+   frame rather than a thin strip letterboxed inside the 16:9 box above. */
+.post-body div.yt-portrait[data-youtube-video] {
+  aspect-ratio: 9 / 16; width: min(100%, 360px); margin-left: auto; margin-right: auto;
+}
 
 /* CTA block (self-contained so it styles in the editor too, where site.css isn't loaded) */
 .post-body .post-cta, .ProseMirror .post-cta {

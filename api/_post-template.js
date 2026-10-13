@@ -85,6 +85,24 @@ export function membershipCta() {
   </section>`;
 }
 
+// YouTube embeds come from the editor's video button as
+// <div data-youtube-video=""><iframe width=.. height=..>. The editor keeps the
+// iframe's width/height through a re-save but drops anything else, so the
+// template adds the rest at render time:
+//  - a portrait embed (a YouTube Short: height > width) gets class yt-portrait,
+//    which blog-content.css shows as a centred 9:16 frame instead of letterboxing
+//    it inside the default 16:9 box;
+//  - every YouTube iframe gets loading="lazy", since the player is heavy.
+export function prepVideos(html) {
+  return String(html || '').replace(/<div data-youtube-video(="")?>(\s*)<iframe\b([^>]*)>/g, (m, eq, ws, attrs) => {
+    const w = Number((attrs.match(/\swidth="(\d+)"/) || [])[1]);
+    const h = Number((attrs.match(/\sheight="(\d+)"/) || [])[1]);
+    const cls = w > 0 && h > w ? ' class="yt-portrait"' : '';
+    const lazy = /\sloading=/.test(attrs) ? '' : ' loading="lazy"';
+    return `<div${cls} data-youtube-video${eq || ''}>${ws}<iframe${attrs}${lazy}>`;
+  });
+}
+
 // width/height for the hero, read from the image file by render-post.js. With
 // height:auto in the inline style these only reserve the space (no stretching),
 // and if the size couldn't be read they're simply left off.
@@ -207,7 +225,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     </div>
     ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
-    <div class="post-body">${post.body_html || ''}</div>${authorBio(post)}
+    <div class="post-body">${prepVideos(post.body_html)}</div>${authorBio(post)}
   </article>
 
   ${membershipCta()}
