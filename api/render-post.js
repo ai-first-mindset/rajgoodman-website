@@ -4,6 +4,7 @@
 import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug, listPublished } from './_blog-data.js';
 import { renderPost, renderNotFound } from './_post-template.js';
 import { getAuthedUser } from './_auth.js';
+import { imageSize } from './_image-size.js';
 
 export default async function handler(req, res) {
   let raw = req.query && req.query.slug;
@@ -50,6 +51,11 @@ export default async function handler(req, res) {
   // Recent posts for the "Recent Posts" section (3 most recent, excluding this one).
   let recent = [];
   try { recent = (await listPublished()).filter((p) => p.slug !== post.slug).slice(0, 3); } catch (e) { /* noop */ }
+
+  // Give the hero its real size so the page doesn't jump as it loads. Fails
+  // soft: no dimensions just means the template leaves the attributes off.
+  const dims = await imageSize(post.featured_image);
+  if (dims) post = { ...post, featured_image_width: dims.width, featured_image_height: dims.height };
 
   if (preview) {
     post = { ...post, robots: 'noindex, nofollow' };

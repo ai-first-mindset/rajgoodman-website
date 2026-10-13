@@ -85,6 +85,14 @@ export function membershipCta() {
   </section>`;
 }
 
+// width/height for the hero, read from the image file by render-post.js. With
+// height:auto in the inline style these only reserve the space (no stretching),
+// and if the size couldn't be read they're simply left off.
+export function heroSize(post) {
+  const w = Number(post.featured_image_width), h = Number(post.featured_image_height);
+  return Number.isInteger(w) && Number.isInteger(h) && w > 0 && h > 0 ? ` width="${w}" height="${h}"` : '';
+}
+
 export function renderPost(post, recent = []) {
   const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
   const title = post.seo_title || post.title;
@@ -198,7 +206,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
       <span style="opacity:.7">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
     </div>
     ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
-    ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}" style="width:100%;border-radius:10px;margin-bottom:28px" />` : ''}
+    ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${post.body_html || ''}</div>${authorBio(post)}
   </article>
 
