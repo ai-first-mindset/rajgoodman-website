@@ -733,7 +733,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['275','Tests'],['270','Passed'],['5','Env-gated skips'],['30','Suites'],['75.8%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['282','Tests'],['277','Passed'],['5','Env-gated skips'],['31','Suites'],['75.9%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:80, fn:87.5, n:'render-handlers' },
@@ -763,7 +763,7 @@ const COVERAGE = {
     { f:'api/_image-size.js', l:95.5, b:82.7, fn:88.9, n:'' },
     { f:'api/_media.js', l:100, b:87, fn:100, n:'media-library listing glue' },
     { f:'api/_newsletter-mirror.js', l:93.8, b:81.3, fn:50, n:'' },
-    { f:'api/_post-template.js', l:93.4, b:68.6, fn:84.6, n:'post-template, parity-surfaces' },
+    { f:'api/_post-template.js', l:93.9, b:70.5, fn:86.7, n:'post-template, parity-surfaces' },
     { f:'api/_turnstile.js', l:100, b:100, fn:100, n:'turnstile' },
     { g:'Front-end' },
     { f:'common.js', l:64.7, b:89.1, fn:79.7, n:'linkedin-widget, download-modal, forms · reveal/counters/lightbox untested (visual)' },
