@@ -241,6 +241,7 @@ ${recent.length ? `  <section class="sec">
     <div class="wrap">
       <div class="shead"><span class="kick">Recent Posts</span><span class="ln"></span></div>
       <div class="blog-grid">${recent.map(recentCard).join('')}</div>
+      <div style="margin-top:40px"><a href="/blog/" class="btn btn-line">&larr; All articles</a></div>
     </div>
   </section>` : ''}
 </main>
