@@ -68,6 +68,17 @@ export async function listByCategory(slug) {
   return posts.filter((p) => (p.categories || []).some((c) => catSlug(c) === slug));
 }
 
+// Author profile (title, bio, photo, LinkedIn) from the `authors` table, matched
+// by slug of the post's display name. A profile is decoration: if the table
+// can't be read the post falls back to the built-in bio.
+export async function getAuthorProfile(name) {
+  if (!configured) { guardSeed(); return null; }
+  const slug = catSlug(name);
+  if (!slug) return null;
+  try { return (await sb(`authors?slug=eq.${encodeURIComponent(slug)}&select=slug,name,title,bio,image_url,linkedin_url&limit=1`))[0] || null; }
+  catch (err) { console.error('authors lookup failed', err); return null; }
+}
+
 export const dataSource = configured ? 'supabase' : 'seed';
 
 // --- Dev seed (used only until SUPABASE_URL/KEY are set) ---

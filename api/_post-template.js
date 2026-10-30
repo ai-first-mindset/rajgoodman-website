@@ -45,16 +45,24 @@ function extractFaqs(html) {
   return out;
 }
 
-function authorBio(post) {
-  if (!/\braj\s+goodman\b/i.test(post.author || '')) return '';
+// The author box and byline read the post author's profile (Admin > Authors);
+// the constants above are the fallback when the profile can't be loaded.
+function authorBio(post, profile) {
+  if (!profile && !/\braj\s+goodman\b/i.test(post.author || '')) return '';
+  const name = (profile && profile.name) || post.author;
+  const photo = (profile && profile.image_url) || AUTHOR_PHOTO;
+  const title = profile ? (profile.title || '') : 'AI Futurist, Keynote Speaker & Founder';
+  const bio = (profile && profile.bio) || AUTHOR_BIO_TEXT;
+  const linkedin = profile ? profile.linkedin_url : 'https://www.linkedin.com/in/rajanand/';
   return `
     <aside class="author-bio" style="display:flex;gap:20px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:48px">
-      <img src="${AUTHOR_PHOTO}" alt="${esc(post.author)}" loading="lazy" style="width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
+      <img src="${esc(photo)}" alt="${esc(name)}" loading="lazy" style="width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
       <div>
-        <div style="font-weight:700">${esc(post.author)}</div>
-        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:2px 0 10px">AI Futurist, Keynote Speaker &amp; Founder</div>
-        <p style="margin:0 0 12px;opacity:.85">${esc(AUTHOR_BIO_TEXT)}</p>
-        <div style="display:flex;gap:16px"><a href="/about/">More about Raj &rarr;</a><a href="https://www.linkedin.com/in/rajanand/" target="_blank" rel="noopener">LinkedIn</a></div>
+        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:4px">Written by</div>
+        <div style="font-weight:700"><a href="/authors/" style="color:inherit;text-decoration:none">${esc(name)}</a></div>${title ? `
+        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:2px 0 10px">${esc(title)}</div>` : ''}
+        <p style="margin:0 0 12px;opacity:.85">${esc(bio)}</p>
+        <div style="display:flex;gap:16px"><a href="/about/">More about ${esc(name.split(' ')[0])} &rarr;</a>${linkedin ? `<a href="${esc(linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ''}</div>
       </div>
     </aside>`;
 }
@@ -111,7 +119,7 @@ export function heroSize(post) {
   return Number.isInteger(w) && Number.isInteger(h) && w > 0 && h > 0 ? ` width="${w}" height="${h}"` : '';
 }
 
-export function renderPost(post, recent = []) {
+export function renderPost(post, recent = [], profile = null) {
   const url = post.canonical_url || `${SITE}/blog/${post.slug}/`;
   const title = post.seo_title || post.title;
   const desc = post.meta_description || post.excerpt || '';
@@ -135,8 +143,8 @@ export function renderPost(post, recent = []) {
     '@graph': [
       {
         '@type': 'Person', '@id': PERSON_ID, name: post.author, alternateName: 'Raj Goodman',
-        url: `${SITE}/`, image: DEFAULT_OG_IMAGE, jobTitle: 'AI Futurist, Keynote Speaker & Founder',
-        description: AUTHOR_BIO_TEXT, sameAs: SAME_AS,
+        url: `${SITE}/`, image: DEFAULT_OG_IMAGE, jobTitle: (profile && profile.title) || 'AI Futurist, Keynote Speaker & Founder',
+        description: (profile && profile.bio) || AUTHOR_BIO_TEXT, sameAs: SAME_AS,
       },
       {
         '@type': 'WebSite', '@id': WEBSITE_ID, url: `${SITE}/`, name: SITE_NAME,
@@ -220,12 +228,12 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     <a href="/blog/" style="opacity:.7;text-decoration:none">&larr; All articles</a>
     <h1 style="margin:18px 0 10px">${esc(post.title)}</h1>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
-      <img src="${AUTHOR_PHOTO}" alt="${esc(post.author)}" loading="lazy" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
-      <span style="opacity:.7">By ${esc(post.author)}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
+      <img src="${esc((profile && profile.image_url) || AUTHOR_PHOTO)}" alt="" loading="lazy" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
+      <span style="opacity:.7">By <a href="/authors/" style="color:inherit">${esc(post.author)}</a>${profile && profile.title ? `, ${esc(profile.title)}` : ''}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
     </div>
     ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
-    <div class="post-body">${prepVideos(post.body_html)}</div>${authorBio(post)}
+    <div class="post-body">${prepVideos(post.body_html)}</div>${authorBio(post, profile)}
   </article>
 
   ${membershipCta()}
