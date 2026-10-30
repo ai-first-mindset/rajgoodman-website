@@ -177,6 +177,7 @@
     <div class="item" id="navPosts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span class="label">Posts</span></div>
     <div class="item" id="mediaBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="label">Media</span></div>
     <div class="item" id="navLinkedin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg><span class="label">LinkedIn</span></div>
+    <div class="item" id="authorsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="label">Authors</span></div>
     <div class="item" id="navCoverage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="label">Coverage</span></div>
     <div class="item hide" id="usersBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="label">Users</span></div>
     <div class="item collapse" id="collapseBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="label">Collapse menu</span></div>
@@ -221,6 +222,28 @@
     <div class="card" style="margin-top:16px">
       <h2 style="margin-top:0">Users</h2>
       <table id="usersTable"><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Last sign-in</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- AUTHORS -->
+  <div id="authorsView" class="wrap hide">
+    <div class="media-toolbar"><div class="left"><h1 class="wp-heading" style="margin:0">Authors</h1></div><button id="authorNewBtn" class="primary">Add New</button></div>
+    <p class="muted" style="margin:4px 0 16px">One profile per author, reused on every post: the byline photo and title, the &ldquo;Written by&rdquo; box at the end of each post, and the &ldquo;Written by&rdquo; box. The site&rsquo;s /authors/ page itself is hand-written.</p>
+    <table id="authorsTable"><thead><tr><th>Name</th><th>Title</th><th>Bio</th><th></th></tr></thead><tbody></tbody></table>
+    <div class="card hide" id="authorForm" style="margin-top:16px">
+      <h3 style="margin:0 0 4px" id="authorFormTitle">Author</h3>
+      <div class="row">
+        <div><label for="a_name">Name <span class="muted">(must match the byline exactly)</span></label><input id="a_name" maxlength="120" /></div>
+        <div><label for="a_title">Title</label><input id="a_title" maxlength="120" placeholder="e.g. Founder and Director" /></div>
+      </div>
+      <label for="a_bio">Bio <span class="muted">(80&ndash;120 words)</span><span id="c_abio" class="count muted">0</span></label>
+      <textarea id="a_bio" rows="5" maxlength="1500" style="resize:vertical"></textarea>
+      <div class="row">
+        <div><label for="a_image_url">Photo URL</label><input id="a_image_url" placeholder="https://…" />
+          <div class="actions" style="margin-top:6px"><button type="button" id="aLibrary">Library</button></div></div>
+        <div><label for="a_linkedin_url">LinkedIn URL</label><input id="a_linkedin_url" placeholder="https://www.linkedin.com/in/…" /></div>
+      </div>
+      <div class="actions" style="margin-top:14px"><button type="button" id="authorSave" class="primary">Save author</button><button type="button" id="authorCancel">Cancel</button></div>
     </div>
   </div>
 
@@ -322,8 +345,6 @@
     <div class="card">
       <label>Title</label>
       <input id="f_title" placeholder="Post title (the H1)" />
-      <label>Slug <span class="muted">— URL: /blog/<span id="slugPreview">…</span>/</span></label>
-      <input id="f_slug" placeholder="post-slug" />
       <label>Body</label>
       <div id="tt-toolbar" class="tt-toolbar">
         <button type="button" data-cmd="h2" title="Heading 2">H2</button>
@@ -348,7 +369,7 @@
       <div class="muted" style="font-size:11px;padding:5px 8px 0">Tip: click any image in the post to edit its alt text right where the image is. Images still missing alt are outlined in red.</div>
       <div id="tt-altbar" style="display:none;gap:8px;align-items:center;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
         <span class="muted" style="white-space:nowrap">Alt text for selected image:</span>
-        <input id="tt-altinput" placeholder="Describe this image for SEO &amp; screen readers…" style="flex:1" />
+        <textarea id="tt-altinput" rows="2" placeholder="Describe this image for SEO &amp; screen readers…" aria-label="Alt text for selected image" style="flex:1;resize:vertical;min-height:2.6em"></textarea>
         <button type="button" id="tt-altapply" class="primary">Apply</button>
       </div>
       <div id="tt-videobar" style="display:none;gap:8px;padding:8px;background:#fff;border:1px solid var(--bd);border-bottom:none">
@@ -384,47 +405,57 @@
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 4px">SEO &amp; metadata</h3>
-      <label>SEO title <span class="muted">(the &lt;title&gt;; falls back to Title)</span><span id="c_seo" class="count muted">0</span></label>
-      <input id="f_seo_title" maxlength="70" />
-      <label>Meta description <span id="c_desc" class="count muted">0</span></label>
-      <textarea id="f_meta_description" rows="2" maxlength="200"></textarea>
-      <label>Excerpt</label>
-      <textarea id="f_excerpt" rows="2"></textarea>
+      <h3 style="margin:0 0 4px">Author &amp; publishing</h3>
       <div class="row">
-        <div>
-          <label>Featured image URL</label>
-          <input id="f_featured_image" placeholder="https://…" />
-          <div class="actions" style="margin-top:6px">
-            <button type="button" id="fiUpload">Upload</button>
-            <button type="button" id="fiLibrary">Library</button>
-          </div>
-        </div>
-        <div><label>Featured image alt</label><input id="f_featured_image_alt" /></div>
-      </div>
-      <div class="row">
-        <div><label>Author</label><input id="f_author" /></div>
-        <div><label>Focus keyphrase <span class="muted">(editorial only)</span></label><input id="f_focus_keyphrase" /></div>
+        <div><label for="f_author">Author <span class="muted">(profiles live under Authors)</span></label><select id="f_author"></select></div>
+        <div><label for="f_published_at">Publish date</label><input id="f_published_at" type="datetime-local" />
+          <div class="muted" style="font-size:12px;margin-top:4px">Shown on the post and the blog listing. Leave blank to use the moment you publish.</div></div>
       </div>
       <label>Categories <span class="muted">(each gets an archive at /blog/category/&hellip;/)</span></label>
       <div id="f_catbox" style="border:1px solid var(--bd);border-radius:4px;background:#fff;padding:8px 12px;max-height:150px;overflow-y:auto"></div>
       <div style="display:flex;gap:8px;margin-top:6px">
-        <input id="f_catnew" placeholder="Add a new category&hellip;" style="flex:1" />
+        <input id="f_catnew" placeholder="Add a new category&hellip;" aria-label="Add a new category" style="flex:1" />
         <button type="button" id="f_cataddbtn">Add</button>
       </div>
-      <label>Canonical URL <span class="muted">(blank = self)</span></label>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px">Featured image</h3>
+      <label for="f_featured_image">Featured image URL</label>
+      <input id="f_featured_image" placeholder="https://…" />
+      <div class="actions" style="margin-top:6px">
+        <button type="button" id="fiUpload">Upload</button>
+        <button type="button" id="fiLibrary">Library</button>
+      </div>
+      <label for="f_featured_image_alt">Featured image alt text</label>
+      <textarea id="f_featured_image_alt" rows="2" style="resize:vertical"></textarea>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px">SEO</h3>
+      <label for="f_seo_title">Meta title <span class="muted">(the &lt;title&gt;; falls back to Title)</span><span id="c_seo" class="count muted">0</span></label>
+      <input id="f_seo_title" maxlength="70" />
+      <label for="f_meta_description">Meta description <span id="c_desc" class="count muted">0</span></label>
+      <textarea id="f_meta_description" rows="2" maxlength="200"></textarea>
+      <label for="f_slug">Slug <span class="muted">— URL: /blog/<span id="slugPreview">…</span>/</span></label>
+      <input id="f_slug" placeholder="post-slug" />
+      <label for="f_canonical_url">Canonical URL <span class="muted">(blank = self)</span></label>
       <input id="f_canonical_url" placeholder="(defaults to /blog/{slug}/)" />
+      <label for="f_excerpt">Excerpt <span class="muted">(blog listing summary)</span></label>
+      <textarea id="f_excerpt" rows="2"></textarea>
+      <label for="f_focus_keyphrase">Focus keyphrase <span class="muted">(editorial only)</span></label>
+      <input id="f_focus_keyphrase" />
       <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin-top:16px;cursor:pointer">
         <input type="checkbox" id="f_noindex" style="width:auto;margin:0" /> Discourage search engines (noindex)
       </label>
-      <label>Robots <span class="muted">(advanced)</span></label>
+      <label for="f_robots">Robots <span class="muted">(advanced)</span></label>
       <input id="f_robots" />
     </div>
 
     <div class="card">
       <h3 style="margin:0 0 4px">Social (OpenGraph / Twitter)</h3>
       <p class="muted" style="margin:0 0 6px">Optional — how this post looks when shared. Leave blank to use the SEO fields / featured image.</p>
-      <label>Social title <span class="muted">(blank = SEO title)</span></label>
+      <label>Social title <span class="muted">(blank = meta title)</span></label>
       <input id="f_og_title" />
       <label>Social description <span class="muted">(blank = meta description)</span></label>
       <textarea id="f_og_description" rows="2"></textarea>

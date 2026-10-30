@@ -74,7 +74,7 @@ function showApp(){
   showDashboard();
 }
 function setActiveMenu(id){ document.querySelectorAll('#adminmenu .item').forEach(a=>a.classList.toggle('current', a.id===id)); }
-function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView','coverageView'].forEach(v=>$(v).classList.add('hide')); }
+function hideViews(){ ['dashboardView','listView','editView','mediaView','usersView','linkedinView','coverageView','authorsView'].forEach(v=>$(v).classList.add('hide')); }
 async function showDashboard(){
   hideViews();
   $('dashboardView').classList.remove('hide'); setActiveMenu('navDashboard');
@@ -633,22 +633,89 @@ function addNewCat(){
   CAT_SEL.add(existing||v); $('f_catnew').value=''; renderCats();
 }
 
+// Author profiles (Authors screen). The byline dropdown lists every profile plus
+// the default byline; a post whose author has no profile keeps its name as an option.
+const BRAND_AUTHOR = 'Raj Goodman Anand';
+let AUTHORS = [];
+async function loadAuthors(){
+  const r = await api('/api/admin/authors/');
+  if (r.ok && r.body && r.body.authors) AUTHORS = r.body.authors;
+  return AUTHORS;
+}
+function renderAuthorSelect(value){
+  const names = AUTHORS.map(a=>a.name);
+  if (!names.includes(BRAND_AUTHOR)) names.push(BRAND_AUTHOR);
+  if (value && !names.includes(value)) names.push(value);
+  $('f_author').innerHTML = names.map(n=>`<option value="${esc(n)}">${esc(n)}${AUTHORS.some(a=>a.name===n)?'':' (no profile)'}</option>`).join('');
+  $('f_author').value = value || names[0];
+}
+// datetime-local works in the browser's timezone; the database stores UTC.
+function toLocalInput(iso){
+  if (!iso) return '';
+  const d = new Date(iso); if (isNaN(d)) return '';
+  const pad = n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromLocalInput(v){
+  if (!v) return null;
+  const d = new Date(v); return isNaN(d) ? null : d.toISOString();
+}
+
 async function openEditor(id) {
   hideViews(); $('editView').classList.remove('hide'); setActiveMenu('navPosts');
   slugEdited = false;
+  await loadAuthors();
   if (id) {
     const r = await api('/api/admin/posts/?id='+encodeURIComponent(id));
     current = r.body.posts;
   } else {
-    current = { status:'draft', author:'Raj Goodman Anand', robots:DEFAULT_ROBOTS };
+    current = { status:'draft', author:(AUTHORS[0] && AUTHORS[0].name) || BRAND_AUTHOR, robots:DEFAULT_ROBOTS };
   }
   fill(current);
+}
+
+async function showAuthors(){
+  hideViews(); $('authorsView').classList.remove('hide'); setActiveMenu('authorsBtn');
+  $('authorForm').classList.add('hide');
+  const tb = $('authorsTable').querySelector('tbody'); tb.innerHTML='<tr><td colspan="4" class="muted">Loading…</td></tr>';
+  const r = await api('/api/admin/authors/');
+  if (!r.ok){ tb.innerHTML='<tr><td colspan="4" class="muted">'+esc(loadFailMsg(r))+'</td></tr>'; return; }
+  AUTHORS = r.body.authors || [];
+  tb.innerHTML = AUTHORS.length ? '' : '<tr><td colspan="4" class="muted">No authors yet.</td></tr>';
+  AUTHORS.forEach(a=>{
+    const tr=document.createElement('tr');
+    const bio=(a.bio||'').split(/\s+/).filter(Boolean).length;
+    tr.innerHTML=`<td><b>${esc(a.name)}</b></td><td>${esc(a.title||'')}</td><td class="muted">${bio?bio+' words':'—'}</td><td><button data-edit="${esc(a.slug)}">Edit</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editAuthor(AUTHORS.find(a=>a.slug===b.dataset.edit))));
+}
+function editAuthor(a){
+  a = a || {};
+  $('authorFormTitle').textContent = a.name ? 'Edit '+a.name : 'New author';
+  $('a_name').value=a.name||''; $('a_title').value=a.title||''; $('a_bio').value=a.bio||'';
+  $('a_image_url').value=a.image_url||''; $('a_linkedin_url').value=a.linkedin_url||'';
+  $('a_name').disabled = !!a.name; // renaming would detach existing posts from the profile
+  countBio(); $('authorForm').classList.remove('hide'); $('a_name').focus();
+}
+function countBio(){
+  const w=$('a_bio').value.split(/\s+/).filter(Boolean).length;
+  $('c_abio').textContent = w+' words'; $('c_abio').style.color = (w>=80&&w<=120)?'#1a7f37':'#b26b00';
+}
+async function saveAuthor(){
+  const body={ name:$('a_name').value, title:$('a_title').value, bio:$('a_bio').value, image_url:$('a_image_url').value, linkedin_url:$('a_linkedin_url').value };
+  const existing = AUTHORS.find(a=>a.name===body.name.trim());
+  if (existing) body.sort = existing.sort;
+  const r = await api('/api/admin/authors/', { method:'POST', body:JSON.stringify(body) });
+  if (r.ok){ toast('Author saved'); showAuthors(); }
+  else toast('Error: '+((r.body&&r.body.error)||r.status));
 }
 function fill(p){
   $('f_title').value=p.title||''; $('f_slug').value=p.slug||'';
   $('f_seo_title').value=p.seo_title||''; $('f_meta_description').value=p.meta_description||'';
   $('f_excerpt').value=p.excerpt||''; $('f_featured_image').value=p.featured_image||'';
-  $('f_featured_image_alt').value=p.featured_image_alt||''; $('f_author').value=p.author||'Raj Goodman Anand';
+  $('f_featured_image_alt').value=p.featured_image_alt||''; renderAuthorSelect(p.author||BRAND_AUTHOR);
+  $('f_published_at').value=toLocalInput(p.published_at);
   $('f_focus_keyphrase').value=p.focus_keyphrase||''; $('f_canonical_url').value=p.canonical_url||'';
   CAT_SEL=new Set(p.categories||[]);
   (p.categories||[]).forEach(c=>{ if(!CAT_ALL.some(x=>x.toLowerCase()===c.toLowerCase())) CAT_ALL.push(c); });
@@ -805,7 +872,7 @@ function collect(){
     seo_title:$('f_seo_title').value.trim()||null, meta_description:$('f_meta_description').value.trim()||null,
     excerpt:$('f_excerpt').value.trim()||null, body_html:(editor ? editor.getHTML() : ''),
     featured_image:$('f_featured_image').value.trim()||null, featured_image_alt:$('f_featured_image_alt').value.trim()||null,
-    author:$('f_author').value.trim()||'Raj Goodman Anand', canonical_url:$('f_canonical_url').value.trim()||null,
+    author:$('f_author').value||BRAND_AUTHOR, canonical_url:$('f_canonical_url').value.trim()||null,
     robots:$('f_robots').value.trim()||DEFAULT_ROBOTS, focus_keyphrase:$('f_focus_keyphrase').value.trim()||null,
     categories:Array.from(CAT_SEL),
     og_title:$('f_og_title').value.trim()||null, og_description:$('f_og_description').value.trim()||null, og_image:$('f_og_image').value.trim()||null,
@@ -813,6 +880,8 @@ function collect(){
 }
 async function save(status){
   const f = collect();
+  const pub = fromLocalInput($('f_published_at').value);
+  if (pub) f.published_at = pub;
   if(!f.title || !f.slug){ toast('Title and slug are required'); return; }
   f.status = status;
   let r;
@@ -846,6 +915,12 @@ $('setpwForm').addEventListener('submit', async (e) => {
 });
 $('logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); await api('/api/admin/session/', { method:'DELETE' }); location.reload(); });
 $('usersBtn').addEventListener('click', showUsers);
+$('authorsBtn').addEventListener('click', showAuthors);
+$('authorNewBtn').addEventListener('click', ()=>editAuthor(null));
+$('authorSave').addEventListener('click', saveAuthor);
+$('authorCancel').addEventListener('click', ()=>$('authorForm').classList.add('hide'));
+$('a_bio').addEventListener('input', countBio);
+$('aLibrary').addEventListener('click', ()=> openMedia((url)=>{ $('a_image_url').value=url; }));
 $('usersBackBtn').addEventListener('click', loadList);
 $('inviteForm').addEventListener('submit', async (e) => {
   e.preventDefault();

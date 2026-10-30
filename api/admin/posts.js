@@ -19,6 +19,10 @@ function headers(extra) {
 function pick(body) {
   const row = {};
   for (const k of ALLOWED) if (k in body && body[k] !== undefined) row[k] = body[k];
+  // An editor-chosen publish date must be a real date; anything else is dropped
+  // so the publish bookkeeping below fills it in.
+  if ('published_at' in row && (row.published_at === null || isNaN(Date.parse(row.published_at)))) delete row.published_at;
+  else if (row.published_at) row.published_at = new Date(row.published_at).toISOString();
   return row;
 }
 // Best-effort sanitiser for admin-authored HTML: strip <script>/<style>, inline
@@ -60,6 +64,7 @@ export default async function handler(req, res) {
       if (!body.title || !body.slug) return res.status(422).json({ ok: false, error: 'title-and-slug-required' });
       const row = pick(body);
       if ('body_html' in row) row.body_html = sanitizeHtml(row.body_html);
+      if (row.status === 'published' && !row.published_at) row.published_at = new Date().toISOString();
       const r = await fetch(`${SB_URL}/rest/v1/posts`, {
         method: 'POST', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
       });
@@ -80,7 +85,7 @@ export default async function handler(req, res) {
         if (!cur.ok) return res.status(502).json({ ok: false, error: 'current-row-lookup-failed' });
         const curRow = (await cur.json())[0];
         if (curRow) {
-          if (body.status === 'published' && !curRow.published_at) row.published_at = new Date().toISOString();
+          if (body.status === 'published' && !curRow.published_at && !row.published_at) row.published_at = new Date().toISOString();
           if (body.slug && curRow.slug && body.slug !== curRow.slug) {
             const set = new Set([...(curRow.prev_slugs || []), curRow.slug]);
             set.delete(body.slug);

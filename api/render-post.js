@@ -1,7 +1,7 @@
 // SSR a single published blog post at /blog/{slug}/ (via the vercel.json rewrite).
 // Cached at the edge for static-like performance; 404s are themed + short-cached.
 
-import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug, listPublished } from './_blog-data.js';
+import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug, listPublished, getAuthorProfile } from './_blog-data.js';
 import { renderPost, renderNotFound } from './_post-template.js';
 import { getAuthedUser } from './_auth.js';
 import { imageSize } from './_image-size.js';
@@ -54,16 +54,16 @@ export default async function handler(req, res) {
 
   // Give the hero its real size so the page doesn't jump as it loads. Fails
   // soft: no dimensions just means the template leaves the attributes off.
-  const dims = await imageSize(post.featured_image);
+  const [dims, profile] = await Promise.all([imageSize(post.featured_image), getAuthorProfile(post.author)]);
   if (dims) post = { ...post, featured_image_width: dims.width, featured_image_height: dims.height };
 
   if (preview) {
     post = { ...post, robots: 'noindex, nofollow' };
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).send(renderPost(post, recent));
+    return res.status(200).send(renderPost(post, recent, profile));
   }
 
   // Static-like caching; revalidate in the background after 5 min.
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
-  return res.status(200).send(renderPost(post, recent));
+  return res.status(200).send(renderPost(post, recent, profile));
 }
