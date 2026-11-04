@@ -71,6 +71,15 @@
 .post-body th, .ProseMirror th { color: #f4efe6; font-weight: 700; background: rgba(244, 239, 230, .05); }
 .post-body td > p, .post-body th > p, .ProseMirror td > p, .ProseMirror th > p { margin: 0 0 .5rem; }
 .post-body td > p:last-child, .post-body th > p:last-child, .ProseMirror td > p:last-child, .ProseMirror th > p:last-child { margin-bottom: 0; }
+/* The admin page styles its own posts table with bare table/th/td selectors
+   (white card, small caps headers). Keep those out of the editor so a pasted
+   table looks as it will on the live post. */
+.ProseMirror table { background: transparent; border: 0; border-radius: 0; width: auto; }
+.ProseMirror table tr th, .ProseMirror table tr td {
+  font-size: inherit; letter-spacing: normal; text-transform: none;
+  border: 1px solid rgba(244, 239, 230, .16);
+}
+.ProseMirror table tr td { color: inherit; background: transparent; }
 
 /* FAQ accordion — native <details>/<summary>, no JS needed on the published page.
    Deliberately matches the .faq pattern in site.css so a post's FAQ looks the
