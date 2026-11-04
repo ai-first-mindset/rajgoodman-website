@@ -3,6 +3,7 @@
 // Wired via rewrites in vercel.json. Posts come from the published set in the DB.
 
 import { listPublished, getAllCategories } from './_blog-data.js';
+import { tagBlog } from './_cache.js';
 
 const SITE = 'https://rajgoodman.com';
 
@@ -23,6 +24,7 @@ function doc(inner, root = 'urlset') {
 }
 
 export default async function handler(req, res) {
+  tagBlog(res);
   let kind = (req.query && req.query.kind) || '';
   if (!kind && req.url) { try { kind = new URL(req.url, 'http://x').searchParams.get('kind') || ''; } catch (e) { /* noop */ } }
 

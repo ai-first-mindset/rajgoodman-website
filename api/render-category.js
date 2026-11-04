@@ -3,6 +3,7 @@
 
 import { listByCategory, catSlug } from './_blog-data.js';
 import { renderNotFound } from './_post-template.js';
+import { tagBlog } from './_cache.js';
 
 const SITE = 'https://rajgoodman.com';
 
@@ -69,6 +70,7 @@ function page(name, slug, posts) {
 }
 
 export default async function handler(req, res) {
+  tagBlog(res);
   let raw = req.query && req.query.slug;
   if (!raw && req.url) { try { raw = new URL(req.url, 'http://x').searchParams.get('slug'); } catch (e) { /* noop */ } }
   const slug = (raw || '').toString().replace(/\/+$/, '');

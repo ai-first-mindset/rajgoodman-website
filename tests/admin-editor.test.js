@@ -71,9 +71,10 @@ test('parseHash: invite tokens, error links, and empty hashes', () => {
 test('collect: trims fields, applies defaults, categories come from the picker', () => {
   const ids = ['f_slug', 'f_title', 'f_seo_title', 'f_meta_description', 'f_excerpt', 'f_featured_image',
     'f_featured_image_alt', 'f_author', 'f_canonical_url', 'f_robots', 'f_focus_keyphrase',
-    'f_og_title', 'f_og_description', 'f_og_image'];
+    'f_og_title', 'f_og_description', 'f_og_image', 'f_show_featured_image'];
   resetEls(ids);
   els.f_slug.value = ' my-post '; els.f_title.value = ' My Post ';
+  els.f_show_featured_image.checked = true;
   els.f_author.value = ''; els.f_robots.value = '';
   admin.__test.setCats(['AI Strategy'], ['AI Strategy']);
   admin.__test.setEditor(stubEditor());
@@ -85,6 +86,9 @@ test('collect: trims fields, applies defaults, categories come from the picker',
   assert.equal(row.seo_title, null, 'empty optionals become null');
   assert.equal(row.body_html, '<p>the body</p>');
   assert.deepEqual(row.categories, ['AI Strategy']);
+  assert.equal(row.show_featured_image, true);
+  els.f_show_featured_image.checked = false;
+  assert.equal(admin.collect().show_featured_image, false, 'unticking hides the image at the top of the post');
 });
 
 /* ---- category picker ---- */

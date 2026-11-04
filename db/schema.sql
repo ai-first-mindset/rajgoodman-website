@@ -12,6 +12,7 @@ create table if not exists posts (
   body_html           text,                          -- sanitised HTML body
   featured_image      text,                          -- og:image URL
   featured_image_alt  text,
+  show_featured_image boolean not null default true, -- false hides the image at the top of the post
   author              text not null default 'Raj Goodman Anand',
   canonical_url       text,                          -- override; defaults to self
   robots              text not null default 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
@@ -33,6 +34,7 @@ alter table posts add column if not exists og_description text;
 alter table posts add column if not exists og_image text;
 alter table posts add column if not exists prev_slugs text[] not null default '{}';
 alter table posts add column if not exists categories text[] not null default '{}';
+alter table posts add column if not exists show_featured_image boolean not null default true;
 
 create index if not exists posts_status_pub_idx on posts (status, published_at desc);
 create unique index if not exists posts_slug_idx on posts (slug);

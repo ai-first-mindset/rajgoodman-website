@@ -5,8 +5,10 @@ import { getPostBySlug, getPostBySlugAnyStatus, getPublishedByPrevSlug, listPubl
 import { renderPost, renderNotFound } from './_post-template.js';
 import { getAuthedUser } from './_auth.js';
 import { imageSize } from './_image-size.js';
+import { tagBlog } from './_cache.js';
 
 export default async function handler(req, res) {
+  tagBlog(res);
   let raw = req.query && req.query.slug;
   if (!raw && req.url) {
     try { raw = new URL(req.url, 'http://x').searchParams.get('slug'); } catch (e) { /* noop */ }

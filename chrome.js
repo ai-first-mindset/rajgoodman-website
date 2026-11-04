@@ -78,7 +78,7 @@
       '<a href="/about/">About Raj</a><a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/authors/">Authors</a><a href="/testimonials/">Testimonials</a><a href="/site-map/">Sitemap</a>' +
     '</div>' +
   '</div>' +
-  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM - ALL RIGHTS RESERVED | <a href="/terms-and-conditions/">LEGAL</a></span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
+  '<div class="f-bot"><span>\u00a9 2026 RAJGOODMAN.COM - ALL RIGHTS RESERVED | <a href="/terms-and-conditions/">LEGAL</a> | <a href="/privacy-policy/">PRIVACY</a></span><span>AI FUTURIST \u00b7 KEYNOTE SPEAKER</span></div>' +
   '</div></footer>';
 
   document.body.insertAdjacentHTML('afterbegin', nav);

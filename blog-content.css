@@ -57,6 +57,21 @@
 }
 .post-body code, .ProseMirror code { font-family: 'JetBrains Mono', monospace; font-size: .92em; }
 
+/* Tables (usually pasted from Word or Google Docs). display:block with
+   overflow-x lets a wide table scroll inside the article on a phone instead
+   of widening the whole page. */
+.post-body table, .ProseMirror table {
+  display: block; max-width: 100%; overflow-x: auto;
+  border-collapse: collapse; margin: 1.6rem 0; font-size: .95em; line-height: 1.55;
+}
+.post-body th, .post-body td, .ProseMirror th, .ProseMirror td {
+  border: 1px solid rgba(244, 239, 230, .16); padding: .55rem .8rem;
+  text-align: left; vertical-align: top; min-width: 7rem;
+}
+.post-body th, .ProseMirror th { color: #f4efe6; font-weight: 700; background: rgba(244, 239, 230, .05); }
+.post-body td > p, .post-body th > p, .ProseMirror td > p, .ProseMirror th > p { margin: 0 0 .5rem; }
+.post-body td > p:last-child, .post-body th > p:last-child, .ProseMirror td > p:last-child, .ProseMirror th > p:last-child { margin-bottom: 0; }
+
 /* FAQ accordion — native <details>/<summary>, no JS needed on the published page.
    Deliberately matches the .faq pattern in site.css so a post's FAQ looks the
    same as the one on /about/ and the service pages: one continuous list with

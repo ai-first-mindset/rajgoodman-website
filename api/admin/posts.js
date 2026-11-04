@@ -1,15 +1,17 @@
 // Admin CRUD for blog posts (auth-gated). Uses the Supabase secret key
 // server-side via PostgREST. GET list / GET ?id / POST create / PATCH update
-// (incl. publish bookkeeping) / DELETE.
+// (incl. publish bookkeeping) / DELETE. Every successful write purges the
+// blog's CDN cache so the change shows on the live site straight away.
 
 import { requireUser } from '../_auth.js';
 import { readBody } from '../_body.js';
+import { purgeBlog } from '../_cache.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const ALLOWED = ['slug', 'title', 'seo_title', 'meta_description', 'excerpt', 'body_html',
-  'featured_image', 'featured_image_alt', 'author', 'canonical_url', 'robots', 'focus_keyphrase',
+  'featured_image', 'featured_image_alt', 'show_featured_image', 'author', 'canonical_url', 'robots', 'focus_keyphrase',
   'og_title', 'og_description', 'og_image', 'categories',
   'status', 'published_at'];
 
@@ -23,6 +25,8 @@ function pick(body) {
   // so the publish bookkeeping below fills it in.
   if ('published_at' in row && (row.published_at === null || isNaN(Date.parse(row.published_at)))) delete row.published_at;
   else if (row.published_at) row.published_at = new Date(row.published_at).toISOString();
+  // A boolean column: anything but an explicit false keeps the image showing.
+  if ('show_featured_image' in row) row.show_featured_image = row.show_featured_image !== false;
   return row;
 }
 // Best-effort sanitiser for admin-authored HTML: strip <script>/<style>, inline
@@ -52,7 +56,7 @@ export default async function handler(req, res) {
       const id = getId(req);
       const path = id
         ? `posts?id=eq.${encodeURIComponent(id)}&limit=1`
-        : 'posts?select=id,slug,title,status,categories,published_at,modified_at&order=modified_at.desc';
+        : 'posts?select=id,slug,title,status,author,categories,published_at,modified_at&order=modified_at.desc';
       const r = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: headers() });
       const data = await r.json();
       return res.status(200).json({ ok: true, posts: id ? (data[0] || null) : data });
@@ -69,6 +73,7 @@ export default async function handler(req, res) {
         method: 'POST', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
       });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'create-failed', detail: await r.text() });
+      await purgeBlog();
       return res.status(201).json({ ok: true, post: (await r.json())[0] });
     }
 
@@ -97,6 +102,7 @@ export default async function handler(req, res) {
         method: 'PATCH', headers: headers({ Prefer: 'return=representation' }), body: JSON.stringify(row),
       });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'update-failed', detail: await r.text() });
+      await purgeBlog();
       return res.status(200).json({ ok: true, post: (await r.json())[0] });
     }
 
@@ -104,6 +110,7 @@ export default async function handler(req, res) {
       if (!body.id) return res.status(422).json({ ok: false, error: 'id-required' });
       const r = await fetch(`${SB_URL}/rest/v1/posts?id=eq.${encodeURIComponent(body.id)}`, { method: 'DELETE', headers: headers() });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'delete-failed' });
+      await purgeBlog();
       return res.status(200).json({ ok: true });
     }
 

@@ -3,6 +3,8 @@
 
 import { listPublished, getAllCategories } from './_blog-data.js';
 import { TEMPLATE } from './_blog-index-template.js';
+import { filterAttrs, filterBar, noMatches } from './_blog-filter.js';
+import { tagBlog } from './_cache.js';
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -21,10 +23,11 @@ function card(p) {
     ? `<time datetime="${esc(p.published_at)}" style="display:block;font-size:.76rem;color:var(--tx-40);margin:0 0 8px">${esc(fmtDate(p.published_at))}</time>`
     : '';
   const ex = p.excerpt ? `<p>${esc(p.excerpt)}</p>` : '';
-  return `<a class="post" href="/blog/${esc(p.slug)}/" data-reveal>${img}<div class="bd"><h3>${esc(p.title)}</h3>${date}${ex}<span class="go">READ &#8594;</span></div></a>`;
+  return `<a class="post" href="/blog/${esc(p.slug)}/"${filterAttrs(p)} data-reveal>${img}<div class="bd"><h3>${esc(p.title)}</h3>${date}${ex}<span class="go">READ &#8594;</span></div></a>`;
 }
 
 export default async function handler(req, res) {
+  tagBlog(res);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
 
@@ -53,7 +56,13 @@ export default async function handler(req, res) {
     ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;align-items:center"><span style="color:var(--tx-40);font-size:.74rem;text-transform:uppercase;letter-spacing:.12em">Browse</span>${cats.map((c) => `<a href="/blog/category/${c.slug}/" style="font-size:.84rem;color:var(--tx-60);border:1px solid var(--line);padding:5px 13px;border-radius:20px;text-decoration:none">${esc(c.name)}</a>`).join('')}</div>`
     : '';
 
+  // Search + author filter over the rendered grid (nothing to filter when the
+  // grid is empty or the DB is down).
+  const canFilter = !dbFailed && posts.length > 0;
+  const bar = canFilter ? filterBar(posts) : '';
+  const after = canFilter ? noMatches() : '';
+
   // Function replacement avoids $-pattern interpretation in the HTML.
-  const withCats = TEMPLATE.replace('<div class="blog-grid">{{POSTS}}</div>', () => `${catRow}<div class="blog-grid">{{POSTS}}</div>`);
+  const withCats = TEMPLATE.replace('<div class="blog-grid">{{POSTS}}</div>', () => `${bar}${catRow}<div class="blog-grid">{{POSTS}}</div>${after}`);
   return res.status(dbFailed ? 503 : 200).send(withCats.replace('{{POSTS}}', () => grid));
 }

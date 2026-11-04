@@ -206,9 +206,13 @@ async function loadList() {
   posts.forEach(p => {
     const tr = document.createElement('tr');
     const mod = p.modified_at ? new Date(p.modified_at).toLocaleDateString() : '';
-    tr.innerHTML = `<td><a class="link" href="#" data-id="${p.id}">${esc(p.title)}</a></td>
-      <td class="muted">/blog/${esc(p.slug)}/</td>
+    // UTC, so it matches the date the live site prints.
+    const pubd = p.published_at ? new Date(p.published_at).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}) : '—';
+    tr.innerHTML = `<td><a class="link" href="#" data-id="${p.id}">${esc(p.title)}</a><div class="muted" style="font-size:12px">/blog/${esc(p.slug)}/</div></td>
+      <td>${esc(p.author||'')}</td>
+      <td class="muted">${esc((p.categories||[]).join(', '))||'—'}</td>
       <td><span class="pill ${p.status}">${p.status}</span></td>
+      <td class="muted">${pubd}</td>
       <td class="muted">${mod}</td>
       <td><button data-edit="${p.id}">Edit</button></td>`;
     tb.appendChild(tr);
@@ -274,6 +278,94 @@ function insertForm(kind){
   editor.chain().focus().insertContent([{ type:'leadform', attrs:{ kind } }, { type:'paragraph' }]).run();
   $('tt-formbar').style.display='none';
 }
+// ---- Pasting from Word / Google Docs ----
+// Word puts its own markup on the clipboard: conditional comments, <o:p> tags,
+// mso-* styles, empty spacer paragraphs, links to images on the writer's own
+// disk, and lists written as paragraphs with typed bullet characters instead
+// of <ul>/<ol>. This turns that into the structure the editor understands:
+// headings, real nested lists, bold/italic, links and tables carry over.
+// Alignment, fonts and spacing are dropped on purpose, so a pasted post
+// follows the site's styling. Plain string work (no DOM) so it is unit tested.
+const LIST_MARKER = /<!(?:--)?\[if !supportLists\](?:--)?>([\s\S]*?)<!(?:--)?\[endif\](?:--)?>/i;
+function wordListsToHtml(run){
+  const items = [];
+  run.replace(/<p\b([^>]*)>([\s\S]*?)<\/p>/gi, (m, attrs, body) => {
+    const level = Number((attrs.match(/level(\d+)/i) || [])[1] || 1);
+    const mk = body.match(LIST_MARKER);
+    const marker = mk ? mk[1].replace(/<[^>]+>/g, '').replace(/&nbsp;|\u00a0/g, ' ').trim() : '';
+    const tag = /^\(?(\d+|[a-z]{1,4})[.)]$/i.test(marker) ? 'ol' : 'ul';
+    items.push({ level, tag, html: body.replace(LIST_MARKER, '').trim() });
+    return m;
+  });
+  let out = ''; const stack = [];
+  for (const it of items) {
+    while (stack.length && stack[stack.length-1].level > it.level) out += '</li></' + stack.pop().tag + '>';
+    const top = stack[stack.length-1];
+    if (top && top.level === it.level && top.tag === it.tag) out += '</li>';
+    else {
+      if (top && top.level === it.level) out += '</li></' + stack.pop().tag + '>';
+      out += '<' + it.tag + '>'; stack.push({ level: it.level, tag: it.tag });
+    }
+    out += '<li><p>' + it.html + '</p>';
+  }
+  while (stack.length) out += '</li></' + stack.pop().tag + '>';
+  return out;
+}
+function cleanPastedHtml(html){
+  if (typeof html !== 'string' || !html) return html;
+  let h = html;
+  if (/urn:schemas-microsoft-com:office|class="?Mso|mso-list/i.test(h)) {
+    h = h.replace(/(?:<p\b[^>]*mso-list:\s*l\d+\s+level\d+[^>]*>[\s\S]*?<\/p>\s*)+/gi, wordListsToHtml);
+  }
+  h = h
+    .replace(/<!--\[if[\s\S]*?<!\[endif\]-->/gi, '')
+    .replace(/<!\[if[\s\S]*?<!\[endif\]>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<(style|xml|script)\b[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(meta|link)\b[^>]*>/gi, '')
+    .replace(/<\/?[a-z]+:[a-z]+\b[^>]*>/gi, '')                   // <o:p>, <v:shape>, <w:...>
+    .replace(/<img\b[^>]*\bsrc=["']?(?:file:|blob:)[^>]*>/gi, '') // images on the writer's disk: upload them instead
+    .replace(/<p\b[^>]*>(?:\s|&nbsp;|&#160;|<br\s*\/?>|<\/?(?:span|b|i|strong|em|font)\b[^>]*>)*<\/p>/gi, '');
+  // The post title is the page's only H1, so the top pasted heading level
+  // becomes H2 and the next H3 (the editor allows H2 and H3).
+  const levels = [...h.matchAll(/<h([1-6])\b/gi)].map((m) => Number(m[1]));
+  if (levels.length) {
+    const top = Math.min(...levels);
+    h = h.replace(/<(\/?)h([1-6])\b/gi, (m, close, n) => '<' + close + 'h' + Math.min(3, Math.max(2, Number(n) - top + 2)));
+  }
+  return h;
+}
+
+// Table nodes, so tables pasted from Word or Google Docs survive instead of
+// being flattened into paragraphs. Built on the bundle's Node API because the
+// vendored bundle has no table extension: cell text is editable, but rows and
+// columns are added in the source document before pasting.
+let _tableNodes;
+function tableNodes(){
+  if(_tableNodes) return _tableNodes;
+  const { Node } = window.TipTap;
+  const span = (name) => ({
+    default:null,
+    parseHTML:el=>{ const v=parseInt(el.getAttribute(name),10); return v>1 ? v : null; },
+    renderHTML:a=>a[name] ? { [name]:a[name] } : {},
+  });
+  const cell = (name, tag) => Node.create({
+    name, content:'block+', isolating:true,
+    addAttributes(){ return { colspan:span('colspan'), rowspan:span('rowspan') }; },
+    parseHTML(){ return [{ tag }]; },
+    renderHTML({ HTMLAttributes }){ return [tag, HTMLAttributes, 0]; },
+  });
+  _tableNodes = [
+    Node.create({ name:'table', group:'block', content:'tableRow+', isolating:true,
+      parseHTML(){ return [{ tag:'table' }]; }, renderHTML(){ return ['table', ['tbody', 0]]; } }),
+    Node.create({ name:'tableRow', content:'(tableCell|tableHeader)+',
+      parseHTML(){ return [{ tag:'tr' }]; }, renderHTML(){ return ['tr', 0]; } }),
+    cell('tableCell', 'td'),
+    cell('tableHeader', 'th'),
+  ];
+  return _tableNodes;
+}
+
 function mountEditor(html){
   const { Editor, StarterKit, Link, Image, Placeholder, Details, DetailsSummary, DetailsContent, Youtube } = window.TipTap;
   if(editor){ editor.destroy(); editor = null; }
@@ -290,7 +382,9 @@ function mountEditor(html){
       Youtube.configure({ controls:true, nocookie:true, width:640, height:360 }),
       ctaNode(),
       formNode(),
+      ...tableNodes(),
     ],
+    editorProps: { transformPastedHTML: cleanPastedHtml },
     content: html || '',
     onUpdate: runSeoChecks,
     onSelectionUpdate: updateToolbarActive,
@@ -649,16 +743,18 @@ function renderAuthorSelect(value){
   $('f_author').innerHTML = names.map(n=>`<option value="${esc(n)}">${esc(n)}${AUTHORS.some(a=>a.name===n)?'':' (no profile)'}</option>`).join('');
   $('f_author').value = value || names[0];
 }
-// datetime-local works in the browser's timezone; the database stores UTC.
+// The publish date is entered and shown in UTC, because the site prints the
+// UTC date. Converting from the browser's timezone made a date picked near
+// midnight in UTC+8 ("3 Nov, 00:00") save as 2 Nov 16:00 UTC and show a day
+// early on the live site.
 function toLocalInput(iso){
   if (!iso) return '';
   const d = new Date(iso); if (isNaN(d)) return '';
-  const pad = n=>String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return d.toISOString().slice(0,16);
 }
 function fromLocalInput(v){
   if (!v) return null;
-  const d = new Date(v); return isNaN(d) ? null : d.toISOString();
+  const d = new Date(v+'Z'); return isNaN(d) ? null : d.toISOString();
 }
 
 async function openEditor(id) {
@@ -715,6 +811,7 @@ function fill(p){
   $('f_seo_title').value=p.seo_title||''; $('f_meta_description').value=p.meta_description||'';
   $('f_excerpt').value=p.excerpt||''; $('f_featured_image').value=p.featured_image||'';
   $('f_featured_image_alt').value=p.featured_image_alt||''; renderAuthorSelect(p.author||BRAND_AUTHOR);
+  $('f_show_featured_image').checked = p.show_featured_image !== false;
   $('f_published_at').value=toLocalInput(p.published_at);
   $('f_focus_keyphrase').value=p.focus_keyphrase||''; $('f_canonical_url').value=p.canonical_url||'';
   CAT_SEL=new Set(p.categories||[]);
@@ -731,6 +828,10 @@ function fill(p){
   $('unpubBtn').classList.toggle('hide', !pub);
   $('deleteBtn').classList.toggle('hide', !p.id);
   $('publishBtn').classList.toggle('hide', pub);
+  // On a published post this button pushes the edit live, so it says Update
+  // rather than "Save draft" (which read as if it would unpublish the post).
+  $('saveBtn').textContent = pub ? 'Update' : 'Save draft';
+  $('saveBtn').classList.toggle('accent', pub);
 }
 function colorFor(len, min, max){ if(!len) return 'var(--mut)'; if(len<min) return '#b9770e'; if(len<=max) return '#1a7f37'; return '#b42318'; }
 function refreshMeta(){
@@ -873,6 +974,7 @@ function collect(){
     seo_title:$('f_seo_title').value.trim()||null, meta_description:$('f_meta_description').value.trim()||null,
     excerpt:$('f_excerpt').value.trim()||null, body_html:(editor ? editor.getHTML() : ''),
     featured_image:$('f_featured_image').value.trim()||null, featured_image_alt:$('f_featured_image_alt').value.trim()||null,
+    show_featured_image:$('f_show_featured_image').checked,
     author:$('f_author').value||BRAND_AUTHOR, canonical_url:$('f_canonical_url').value.trim()||null,
     robots:$('f_robots').value.trim()||DEFAULT_ROBOTS, focus_keyphrase:$('f_focus_keyphrase').value.trim()||null,
     categories:Array.from(CAT_SEL),
@@ -880,6 +982,7 @@ function collect(){
   };
 }
 async function save(status){
+  const wasPublished = !!(current && current.status==='published');
   const f = collect();
   const pub = fromLocalInput($('f_published_at').value);
   if (pub) f.published_at = pub;
@@ -888,7 +991,7 @@ async function save(status){
   let r;
   if (current && current.id) { f.id = current.id; r = await api('/api/admin/posts/', { method:'PATCH', body:JSON.stringify(f) }); }
   else { r = await api('/api/admin/posts/', { method:'POST', body:JSON.stringify(f) }); }
-  if (r.ok) { current = r.body.post; fill(current); toast(status==='published'?'Published':'Saved'); }
+  if (r.ok) { current = r.body.post; fill(current); toast(status!=='published' ? 'Saved' : wasPublished ? 'Updated' : 'Published'); }
   else { toast('Error: '+((r.body&&r.body.error)||r.status)); }
 }
 
@@ -1026,7 +1129,7 @@ if (typeof document !== 'undefined') wireAdmin();
 /* Exposed for unit tests under Node (CommonJS); a no-op in the browser. */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    slugify, esc, parseHash, collect, renderCats, addNewCat,
+    slugify, esc, parseHash, collect, renderCats, addNewCat, cleanPastedHtml,
     applyImageAlt, updateToolbarActive, renderCoverage, wireAdmin, COVERAGE,
     api, loadFailMsg, fetchMedia, compressImage, showRateLimitNotice, rateLimitWait, sendReset,
     __test: {

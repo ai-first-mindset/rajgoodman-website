@@ -13,7 +13,6 @@
     { "source": "/blog/ai-in-telecom-industry/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/next-interface-shift-ai-native-devices-multimodal-agents/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/why-ai-first-leadership-fails-industrial-businesses/", "destination": "/blog/", "statusCode": 301 },
-    { "source": "/blog/category/ai-first-mindset/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/artificial-intelligence-benefits-to-society-and-the-economy/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/generative-ai-in-search/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-for-personalization/", "destination": "/blog/", "statusCode": 301 },

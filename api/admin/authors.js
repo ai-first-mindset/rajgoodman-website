@@ -1,11 +1,13 @@
 // Admin CRUD for author profiles (auth-gated). GET list / POST create-or-update.
 // The slug is derived from the name, which is what posts.author stores and the
 // author archive URL is built from, so renaming creates a new profile rather
-// than silently orphaning the old author's posts.
+// than silently orphaning the old author's posts. Saves purge the blog's CDN
+// cache, since the profile is shown on every post by that author.
 
 import { requireUser } from '../_auth.js';
 import { readBody } from '../_body.js';
 import { catSlug } from '../_blog-data.js';
+import { purgeBlog } from '../_cache.js';
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -44,6 +46,7 @@ export default async function handler(req, res) {
         method: 'POST', headers: headers({ Prefer: 'resolution=merge-duplicates,return=representation' }), body: JSON.stringify(row),
       });
       if (!r.ok) return res.status(502).json({ ok: false, error: 'save-failed', detail: await r.text() });
+      await purgeBlog();
       return res.status(200).json({ ok: true, author: (await r.json())[0] });
     }
     res.setHeader('Allow', 'GET, POST');

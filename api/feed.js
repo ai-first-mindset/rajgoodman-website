@@ -2,6 +2,7 @@
 // WordPress feed so existing subscribers and aggregators keep working.
 
 import { listPublished } from './_blog-data.js';
+import { tagBlog } from './_cache.js';
 
 const SITE = 'https://rajgoodman.com';
 
@@ -35,6 +36,7 @@ ${items}
 }
 
 export default async function handler(req, res) {
+  tagBlog(res);
   res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
   try {
     const posts = await listPublished();

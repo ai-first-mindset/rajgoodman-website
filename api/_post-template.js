@@ -232,7 +232,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
       <span style="opacity:.7">By <a href="/authors/" style="color:inherit">${esc(post.author)}</a>${profile && profile.title ? `, ${esc(profile.title)}` : ''}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
     </div>
     ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
-    ${post.featured_image ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
+    ${post.featured_image && post.show_featured_image !== false ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${prepVideos(post.body_html)}</div>${authorBio(post, profile)}
   </article>
 

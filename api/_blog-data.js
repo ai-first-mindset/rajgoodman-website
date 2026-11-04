@@ -49,7 +49,7 @@ export async function getPublishedByPrevSlug(slug) {
 
 export async function listPublished() {
   if (!configured) { guardSeed(); return SEED.filter((p) => p.status === 'published'); }
-  return sb('posts?status=eq.published&select=slug,title,excerpt,featured_image,categories,published_at,modified_at&order=published_at.desc');
+  return sb('posts?status=eq.published&select=slug,title,excerpt,author,featured_image,categories,published_at,modified_at&order=published_at.desc');
 }
 
 // Category helpers. Categories are stored as display names (text[]) on each post;

@@ -99,7 +99,7 @@ test('GET list: slim column selection ordered by modified_at', async () => {
   await handler(req('GET'), res);
   assert.equal(res.statusCode, 200);
   assert.ok(Array.isArray(res.body.posts));
-  assert.match(restCalls[0].url, /select=id,slug,title,status,categories,published_at,modified_at&order=modified_at\.desc/);
+  assert.match(restCalls[0].url, /select=id,slug,title,status,author,categories,published_at,modified_at&order=modified_at\.desc/);
 });
 
 test('GET ?id: returns a single post (or null when missing)', async () => {

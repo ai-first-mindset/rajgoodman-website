@@ -324,7 +324,7 @@
   <!-- LIST -->
   <div id="listView" class="wrap hide">
     <div class="media-toolbar"><div class="left"><h1 class="wp-heading" style="margin:0">Posts</h1></div><button id="newBtn" class="primary">Add New</button></div>
-    <table id="postsTable"><thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Modified</th><th></th></tr></thead><tbody></tbody></table>
+    <table id="postsTable"><thead><tr><th>Title</th><th>Author</th><th>Categories</th><th>Status</th><th>Published</th><th>Modified</th><th></th></tr></thead><tbody></tbody></table>
     <p id="emptyMsg" class="muted hide" style="margin-top:16px">No posts yet — create one.</p>
   </div>
 
@@ -408,7 +408,7 @@
       <h3 style="margin:0 0 4px">Author &amp; publishing</h3>
       <div class="row">
         <div><label for="f_author">Author <span class="muted">(profiles live under Authors)</span></label><select id="f_author"></select></div>
-        <div><label for="f_published_at">Publish date</label><input id="f_published_at" type="datetime-local" />
+        <div><label for="f_published_at">Publish date <span class="muted">(UTC)</span></label><input id="f_published_at" type="datetime-local" />
           <div class="muted" style="font-size:12px;margin-top:4px">Shown on the post and the blog listing. Leave blank to use the moment you publish.</div></div>
       </div>
       <label>Categories <span class="muted">(each gets an archive at /blog/category/&hellip;/)</span></label>
@@ -429,6 +429,10 @@
       </div>
       <label for="f_featured_image_alt">Featured image alt text</label>
       <textarea id="f_featured_image_alt" rows="2" style="resize:vertical"></textarea>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin-top:16px;cursor:pointer">
+        <input type="checkbox" id="f_show_featured_image" checked style="width:auto;margin:0" /> Show at the top of the post
+      </label>
+      <div class="muted" style="font-size:12px;margin-top:4px">Untick to hide it on the post page. It is still used for the blog listing and social shares.</div>
     </div>
 
     <div class="card">
