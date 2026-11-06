@@ -18,6 +18,8 @@
 .logowall .cell{background:var(--bg-2);min-height:120px;display:grid;place-items:center;padding:24px;transition:background .25s}
 .logowall .cell:hover{background:var(--panel)}
 @media(max-width:780px){.logowall{grid-template-columns:repeat(2,1fr)}}
+/* four features sit in one row on desktop (site.css drops to 2 and 1 columns below 980px) */
+@media(min-width:981px){.media-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 <link rel="canonical" href="https://rajgoodman.com/media/" />
 <meta property="og:url" content="https://rajgoodman.com/media/" />
@@ -102,15 +104,19 @@
     <div class="shead" data-reveal><span class="idx">[ 02 ]</span><span class="kick">Interviews &amp; Coverage</span><span class="ln"></span></div>
     <h2 data-reveal>Selected features</h2>
     <div class="media-grid">
-      <a class="mcard" href="https://www.thedailystar.net/business/organisation-news/press-releases/news/eo-bangladesh-workshop-highlights-growing-business-use-ai-4177851" target="_blank" rel="noopener" data-reveal>
+      <a class="mcard" href="https://cio.economictimes.indiatimes.com/news/artificial-intelligence/the-ai-literacy-gap-between-indian-ceos-and-their-teams-is-hurting-adoption/135478992" target="_blank" rel="noopener" data-reveal>
+        <div class="th"><img src="/assets/EOFPK16JAN-FIRSTMINDSET-15-1.webp" alt="Business leaders working on laptops at one of Raj's AI workshops" loading="lazy" /></div>
+        <div class="bd"><span class="tag">ET CIO</span><h3>The AI literacy gap between Indian CEOs and their teams is hurting adoption</h3><p>Raj's authored article on why AI adoption stalls when leaders and their teams learn at different speeds.</p><span class="go">READ →</span></div>
+      </a>
+      <a class="mcard" href="https://www.thedailystar.net/business/organisation-news/press-releases/news/eo-bangladesh-workshop-highlights-growing-business-use-ai-4177851" target="_blank" rel="noopener" data-reveal data-delay="80">
         <div class="th"><img src="https://img.youtube.com/vi/aissG9i024o/maxresdefault.jpg" alt="EO Bangladesh workshop on AI" loading="lazy" /></div>
         <div class="bd"><span class="tag">The Daily Star</span><h3>EO Bangladesh workshop highlights growing business use of AI</h3><p>Coverage of Raj's hands-on AI session for senior business leaders in Dhaka.</p><span class="go">READ →</span></div>
       </a>
-      <a class="mcard" href="https://www.youtube.com/watch?v=J388WuNb7uw" target="_blank" rel="noopener" data-reveal data-delay="80">
+      <a class="mcard" href="https://www.youtube.com/watch?v=J388WuNb7uw" target="_blank" rel="noopener" data-reveal data-delay="160">
         <div class="th"><img src="/assets/vlog-J388WuNb7uw.webp" alt="The Companies That Ignored Change and What AI Means for Yours" loading="lazy" /><span class="pl"><span></span></span></div>
         <div class="bd"><span class="tag">Talk</span><h3>The Companies That Ignored Change… and What AI Means for Yours</h3><p>What history's disrupted giants teach us about acting on AI now.</p><span class="go">WATCH →</span></div>
       </a>
-      <a class="mcard" href="https://www.youtube.com/watch?v=GY_Maxhn0aI" target="_blank" rel="noopener" data-reveal data-delay="160">
+      <a class="mcard" href="https://www.youtube.com/watch?v=GY_Maxhn0aI" target="_blank" rel="noopener" data-reveal data-delay="240">
         <div class="th"><img src="/assets/vlog-GY_Maxhn0aI.webp" alt="AI Just Replaced Your Research Team" loading="lazy" /><span class="pl"><span></span></span></div>
         <div class="bd"><span class="tag">Talk</span><h3>AI Just Replaced Your Research Team - Here's Why That Matters</h3><p>How agentic AI is reshaping knowledge work, and what leaders should do.</p><span class="go">WATCH →</span></div>
       </a>
