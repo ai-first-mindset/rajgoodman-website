@@ -901,7 +901,7 @@ function runSeoChecks(){
 
 // --- BEGIN GENERATED COVERAGE (scripts/update-coverage.mjs — do not edit by hand) ---
 const COVERAGE = {
-  stats: [['317','Tests'],['312','Passed'],['5','Env-gated skips'],['37','Suites'],['75.5%','Lines, instrumented'],['2','Files not exercised']],
+  stats: [['320','Tests'],['315','Passed'],['5','Env-gated skips'],['37','Suites'],['75.8%','Lines, instrumented'],['2','Files not exercised']],
   files: [
     { g:'Public API (serverless)' },
     { f:'api/blog-index.js', l:100, b:83.3, fn:87.5, n:'render-handlers' },
