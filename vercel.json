@@ -4,6 +4,8 @@
   "regions": ["sin1"],
   "git": { "deploymentEnabled": { "main": false } },
   "redirects": [
+    { "source": "/5-practical-ai-use-cases-manufacturing-shop-floor.html", "destination": "/blog/5-practical-ai-use-cases-manufacturing-shop-floor/", "statusCode": 301 },
+    { "source": "/5-practical-ai-use-cases-manufacturing-shop-floor/", "destination": "/blog/5-practical-ai-use-cases-manufacturing-shop-floor/", "statusCode": 301 },
     { "source": "/\\*", "destination": "/", "statusCode": 301 },
     { "source": "/\\*/", "destination": "/", "statusCode": 301 },
     { "source": "/%2A", "destination": "/", "statusCode": 301 },
