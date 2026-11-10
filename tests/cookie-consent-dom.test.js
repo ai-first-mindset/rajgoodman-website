@@ -7,6 +7,7 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const MODULE = require.resolve('../assets/cookie-consent.js');
@@ -120,7 +121,7 @@ test('Accept all: full grant pushed, choice persisted with version+timestamp, ba
   const up = updates(dl)[0];
   assert.deepEqual(up, { analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' });
   const rec = JSON.parse(store.get('rg_cookie_consent'));
-  assert.equal(rec.version, 1);
+  assert.equal(rec.version, 2);
   assert.ok(rec.ts > 0);
   assert.deepEqual(rec.consent, { analytics: true, marketing: true, necessary: true });
   assert.equal(banner(), null, 'banner gone');
@@ -163,7 +164,7 @@ test('Escape closes the panel without deciding anything', () => {
 });
 
 test('returning visitor with a valid stored choice: no banner, consent re-applied', () => {
-  const stored = JSON.stringify({ version: 1, ts: Date.now(), consent: { analytics: true, marketing: false, necessary: true } });
+  const stored = JSON.stringify({ version: 2, ts: Date.now(), consent: { analytics: true, marketing: false, necessary: true } });
   const dl = boot(stored);
   assert.equal(banner(), null);
   const up = updates(dl)[0];
@@ -178,7 +179,7 @@ test('stale stored choice (old version) re-prompts with the banner', () => {
 });
 
 test('footer gets a Cookie settings control that reopens the panel; RGCookieConsent.reset clears storage', () => {
-  boot(JSON.stringify({ version: 1, ts: Date.now(), consent: { analytics: false, marketing: false, necessary: true } }));
+  boot(JSON.stringify({ version: 2, ts: Date.now(), consent: { analytics: false, marketing: false, necessary: true } }));
   const link = body.querySelector('.cc-open');
   assert.equal(link.textContent, 'Cookie settings');
   link._fire('click', { target: link });
@@ -212,4 +213,58 @@ test('staging/preview/localhost hostnames never load GTM', () => {
     assert.equal(head.querySelector('script[data-gtm]'), null, hostname + ' must not load GTM');
     assert.ok(!global.window.dataLayer.some((e) => e && e['gtm.start']), hostname + ' must not push gtm.start');
   }
+});
+
+/* ---- Meta Pixel: Marketing consent only ---- */
+const META_ID = '1460163115137532';
+const pixelStored = (marketing) => JSON.stringify({
+  version: 2, ts: Date.now(), consent: { analytics: true, marketing, necessary: true },
+});
+const pixelScript = () => head.querySelector('script[data-meta-pixel]');
+const fbCalls = () => (global.window.fbq ? global.window.fbq.queue.map((a) => Array.from(a)) : []);
+
+test('Meta Pixel does not load before a choice, or when Marketing is refused', () => {
+  for (const stored of [null, pixelStored(false)]) {
+    boot(stored, { hostname: 'rajgoodman.com' });
+    assert.equal(pixelScript(), null);
+    assert.equal(global.window.fbq, undefined);
+  }
+  boot(null, { hostname: 'rajgoodman.com' });
+  clickBanner('reject');
+  assert.equal(pixelScript(), null, 'Reject all must not load it');
+});
+
+test('Accept all loads the pixel and counts exactly one PageView', () => {
+  boot(null, { hostname: 'rajgoodman.com' });
+  clickBanner('accept');
+  assert.match(pixelScript().src, /connect\.facebook\.net\/en_US\/fbevents\.js/);
+  assert.deepEqual(fbCalls(), [['consent', 'grant'], ['init', META_ID], ['track', 'PageView']]);
+});
+
+test('a returning visitor who allowed Marketing gets the pixel on load', () => {
+  boot(pixelStored(true), { hostname: 'rajgoodman.com' });
+  assert.ok(pixelScript());
+});
+
+test('withdrawing Marketing revokes the pixel mid-visit', () => {
+  boot(pixelStored(true), { hostname: 'rajgoodman.com' });
+  global.window.RGCookieConsent.open();
+  overlay().children[0]._fire('click', { target: overlay().querySelector('[data-cc="reject"]') });
+  assert.deepEqual(fbCalls().at(-1), ['consent', 'revoke']);
+});
+
+test('previews and localhost never send events to the live pixel', () => {
+  for (const hostname of ['rajgoodman-website.vercel.app', 'localhost']) {
+    boot(pixelStored(true), { hostname });
+    assert.equal(pixelScript(), null, hostname);
+    assert.equal(global.window.fbq, undefined, hostname);
+  }
+});
+
+test('form conversions reach Meta by event name only, and tolerate fbq being absent', () => {
+  const common = readFileSync(new URL('../common.js', import.meta.url), 'utf8');
+  const fn = common.match(/function trackEvent\(name\)\s*\{[\s\S]*?\n  \}/)[0];
+  assert.match(fn, /typeof window\.fbq === 'function'/);
+  assert.match(fn, /\{ content_name: name \}/);
+  assert.doesNotMatch(fn, /\b(em|ph|fn|ln):/, 'no personal data may be passed to Meta');
 });
