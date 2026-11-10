@@ -193,6 +193,11 @@
      email_click, so a push here would double-count. */
   function trackEvent(name) {
     (window.dataLayer = window.dataLayer || []).push({ event: name });
+    // Only exists once the visitor has allowed Marketing (see cookie-consent.js).
+    // Sends the event name only: never the visitor's name, email or message.
+    if (typeof window.fbq === 'function') {
+      window.fbq('track', name === 'email_subscribe' ? 'CompleteRegistration' : 'Lead', { content_name: name });
+    }
   }
 
   function initForms() {

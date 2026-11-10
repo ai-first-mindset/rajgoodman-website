@@ -9,7 +9,7 @@
   'use strict';
 
   var STORAGE_KEY = 'rg_cookie_consent';
-  var POLICY_VERSION = 1;              // bump to force re-consent after a policy change
+  var POLICY_VERSION = 2;              // bump to force re-consent after a policy change
   var MAX_AGE_DAYS = 365;             // re-prompt after ~12 months
   var PRIVACY_URL = '/privacy-policy/';
   var CSS_HREF = '/assets/cookie-consent.css';
@@ -31,7 +31,7 @@
     },
     {
       key: 'marketing', locked: false, title: 'Marketing',
-      desc: 'Lets us and partners measure and personalise ads (e.g. LinkedIn, Google Ads). Off unless you allow it.'
+      desc: 'Lets us and partners measure and personalise ads (e.g. Meta, LinkedIn, Google Ads). Off unless you allow it.'
     }
   ];
 
@@ -49,6 +49,12 @@
   function gtag() { window.dataLayer.push(arguments); }
 
   var GTM_ID = 'GTM-PQ6PSBZN';
+  var META_PIXEL_ID = '1460163115137532'; // shared with aifirstmindset.ai so audiences combine
+
+  function isProdHost() {
+    var host = typeof location !== 'undefined' ? location.hostname : '';
+    return host === 'rajgoodman.com' || host === 'www.rajgoodman.com';
+  }
 
   // GTM loads ONLY on the production hostname - staging, previews and
   // localhost must never send traffic into the live container's GA4 data.
@@ -63,6 +69,28 @@
     s.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
     s.setAttribute('data-gtm', '');
     (document.head || document.documentElement).appendChild(s);
+  }
+
+  // Meta Pixel. Facebook's script ignores Google Consent Mode, so unlike GA4 and
+  // the container it must never load until the visitor has allowed Marketing.
+  // That gate lives in applyConsent(), the only caller. Production only, so
+  // previews and localhost cannot send events into the live pixel.
+  function loadMetaPixel() {
+    if (!isProdHost()) return;
+    if (window.fbq) { window.fbq('consent', 'grant'); return; }
+    var n = window.fbq = function () {
+      if (n.callMethod) n.callMethod.apply(n, arguments); else n.queue.push(arguments);
+    };
+    if (!window._fbq) window._fbq = n;
+    n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    s.setAttribute('data-meta-pixel', '');
+    (document.head || document.documentElement).appendChild(s);
+    n('consent', 'grant');
+    n('init', META_PIXEL_ID);
+    n('track', 'PageView');
   }
 
   // ---- pure helpers (unit-tested) ----
@@ -106,6 +134,8 @@
   function applyConsent(consent) {
     gtag('consent', 'update', consentToSignals(consent));
     window.dataLayer.push({ event: 'cookie_consent_update', consent: consent });
+    if (consent.marketing) loadMetaPixel();
+    else if (window.fbq) window.fbq('consent', 'revoke'); // withdrawn mid-visit
   }
 
   // ---- DOM ----
