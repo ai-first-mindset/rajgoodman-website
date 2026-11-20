@@ -17,7 +17,7 @@
 .tl{margin-top:34px;border-left:1px solid var(--line);padding-left:34px;position:relative}
 .tl .node{position:relative;padding-bottom:38px}
 .tl .node:last-child{padding-bottom:0}
-.tl .node::before{content:"";position:absolute;left:-41px;top:4px;width:13px;height:13px;background:var(--bg);border:2px solid var(--yellow);border-radius:50%}
+.tl .node::before{content:"";position:absolute;left:-41px;top:4px;width:13px;height:13px;background:var(--bg-2);border:2px solid var(--blue);border-radius:50%}
 .tl .org{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-l);margin-bottom:.7rem}
 .tl h3{font-size:1.2rem;margin-bottom:.5rem}
 .tl .yr{font-family:var(--mono);font-size:.8rem;color:var(--accent);font-weight:600;margin-bottom:.5rem}
@@ -26,9 +26,9 @@
    resources.aifirstmindset.ai/membership), private chapter terms. */
 .mduo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 @media(max-width:760px){.mduo{grid-template-columns:1fr}}
-.mcard{border:1px solid var(--line);border-radius:10px;padding:32px;background:var(--bg-2);display:flex;flex-direction:column;align-items:flex-start;gap:14px}
-.mcard-eyeb{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-l);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.mcard-badge{background:rgba(243,175,0,.13);border:1px solid rgba(243,175,0,.4);color:var(--accent);font-size:.6rem;letter-spacing:.12em;padding:.25em .8em;border-radius:999px}
+.mcard{border:1px solid var(--line);border-radius:10px;padding:32px;background:var(--bg-2);box-shadow:var(--card-shadow);display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.mcard-eyeb{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-l);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mcard-badge{background:var(--tint);border:1px solid var(--line);color:var(--accent);font-size:.66rem;font-weight:700;letter-spacing:.12em;padding:.25em .8em;border-radius:999px}
 .mcard h3{font-size:1.25rem}
 .mcard p{color:var(--tx-60);flex:1}
 .mcard-price{font-family:var(--mono)}

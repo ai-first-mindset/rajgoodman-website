@@ -46,7 +46,7 @@ function page(name, slug, posts) {
 </head>
 <body data-page="blog">
 <main>
-<header class="phero" style="padding-bottom:30px">
+<header class="phero">
   <div class="wrap">
     <div class="crumbs"><a href="/">Home</a><span class="sep">/</span><a href="/blog/">Blog</a><span class="sep">/</span><span>${esc(name)}</span></div>
     <span class="eyebrow"><span class="live"></span>Category</span>
@@ -54,8 +54,9 @@ function page(name, slug, posts) {
     <p class="lede">${posts.length ? `${posts.length} article${posts.length === 1 ? '' : 's'} on ${esc(name)}.` : 'No articles in this category yet - browse all articles below.'}</p>
   </div>
 </header>
-<section class="sec" style="padding-top:30px">
+<section class="sec">
   <div class="wrap">
+    <h2 class="sr-only">Articles in ${esc(name)}</h2>
     <div class="blog-grid">${posts.map(card).join('')}</div>
     <div style="margin-top:40px"><a href="/blog/" class="btn btn-line">&larr; All articles</a></div>
   </div>

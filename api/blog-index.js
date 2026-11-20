@@ -45,15 +45,15 @@ export default async function handler(req, res) {
   }
 
   const grid = dbFailed
-    ? '<p style="opacity:.7;grid-column:1/-1">Articles are temporarily unavailable - please try again in a moment.</p>'
+    ? '<p style="color:var(--tx-60);grid-column:1/-1">Articles are temporarily unavailable - please try again in a moment.</p>'
     : posts.length
       ? posts.map(card).join('\n')
-      : '<p style="opacity:.7;grid-column:1/-1">No articles published yet - check back soon.</p>';
+      : '<p style="color:var(--tx-60);grid-column:1/-1">No articles published yet - check back soon.</p>';
 
   let cats = [];
   try { cats = await getAllCategories(); } catch (e) { /* noop */ }
   const catRow = cats.length
-    ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;align-items:center"><span style="color:var(--tx-40);font-size:.74rem;text-transform:uppercase;letter-spacing:.12em">Browse</span>${cats.map((c) => `<a href="/blog/category/${c.slug}/" style="font-size:.84rem;color:var(--tx-60);border:1px solid var(--line);padding:5px 13px;border-radius:20px;text-decoration:none">${esc(c.name)}</a>`).join('')}</div>`
+    ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;align-items:center"><span style="color:var(--tx-60);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em">Browse</span>${cats.map((c) => `<a href="/blog/category/${c.slug}/" style="display:inline-flex;align-items:center;min-height:44px;font-size:.86rem;font-weight:600;color:var(--tx);background:var(--bg-2);border:1px solid var(--field);padding:0 16px;border-radius:22px;text-decoration:none">${esc(c.name)}</a>`).join('')}</div>`
     : '';
 
   // Search + author filter over the rendered grid (nothing to filter when the

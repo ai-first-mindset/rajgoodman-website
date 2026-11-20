@@ -34,7 +34,7 @@
 
 .post-body blockquote, .ProseMirror blockquote {
   margin: 1.6rem 0; padding: .4rem 0 .4rem 1.2rem;
-  border-left: 3px solid #f3b11a; color: #10242c; font-style: italic;
+  border-left: 3px solid #207796; color: #10242c; font-style: italic;
 }
 
 .post-body ul, .post-body ol, .ProseMirror ul, .ProseMirror ol {
@@ -47,7 +47,7 @@
 
 .post-body img, .ProseMirror img {
   width: 100%; height: auto; margin: 1.6rem 0;
-  border: 1px solid #dde2e3; border-radius: 6px;
+  border: 1px solid #cfd8db; border-radius: 6px;
 }
 
 .post-body pre, .ProseMirror pre {
@@ -65,7 +65,7 @@
   border-collapse: collapse; margin: 1.6rem 0; font-size: .95em; line-height: 1.55;
 }
 .post-body th, .post-body td, .ProseMirror th, .ProseMirror td {
-  border: 1px solid #dde2e3; padding: .55rem .8rem;
+  border: 1px solid #cfd8db; padding: .55rem .8rem;
   text-align: left; vertical-align: top; min-width: 7rem;
 }
 .post-body th, .ProseMirror th { color: #10242c; font-weight: 700; background: #f2f2ef; }
@@ -77,7 +77,7 @@
 .ProseMirror table { background: transparent; border: 0; border-radius: 0; width: auto; }
 .ProseMirror table tr th, .ProseMirror table tr td {
   font-size: inherit; letter-spacing: normal; text-transform: none;
-  border: 1px solid #dde2e3;
+  border: 1px solid #cfd8db;
 }
 .ProseMirror table tr td { color: inherit; background: transparent; }
 
@@ -88,14 +88,14 @@
    The markup differs (posts have no .pm-ic span or .ans wrapper), so the marker
    is drawn on summary::after with two gradients instead. */
 .post-body details, .ProseMirror .faq-item[data-type="details"] {
-  border: 0; border-bottom: 1px solid var(--line, #dde2e3);
+  border: 0; border-bottom: 1px solid var(--line, #cfd8db);
   border-radius: 0; background: none; margin: 0; padding: 0;
   max-width: 54em;
 }
 /* First of a run gets the top rule; runs of items share their dividers. */
-.post-body details { border-top: 1px solid var(--line, #dde2e3); }
+.post-body details { border-top: 1px solid var(--line, #cfd8db); }
 .post-body details + details { border-top: 0; }
-.ProseMirror .faq-item[data-type="details"] { border-top: 1px solid var(--line, #dde2e3); }
+.ProseMirror .faq-item[data-type="details"] { border-top: 1px solid var(--line, #cfd8db); }
 .ProseMirror .faq-item[data-type="details"] + .faq-item[data-type="details"] { border-top: 0; }
 
 .post-body summary, .ProseMirror summary {
@@ -110,7 +110,7 @@
    collapses when the item opens. Mirrors .faq summary .pm-ic in site.css. */
 .post-body summary::after, .ProseMirror summary::after {
   content: ""; flex: none; width: 26px; height: 26px;
-  border: 1px solid var(--line, #dde2e3); transition: .2s;
+  border: 1.5px solid var(--field, #73858c); transition: .2s;
   background-image: linear-gradient(var(--accent, #207796), var(--accent, #207796)), linear-gradient(var(--accent, #207796), var(--accent, #207796));
   background-repeat: no-repeat; background-position: center center;
   background-size: 11px 1.5px, 1.5px 11px;
@@ -122,7 +122,7 @@
 
 /* Answer body — the muted, narrower column .faq details .ans gives pages. */
 .post-body details > div, .ProseMirror .faq-item[data-type="details"] [data-type="detailsContent"] {
-  color: var(--tx-60, #5a6b72); padding: 0 0 22px; max-width: 50em;
+  color: var(--tx-60, #44555c); padding: 0 0 22px; max-width: 50em;
 }
 .post-body details > div > :last-child,
 .ProseMirror .faq-item[data-type="details"] [data-type="detailsContent"] > :last-child { margin-bottom: 0; }
@@ -158,7 +158,7 @@
 
 /* CTA block (self-contained so it styles in the editor too, where site.css isn't loaded) */
 .post-body .post-cta, .ProseMirror .post-cta {
-  border: 1px solid #dde2e3; border-radius: 12px; background: #fff;
+  border: 1px solid #cfd8db; border-radius: 12px; background: #fff;
   padding: 30px 28px; margin: 1.8rem 0; text-align: center;
 }
 .post-body .post-cta-h, .ProseMirror .post-cta-h {
@@ -175,11 +175,11 @@
 /* Form block. The published page styles it via site.css (.row2/.fld/.btn); the
    editor (no site.css) needs its own preview styling. */
 .post-body form.post-form, .ProseMirror form.post-form { margin: 1.8rem 0; }
-.ProseMirror form.post-form { border: 1px dashed #c9d1d3; border-radius: 10px; padding: 18px 20px; }
+.ProseMirror form.post-form { border: 1px dashed #73858c; border-radius: 10px; padding: 18px 20px; }
 .ProseMirror form.post-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ProseMirror form.post-form .fld { margin-bottom: 12px; }
 .ProseMirror form.post-form label { display: block; color: #10242c; font-size: .8rem; font-weight: 600; margin: 0 0 4px; }
 .ProseMirror form.post-form input, .ProseMirror form.post-form select, .ProseMirror form.post-form textarea {
-  width: 100%; padding: 9px 11px; border: 1px solid #c9d1d3; border-radius: 6px; background: #fff; color: #1f2933; font: inherit;
+  width: 100%; padding: 9px 11px; border: 1px solid #73858c; border-radius: 6px; background: #fff; color: #1f2933; font: inherit;
 }
 .ProseMirror form.post-form button { margin-top: 6px; background: #f3b11a; color: #1a1300; font-weight: 700; border: 0; padding: .7em 1.3em; border-radius: 4px; }

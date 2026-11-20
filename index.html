@@ -58,16 +58,16 @@
 
 /* programmes hand-off */
 .prog-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px}
-.prog{border:1px solid var(--line);background:var(--bg-2);border-radius:14px;padding:34px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.prog{border:1px solid var(--line);background:var(--bg-2);border-radius:14px;padding:34px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;box-shadow:var(--card-shadow)}
 .prog .tag{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 .prog h3{font-size:1.45rem}
 .prog p{color:var(--tx-60);flex:1}
 .prog.dark{background:var(--navy);border-color:var(--navy)}
-.prog.dark .tag{color:var(--yellow)}
-.prog.dark h3{color:#fff}
-.prog.dark p{color:rgba(242,242,239,.8)}
+.prog.dark .tag{color:#8cc9de}
+.prog.dark h3{color:#f4efe6}
+.prog.dark p{color:rgba(244,239,230,.8)}
 .prog .facts{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 6px}
-.prog .facts li{font-size:.84rem;font-weight:600;color:#fff;border:1px solid rgba(242,242,239,.25);border-radius:999px;padding:.35em .85em}
+.prog .facts li{font-size:.86rem;font-weight:600;color:#f4efe6;border:1px solid rgba(244,239,230,.45);border-radius:999px;padding:.35em .85em}
 
 /* showreel */
 .lead-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:44px;align-items:center}
@@ -84,7 +84,7 @@
 
 /* services */
 .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
-.svc{border:1px solid var(--line);background:var(--bg-2);border-radius:12px;padding:30px;display:flex;flex-direction:column;transition:box-shadow .25s,transform .25s}
+.svc{border:1px solid var(--line);background:var(--bg-2);border-radius:12px;padding:30px;display:flex;flex-direction:column;box-shadow:var(--card-shadow);transition:box-shadow .25s,transform .25s}
 .svc:hover{box-shadow:var(--shadow);transform:translateY(-3px)}
 .svc h3{font-size:1.3rem;margin-bottom:.6rem}
 .svc p{color:var(--tx-60);font-size:.98rem;margin-bottom:1.2rem;flex:1}
@@ -111,13 +111,11 @@
 .shorts .gcap{position:absolute;left:12px;right:12px;bottom:12px;color:#fff;font-weight:700;font-size:.9rem;line-height:1.25}
 
 /* AI Sprints band */
-.memb{padding:0 0 96px}
-.memb-band{background:var(--navy);border-radius:16px;padding:46px 50px;display:grid;grid-template-columns:1.4fr .6fr;gap:30px;align-items:center}
-.memb-tag{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px}
-.memb-band h2{color:#fff}
-.memb-lead{color:rgba(242,242,239,.82);max-width:34em;margin-top:12px;font-size:1.06rem}
+.memb-band{display:grid;grid-template-columns:1.4fr .6fr;gap:30px;align-items:center}  /* sits in the page's navy band (.sec.dark) */
+.memb-tag{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.memb-lead{color:var(--tx-60);max-width:34em;margin-top:12px;font-size:1.06rem}
 .memb-cta{display:flex;flex-direction:column;align-items:flex-start;gap:14px}
-.memb-ch{color:rgba(242,242,239,.85);font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+.memb-ch{color:var(--tx-60);font-size:.92rem;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}
 .memb-ch:hover{color:#fff}
 
 /* books one-liner */
@@ -127,7 +125,7 @@
 
 /* stay in touch: newsletter + LinkedIn */
 .stay-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:30px}
-.stay-card{border:1px solid var(--line);background:var(--bg-2);border-radius:14px;padding:32px}
+.stay-card{border:1px solid var(--line);background:var(--bg-2);border-radius:14px;padding:32px;box-shadow:var(--card-shadow)}
 .stay-card h3{font-size:1.3rem;margin-bottom:.5rem}
 .stay-card p{color:var(--tx-60);margin-bottom:1.2rem}
 
@@ -147,9 +145,7 @@
   .svc-grid{grid-template-columns:1fr}
   .shorts{grid-template-columns:1fr 1fr}
   .prog,.stay-card{padding:26px 22px}
-  .memb-band{padding:32px 24px}
   .sec{padding:48px 0}
-  .memb{padding-bottom:48px}
   .shead{margin-bottom:14px}
   /* phone length: the old homepage was ~22 phone screens; these keep it near half */
   .about-grid{gap:18px}
@@ -236,16 +232,16 @@
       <span class="pm pm-serif"><span class="the">The</span>Argus</span>
       <span class="pm pm-base">Telecom Reseller</span>
       <span class="pm pm-rev">Revolution</span>
-      <span class="pm pm-serif"><span class="the">The</span>Telegraph</span>
-      <span class="pm pm-serif"><span class="the">The</span>Guardian</span>
-      <span class="pm pm-serif"><span class="the">The</span>Economic Times</span>
-      <span class="pm pm-bw">BusinessWeek</span>
-      <span class="pm pm-bw">Zee Business</span>
-      <span class="pm pm-serif"><span class="the">The</span>Observer</span>
-      <span class="pm pm-bw">Inc.</span>
-      <span class="pm pm-serif"><span class="the">The</span>Argus</span>
-      <span class="pm pm-base">Telecom Reseller</span>
-      <span class="pm pm-rev">Revolution</span>
+      <span class="pm pm-serif" aria-hidden="true"><span class="the">The</span>Telegraph</span>
+      <span class="pm pm-serif" aria-hidden="true"><span class="the">The</span>Guardian</span>
+      <span class="pm pm-serif" aria-hidden="true"><span class="the">The</span>Economic Times</span>
+      <span class="pm pm-bw" aria-hidden="true">BusinessWeek</span>
+      <span class="pm pm-bw" aria-hidden="true">Zee Business</span>
+      <span class="pm pm-serif" aria-hidden="true"><span class="the">The</span>Observer</span>
+      <span class="pm pm-bw" aria-hidden="true">Inc.</span>
+      <span class="pm pm-serif" aria-hidden="true"><span class="the">The</span>Argus</span>
+      <span class="pm pm-base" aria-hidden="true">Telecom Reseller</span>
+      <span class="pm pm-rev" aria-hidden="true">Revolution</span>
     </div></div>
   </div>
 </section>
@@ -274,7 +270,7 @@
 </section>
 
 <!-- SHOWREEL -->
-<section class="sec band">
+<section class="sec">
   <div class="wrap lead-grid">
     <div data-reveal>
       <a class="video-card" href="https://www.youtube.com/watch?v=y1Q4uyo8iPM" target="_blank" rel="noopener" aria-label="Watch Raj Goodman's showreel">
@@ -305,7 +301,7 @@
 </section>
 
 <!-- MEET RAJ -->
-<section class="sec band" id="about">
+<section class="sec" id="about">
   <div class="wrap about-grid">
     <div class="about-pic" data-reveal>
       <img src="/assets/raj-meet.webp" alt="Raj Goodman Anand in front of Tower Bridge, London" loading="lazy"/>
@@ -343,7 +339,7 @@
 </section>
 
 <!-- KEYNOTES (moved down the page in Nov 2026) -->
-<section class="sec band" id="speaking">
+<section class="sec" id="speaking">
   <div class="wrap">
     <div class="shead" data-reveal><span class="kick">Keynotes</span><span class="ln"></span></div>
     <h2 data-reveal>Keynotes for conferences and leadership events</h2>
@@ -362,8 +358,8 @@
 </section>
 
 <!-- AI SPRINTS. Dates and prices live on resources.aifirstmindset.ai/membership only. -->
-<section class="sec" id="membership" style="padding-bottom:0">
-  <div class="wrap memb">
+<section class="sec dark" id="membership">
+  <div class="wrap">
     <div class="memb-band" data-reveal>
       <div>
         <span class="memb-tag">AI-First Mindset®</span>
@@ -379,7 +375,7 @@
 </section>
 
 <!-- COMPANIES -->
-<section class="sec" style="padding-top:0">
+<section class="sec">
   <div class="wrap">
     <div class="shead" data-reveal><span class="kick">Companies</span><span class="ln"></span></div>
     <h2 data-reveal>The companies he built</h2>
@@ -407,7 +403,7 @@
 </section>
 
 <!-- BLOG -->
-<section class="sec band">
+<section class="sec">
   <div class="wrap">
     <div class="shead" data-reveal><span class="kick">Blog</span><span class="ln"></span></div>
     <h2 data-reveal>Raj on AI, strategy and leadership</h2>
@@ -460,7 +456,7 @@
 </section>
 
 <!-- STAY IN TOUCH: newsletter + LinkedIn (the live LinkedIn image feed was removed) -->
-<section class="sec" id="newsletter" style="padding-top:0">
+<section class="sec" id="newsletter">
   <div class="wrap">
     <div class="shead" data-reveal><span class="kick">Stay in touch</span><span class="ln"></span></div>
     <div class="stay-grid">

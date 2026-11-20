@@ -344,16 +344,16 @@
       var css = document.createElement('style');
       css.textContent =
         '.dlm-overlay{position:fixed;inset:0;z-index:220;background:rgba(15,37,48,.5);backdrop-filter:blur(3px);display:grid;place-items:center;padding:20px}' +
-        '.dlm{width:min(440px,100%);background:var(--bg-2,#fff);border:1px solid var(--line,#dde2e3);border-radius:12px;padding:26px;color:var(--tx,#10242c);font-family:var(--ff,system-ui,sans-serif);box-shadow:0 24px 70px -20px rgba(16,36,44,.45);position:relative}' +
+        '.dlm{width:min(440px,100%);background:var(--bg-2,#fff);border:1px solid var(--line,#cfd8db);border-radius:12px;padding:26px;color:var(--tx,#10242c);font-family:var(--ff,system-ui,sans-serif);box-shadow:0 24px 70px -20px rgba(16,36,44,.45);position:relative}' +
         '.dlm h3{font-size:1.15rem;font-weight:800;margin:0 2em .35rem 0}' +
-        '.dlm .dlm-asset{font-size:.86rem;color:var(--tx-60,#5a6b72);margin:0 0 16px}' +
+        '.dlm .dlm-asset{font-size:.86rem;color:var(--tx-60,#44555c);margin:0 0 16px}' +
         '.dlm label{display:block;font-size:.82rem;font-weight:600;margin:12px 0 6px}' +
-        '.dlm input{width:100%;font-family:inherit;font-size:.96rem;padding:.82em 1em;border:1px solid #c9d1d3;border-radius:6px;background:#fff;color:var(--tx,#10242c)}' +
-        '.dlm input:focus{outline:0;border-color:var(--accent,#207796)}' +
-        '.dlm .dlm-close{position:absolute;top:14px;right:14px;background:none;border:0;color:var(--tx-60,#5a6b72);font-size:1.3rem;line-height:1;cursor:pointer;padding:4px}' +
+        '.dlm input{width:100%;font-family:inherit;font-size:.96rem;padding:.82em 1em;border:1px solid #73858c;border-radius:6px;background:#fff;color:var(--tx,#10242c)}' +
+        '.dlm input:focus{outline:3px solid var(--focus,#207796);outline-offset:1px;border-color:var(--focus,#207796)}' +
+        '.dlm .dlm-close{position:absolute;top:6px;right:6px;background:none;border:0;color:var(--tx-60,#44555c);font-size:1.3rem;line-height:1;cursor:pointer;padding:4px;min-width:44px;min-height:44px}' +
         '.dlm .dlm-close:hover{color:var(--tx,#10242c)}' +
         '.dlm .btn{width:100%;justify-content:center;margin-top:16px}' +
-        '.dlm .dlm-note{font-size:.8rem;color:var(--tx-60,#5a6b72);margin-top:12px}' +
+        '.dlm .dlm-note{font-size:.8rem;color:var(--tx-60,#44555c);margin-top:12px}' +
         '.dlm .dlm-success a.btn{text-decoration:none}';
       document.head.appendChild(css);
 
