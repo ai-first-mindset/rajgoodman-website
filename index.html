@@ -310,7 +310,7 @@
       <div class="pad">
         <span class="pad-bind"></span>
         <div class="page" data-page>
-          <div class="pg-head"><span class="pg-k">Workshop day</span><span class="pg-room" data-room>EO Malaysia</span></div>
+          <div class="pg-head"><span class="pg-k">Workshop day</span><span class="pg-room" data-room>For a manufacturer</span></div>
           <ol class="fls"><li class="fl" data-l="0"><span class="fl-t">09:00</span><span class="fl-x">See what AI can already do</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li><li class="fl" data-l="1"><span class="fl-t">11:00</span><span class="fl-x">Pick the three uses that matter</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li><li class="fl" data-l="2"><span class="fl-t">14:00</span><span class="fl-x">Build it, hands on</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li><li class="fl" data-l="3"><span class="fl-t">17:00</span><span class="fl-x">Leave with a plan</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li></ol>
         </div>
       </div>
@@ -336,7 +336,7 @@
   var ws=h1.querySelectorAll('.w');for(var i=0;i<ws.length;i++){ws[i].style.transitionDelay=(0.1+i*0.08)+'s';}
   requestAnimationFrame(function(){h1.classList.add('in');hero.classList.add('ready');});
   var page=hero.querySelector('[data-page]'),room=hero.querySelector('[data-room]'),cap=hero.querySelector('[data-cap]'),ls=[].slice.call(hero.querySelectorAll('.fl'));
-  var ROOMS=['EO Malaysia','YPO Greater London','EO Kenya','EO Vietnam','EO Dubai','EO Sri Lanka'];
+  var ROOMS=['For a manufacturer','For a retail group','For a family business','For an engineering firm','For a distributor'];
   var CAPS=['One day with your leadership team.','Hands on, using your own work.','Your team picks what matters.','Everyone leaves with a plan.'];
   function say(t){cap.classList.add('swap');setTimeout(function(){cap.textContent=t;cap.classList.remove('swap');},350);}
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
