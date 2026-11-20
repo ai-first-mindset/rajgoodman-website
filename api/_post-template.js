@@ -75,20 +75,21 @@ function recentCard(p) {
   return `<a class="post" href="/blog/${esc(p.slug)}/">${img}<div class="bd"><h3>${esc(p.title)}</h3>${ex}<span class="go">READ &#8594;</span></div></a>`;
 }
 
-// End-of-post membership promo. One paid plan since 11 Sept 2026 (Sessions,
-// $1,200 a year); the founding-rate Full plan was withdrawn.
+// End-of-post AI Sprints promo. Dates and prices are deliberately not printed
+// here (they live on resources.aifirstmindset.ai/membership), so the site can
+// never contradict the live offer.
 const MEMBERSHIP_URL = 'https://resources.aifirstmindset.ai/membership'
   + '?utm_source=rajgoodman.com&utm_medium=referral&utm_campaign=membership-2026&utm_content=blog-post';
 
 export function membershipCta() {
-  const detail = 'Join Raj&rsquo;s year-long AI-First Mindset&reg; Membership: 12 live build sessions, three deployed AI systems, $100 a month';
+  const detail = 'AI Sprints: live online sprints for leadership teams, run by Raj';
   return `<section class="wrap" style="max-width:760px;padding-bottom:30px">
     <div class="pcta">
       <div>
-        <div class="pcta-t">Go from reading about AI to shipping it</div>
+        <div class="pcta-t">Put AI to work with your leadership team</div>
         <div class="pcta-d">${detail}</div>
       </div>
-      <a class="btn btn-y" href="${MEMBERSHIP_URL}" target="_blank" rel="noopener">See the membership <span class="ar">&rarr;</span></a>
+      <a class="btn btn-y" href="${MEMBERSHIP_URL}" target="_blank" rel="noopener">See dates and prices <span class="ar">&rarr;</span></a>
     </div>
   </section>`;
 }
@@ -218,7 +219,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
 <!-- TODO(site-wide): inject GTM-PQ6PSBZN here once analytics is added to the build (REQ-014/017) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
 <link rel="stylesheet" href="/blog-content.css" />
 </head>
@@ -231,7 +232,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
       <img src="${esc((profile && profile.image_url) || AUTHOR_PHOTO)}" alt="" loading="lazy" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
       <span style="opacity:.7">By <a href="/authors/" style="color:inherit">${esc(post.author)}</a>${profile && profile.title ? `, ${esc(profile.title)}` : ''}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
     </div>
-    ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
+    ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image && post.show_featured_image !== false ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${prepVideos(post.body_html)}</div>${authorBio(post, profile)}
   </article>
@@ -242,7 +243,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     <div class="wrap">
       <div class="shead" style="justify-content:center"><span class="kick">Work With Us</span></div>
       <h2 style="max-width:18em;margin:0 auto">Have a question, or interested in working with Raj?</h2>
-      <a href="/#work" class="btn btn-y" style="margin-top:1.8rem">Get in touch <span class="ar">&rarr;</span></a>
+      <a href="/#work" class="btn btn-y" style="margin-top:1.8rem">Book a discovery call <span class="ar">&rarr;</span></a>
     </div>
   </section>
 ${recent.length ? `  <section class="sec">

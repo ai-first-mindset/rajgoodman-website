@@ -94,30 +94,34 @@ test('page sitemap and site-map page leave the removed pages out', () => {
   assert.match(sm, /'\/ai-for-business-leaders\/'/);
 });
 
-test('every contact-form service dropdown offers only the training options', () => {
+// Nov 2026 redesign: the dropdown lists what Raj offers now. Still no
+// consulting or CAIO option (SEO round 1).
+test('every contact-form service dropdown offers the current options, no consulting or CAIO', () => {
   const files = shipped().filter((f) => read(f).includes('name=\\"service\\"') || read(f).includes('name="service"'));
   assert.ok(files.length >= 14, `found ${files.length} forms`);
   for (const f of files) {
     const src = read(f).replace(/\\"/g, '"');
     for (const sel of src.match(/<select[^>]*name="service"[^>]*>[\s\S]*?<\/select>/g)) {
       const opts = [...sel.matchAll(/<option(?: value="[^"]*")?>([^<]*)<\/option>/g)].map((m) => m[1]).slice(1);
-      assert.deepEqual(opts, ['AI for Business Leaders', 'AI Trainer', 'Executive Training'], f);
+      assert.deepEqual(opts, ['Leadership workshop', 'Keynote', 'Executive Training', 'AI Sprint', 'EO/YPO chapter session', 'Other'], f);
+      assert.ok(!opts.some((o) => /consult|fractional|caio/i.test(o)), f);
     }
   }
 });
 
-test('homepage: three service cards (Workshops, Speaking, Training), no Consulting or CAIO', () => {
+test('homepage: three service cards (Workshops, Keynote, AI-First Mindset programmes), no Consulting or CAIO', () => {
   const html = read('index.html');
   const cards = [...html.matchAll(/<article class="svc"[^>]*>[\s\S]*?<h3>([^<]+)<\/h3>/g)].map((m) => m[1]);
-  assert.deepEqual(cards, ['Workshops', 'Speaking', 'Training']);
+  assert.deepEqual(cards, ['Workshops', 'Keynote', 'AI-First Mindset programmes']);
+  assert.doesNotMatch(html, /Consultant|>Consulting</);
   assert.doesNotMatch(html, /fractional CAIO|Fractional Chief AI Officer/i);
 });
 
-test('homepage footer keeps Workshops + AI Training under Helping Through', () => {
+test('homepage and shared footers list the same Services column, no consulting pages', () => {
   for (const src of [read('index.html'), read('chrome.js')]) {
-    const col = src.match(/<h4>Helping Through<\/h4>[\s\S]*?<\/div>/)[0];
+    const col = src.match(/<h4>Services<\/h4>[\s\S]*?<\/div>/)[0];
     const links = [...col.matchAll(/>([^<>]+)<\/a>/g)].map((m) => m[1]);
-    assert.deepEqual(links, ['Workshops', 'AI Training']);
+    assert.deepEqual(links, ['Workshops', 'Keynote Speaker', 'AI Training']);
   }
 });
 

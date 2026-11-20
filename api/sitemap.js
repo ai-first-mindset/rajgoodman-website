@@ -13,7 +13,7 @@ const PAGES = ['/', '/about/', '/keynote-speaker/',
   '/ai-for-business-leaders/', '/ai-trainer/', '/events/', '/media/',
   '/ai-training-for-executives/', '/blog/', '/testimonials/', '/eo-ypo-leadership/',
   '/workshops/tech-workshop/', '/privacy-policy/', '/authors/', '/terms-and-conditions/',
-  '/site-map/'];
+  '/site-map/', '/books/'];
 
 function urlTag(loc, lastmod) {
   return `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;

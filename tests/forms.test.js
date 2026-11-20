@@ -93,7 +93,7 @@ test('no [data-form] on the page: no Turnstile script is injected', () => {
   assert.equal(head.children.length, 0);
 });
 
-test('script injected once; onload renders a dark-theme widget into every form mount', () => {
+test('script injected once; onload renders a light-theme widget into every form mount', () => {
   installEnv();
   makeForm('contact'); makeForm('newsletter');
   initForms();
@@ -102,7 +102,7 @@ test('script injected once; onload renders a dark-theme widget into every form m
   assert.match(scripts[0].src, /challenges\.cloudflare\.com\/turnstile/);
   const ts = loadTurnstile();
   assert.equal(ts.rendered.length, 2);
-  assert.equal(ts.rendered[0].theme, 'dark');
+  assert.equal(ts.rendered[0].theme, 'light');
   assert.ok(ts.rendered[0].sitekey);
 });
 

@@ -1,4 +1,4 @@
-// Membership CTA (one paid plan since 11 Sept 2026: Sessions, $1,200 a year)
+// End-of-post AI Sprints CTA (Nov 2026: no prices or dates on rajgoodman.com)
 // and the cross-page anchor fix in common.js. The founding-rate promo bar and
 // [data-founding-*] copy switch were removed with the Full plan.
 // Tiny hand-rolled DOM stub in the style of back-to-top.test.js - no jsdom.
@@ -60,12 +60,12 @@ const base = {
   author: 'Raj Goodman Anand',
 };
 
-test('CTA pitches the single Sessions plan with no founding-rate language', () => {
+test('CTA pitches AI Sprints with no prices or dates (they live on the membership page)', () => {
   const html = membershipCta();
   assert.match(html, /class="pcta"/);
-  assert.match(html, /12 live build sessions/);
-  assert.match(html, /\$100 a month/);
-  assert.doesNotMatch(html, /\$3,000|\$4,800|founding|15 Sept/i);
+  assert.match(html, /AI Sprints/);
+  assert.match(html, /See dates and prices/);
+  assert.doesNotMatch(html, /\$\d|founding|Sept|month|year/i);
   assert.match(html, /utm_content=blog-post/);
 });
 

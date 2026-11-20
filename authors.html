@@ -11,13 +11,13 @@
 <meta name="description" content="Meet the author behind rajgoodman.com. Every article is written by Raj Goodman Anand - AI futurist, keynote speaker and founder of AI-First Mindset®." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
 <style>
 .author-card{display:grid;grid-template-columns:300px 1fr;gap:44px;align-items:center;margin-top:40px}
 .author-card .pic{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--bg-2)}
 .author-card .pic img{width:100%;display:block;aspect-ratio:300/360;object-fit:cover;object-position:50% 15%}
-.author-card .role{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);margin:4px 0 16px}
+.author-card .role{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:4px 0 16px}
 .author-card .abio{opacity:.85;max-width:44em}
 .author-card .meta{display:flex;flex-wrap:wrap;gap:10px 28px;margin:20px 0 26px;font-size:.84rem;opacity:.7}
 .author-card .meta b{color:var(--tx);font-weight:700}
@@ -61,8 +61,6 @@
 </script>
 </head>
 <body data-page="authors">
-<div class="bg-grid"></div>
-<div class="scan"></div>
 
 <main>
 <header class="phero" style="padding-bottom:30px">
@@ -97,8 +95,9 @@
 
 <section class="sec tight" id="work">
   <div class="wrap">
-    <div class="shead" data-reveal><span class="idx">[ &#10022; ]</span><span class="kick">Let's Talk</span><span class="ln"></span></div>
-    <h2 data-reveal style="margin-bottom:34px">Work with Raj</h2>
+    <div class="shead" data-reveal><span class="idx">[ &#10022; ]</span><span class="kick">Contact</span><span class="ln"></span></div>
+    <h2 data-reveal>Book a discovery call</h2>
+    <p class="sub" data-reveal>Tell Raj about your team and what you want from AI. His team will reply to arrange a call.</p>
     <div class="work-grid" data-reveal>
       <div class="work-quote">
         <div class="wp duo"><img src="/assets/raj-work.webp" alt="Raj Goodman" /></div>
@@ -112,11 +111,11 @@
             <div class="fld"><label for="cf-email">Email Address *</label><input id="cf-email" autocomplete="email" name="email" type="email" required placeholder="you@company.com" /></div>
           </div>
           <div class="fld"><label for="cf-service">Services *</label>
-            <select id="cf-service" name="service" required><option value="">- Please choose an option -</option><option>AI for Business Leaders</option><option>AI Trainer</option><option>Executive Training</option></select>
+            <select id="cf-service" name="service" required><option value="">- Please choose an option -</option><option>Leadership workshop</option><option>Keynote</option><option>Executive Training</option><option>AI Sprint</option><option>EO/YPO chapter session</option><option>Other</option></select>
           </div>
           <div class="fld"><label for="cf-message">Message *</label><textarea id="cf-message" name="message" required placeholder="How can Raj help?"></textarea></div>
           <div data-turnstile style="margin:6px 0 18px"></div>
-          <button class="btn btn-y" type="submit">Send message <span class="ar">&rarr;</span></button>
+          <button class="btn btn-y" type="submit">Book a discovery call <span class="ar">&rarr;</span></button>
         </form>
       </div>
     </div>
