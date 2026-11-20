@@ -11,13 +11,11 @@
 <meta name="description" content="Raj Goodman's insights on AI and digital transformation are featured across global media - press, podcasts, interviews and keynote video." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
 <style>
-.logowall{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:34px}
-.logowall .cell{background:var(--bg-2);min-height:120px;display:grid;place-items:center;padding:24px;transition:background .25s}
-.logowall .cell:hover{background:var(--panel)}
-@media(max-width:780px){.logowall{grid-template-columns:repeat(2,1fr)}}
+/* .logowall itself is styled in site.css */
+.logowall{margin-top:34px}
 /* four features sit in one row on desktop (site.css drops to 2 and 1 columns below 980px) */
 @media(min-width:981px){.media-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -66,11 +64,9 @@
 </script>
 </head>
 <body data-page="media">
-<div class="bg-grid"></div>
-<div class="scan"></div>
 
 <main>
-<header class="phero" style="padding-bottom:30px">
+<header class="phero">
   <div class="wrap">
     <div class="crumbs" data-reveal><a href="/">Home</a><span class="sep">/</span><span>Resources</span><span class="sep">/</span><span>Media</span></div>
     <span class="eyebrow" data-reveal><span class="live"></span>Raj in the Media</span>
@@ -81,7 +77,7 @@
 </header>
 
 <!-- PRESS WALL -->
-<section class="sec tight" style="padding-top:40px">
+<section class="sec tight">
   <div class="wrap">
     <div class="shead" data-reveal><span class="idx">[ 01 ]</span><span class="kick">Featured In</span><span class="ln"></span></div>
     <h2 data-reveal>Press &amp; features</h2>
@@ -140,25 +136,23 @@
   </div>
 </section>
 
-<!-- LINKEDIN -->
-<section class="sec tight">
+<section class="sec tight dark">
   <div class="wrap">
-    <div class="shead" data-reveal><span class="idx">[ 04 ]</span><span class="kick">Follow in Real Time</span><span class="ln"></span></div>
-    <h2 data-reveal>On LinkedIn</h2>
-    <div class="li-grid" data-li-grid style="margin-top:34px">
-      <a class="li-card" href="https://www.linkedin.com/posts/rajanand_airoadshow-aiworkshop-leadershipdevelopment-activity-7478086681770872832-fy8w" target="_blank" rel="noopener" data-reveal><img src="https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/mr3c0y25-raj-dhaka.jpg" alt="Raj Goodman LinkedIn post" loading="lazy"/><span class="tag">in · Raj Anand</span></a>
-      <a class="li-card" href="https://www.linkedin.com/posts/rajanand_adobe-nvidia-enterpriseai-activity-7477677348641742848-1iSD" target="_blank" rel="noopener" data-reveal data-delay="80"><img src="https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/mr3cprzk-legacy-tech.jpg" alt="Raj Goodman LinkedIn post" loading="lazy"/><span class="tag">in · Raj Anand</span></a>
-      <a class="li-card" href="https://www.linkedin.com/posts/rajanand_there-is-no-federal-ai-law-in-the-us-thats-activity-7477322512658276352-DQMy" target="_blank" rel="noopener" data-reveal data-delay="160"><img src="https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/mr3d0qci-federal-law.png" alt="Raj Goodman LinkedIn post" loading="lazy"/><span class="tag">in · Raj Anand</span></a>
-      <a class="li-card" href="https://www.linkedin.com/posts/rajanand_the-fear-of-ai-is-moving-faster-than-ai-itself-activity-7476227797833633792-NWR3" target="_blank" rel="noopener" data-reveal data-delay="240"><img src="https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/qa1783074328-fear-of-ai-cropped.png" alt="Raj Goodman LinkedIn post" loading="lazy"/><span class="tag">in · Raj Anand</span></a>
+    <div class="follow" data-reveal>
+      <div>
+        <h2>Follow Raj on LinkedIn</h2>
+        <p>Raj shares what he is learning about AI and leadership on LinkedIn.</p>
+      </div>
+      <a href="https://www.linkedin.com/in/rajanand/" target="_blank" rel="noopener" class="btn btn-line">Follow Raj on LinkedIn <span class="ar">&rarr;</span></a>
     </div>
-    <div style="margin-top:34px" data-reveal><a href="https://www.linkedin.com/in/rajanand/" target="_blank" rel="noopener" class="btn btn-line">Follow Raj on LinkedIn <span class="ar">→</span></a></div>
   </div>
 </section>
 
 <section class="sec tight" id="work">
   <div class="wrap">
-    <div class="shead" data-reveal><span class="idx">[ ✦ ]</span><span class="kick">Let's Talk</span><span class="ln"></span></div>
-    <h2 data-reveal style="margin-bottom:34px">Media &amp; press enquiries</h2>
+    <div class="shead" data-reveal><span class="idx">[ ✦ ]</span><span class="kick">Contact</span><span class="ln"></span></div>
+    <h2 data-reveal>Book a discovery call</h2>
+    <p class="sub" data-reveal>Tell Raj about your team and what you want from AI. His team will reply to arrange a call.</p>
     <div class="work-grid" data-reveal>
       <div class="work-quote">
         <div class="wp duo"><img src="/assets/raj-work.webp" alt="Raj Goodman" /></div>
@@ -172,11 +166,11 @@
             <div class="fld"><label for="cf-email">Email Address *</label><input id="cf-email" autocomplete="email" name="email" type="email" required placeholder="you@company.com" /></div>
           </div>
           <div class="fld"><label for="cf-service">Services *</label>
-            <select id="cf-service" name="service" required><option value="">- Please choose an option -</option><option>AI for Business Leaders</option><option>AI Consulting</option><option>AI Trainer</option><option>Executive Training</option><option>Fractional Chief AI Officer</option><option>Organizational Transformation</option></select>
+            <select id="cf-service" name="service" required><option value="">- Please choose an option -</option><option>Leadership workshop</option><option>Keynote</option><option>Executive Training</option><option>AI Sprint</option><option>EO/YPO chapter session</option><option>Other</option></select>
           </div>
           <div class="fld"><label for="cf-message">Message *</label><textarea id="cf-message" name="message" required placeholder="Tell us about your publication or show…"></textarea></div>
           <div data-turnstile style="margin:6px 0 18px"></div>
-          <button class="btn btn-y" type="submit">Send message <span class="ar">→</span></button>
+          <button class="btn btn-y" type="submit">Book a discovery call <span class="ar">→</span></button>
         </form>
       </div>
     </div>

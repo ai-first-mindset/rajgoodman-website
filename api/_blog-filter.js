@@ -98,18 +98,19 @@ export function filterBar(posts) {
     ? `<select id="ba" aria-label="Filter by author"><option value="">All authors</option>${authors.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('')}</select>`
     : '';
   return `<style>
-.bfilter{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 26px;color-scheme:dark}
-.bfilter input,.bfilter select{font:inherit;font-size:.95rem;color:var(--tx);background:transparent;border:1px solid var(--line);border-radius:6px;padding:.7rem 1rem;min-height:44px}
+.bfilter{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 26px;color-scheme:light}
+.bfilter input,.bfilter select{font:inherit;font-size:.95rem;color:var(--tx);background:#fff;border:1px solid var(--field);border-radius:6px;padding:.7rem 1rem;min-height:48px}
 .bfilter input{flex:1 1 260px;min-width:0}
 .bfilter select{flex:0 1 220px}
-.bfilter input::placeholder{color:var(--tx-40)}
-.bfilter input:focus,.bfilter select:focus{outline:none;border-color:var(--yellow)}
+.bfilter input::placeholder{color:#5b6b71;opacity:1}
+.bfilter input:focus,.bfilter select:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 .bnone{color:var(--tx-60);margin:8px 0 0}
 .bpager{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:36px 0 0}
-.bpg{font:inherit;font-family:var(--mono);font-size:.82rem;color:var(--tx-60);background:transparent;border:1px solid var(--line);border-radius:6px;min-width:44px;min-height:44px;padding:0 .9rem;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s,color .2s}
-.bpg:hover,.bpg:focus-visible{border-color:var(--yellow);color:var(--yellow);outline:none}
-.bpg.on{border-color:var(--yellow);color:var(--yellow);cursor:default}
-.bgap{color:var(--tx-40);padding:0 4px}
+.bpg{font:inherit;font-family:var(--mono);font-size:.86rem;font-weight:600;color:var(--tx);background:#fff;border:1px solid var(--field);border-radius:6px;min-width:44px;min-height:44px;padding:0 .9rem;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s,color .2s}
+.bpg:hover{border-color:var(--navy);color:var(--navy)}
+.bpg:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.bpg.on{background:var(--navy);border-color:var(--navy);color:#fff;cursor:default}
+.bgap{color:var(--tx-60);padding:0 4px}
 </style>
 <div class="bfilter" role="search"><input id="bq" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off" />${authorMenu}</div>`;
 }

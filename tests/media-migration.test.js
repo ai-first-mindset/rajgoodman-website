@@ -101,7 +101,9 @@ test('every Supabase media URL hard-coded in the repo resolves', { skip: SKIP_NE
       urls.add(m[0]);
     }
   }
-  assert.ok(urls.size >= 5, `found supabase refs in repo (got ${urls.size})`);
+  // The static LinkedIn cards (most of the hard-coded refs) were removed with the
+  // live feed in Nov 2026; the OG images remain.
+  assert.ok(urls.size >= 2, `found supabase refs in repo (got ${urls.size})`);
   await allResolve(urls, 'repo supabase refs');
 });
 

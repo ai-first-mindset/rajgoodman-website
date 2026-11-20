@@ -29,6 +29,7 @@ const NOTES = {
   'api/render-category.js': 'render-handlers',
   'api/feed.js': 'parity-surfaces',
   'api/sitemap.js': 'route checked textually in parity tests only',
+  'api/gone.js': 'seo-round-1 · 410 handler + vercel.json wiring',
   'api/admin/posts.js': 'admin-posts-api',
   'api/admin/fetch-meta.js': 'fetch-meta · extraction only, handler unexercised',
   'api/_body.js': 'read-body',

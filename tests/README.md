@@ -56,6 +56,9 @@ refresh.
   form), member-exists-is-success, 502s, loud-config stored:false.
 - `contact-api.test.js` — contact endpoint contract: DealDesk forward with
   x-api-key, service folded into the message, half-configured guard, 502s.
+- `seo-round-1.test.js`: removed consulting/CAIO pages: files deleted, 301 and
+  410 wiring in vercel.json, no redirect chains, no internal links, sitemap and
+  site-map page clean, service dropdowns and homepage cards trimmed.
 - `turnstile.test.js` — the shared verifier fails CLOSED on missing
   secret/token and unreachable siteverify; clientIp precedence.
 - `admin-posts-api.test.js` — admin auth guards (401 gate, cookie refresh,

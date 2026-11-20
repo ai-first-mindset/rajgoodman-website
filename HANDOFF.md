@@ -1,5 +1,7 @@
 # Developer Handoff — Raj Goodman Website Rebuild
 
+> Historical document from the July 2026 rebuild. The dark "Signal" look it describes was replaced by a light theme in Nov 2026; README.md is current.
+
 This is everything you need to take over the rebuild. Read this top to bottom once; it'll save you the back-story.
 
 ---
@@ -42,7 +44,7 @@ Plain HTML/CSS/JS. Open a file or serve the folder — that's it.
 ### Conventions
 - **Section header pattern:** `<div class="shead"><span class="idx">[ 01 ]</span><span class="kick">LABEL</span><span class="ln"></span></div>` then `<h2>`.
 - **Videos:** real `<a href="…youtube.com/watch?v=ID…">` links. `common.js` intercepts them and opens an in-page `youtube-nocookie` lightbox (no iframe loads until click → fast + SEO-safe). Channel/non-video links pass through. Timestamps via `?t=140` are honored.
-- **Stats are intentionally `300+` workshops / `20+` countries / `20,000+` leaders** everywhere they appear (a deliberate override of the live numbers — keep them).
+- **Superseded (Nov 2026):** the stat strips were removed site-wide and the site moved to a light theme. See README "Notes".
 
 ---
 

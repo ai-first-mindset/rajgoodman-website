@@ -55,13 +55,13 @@ function authorBio(post, profile) {
   const bio = (profile && profile.bio) || AUTHOR_BIO_TEXT;
   const linkedin = profile ? profile.linkedin_url : 'https://www.linkedin.com/in/rajanand/';
   return `
-    <aside class="author-bio" style="display:flex;gap:20px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:48px">
+    <aside class="author-bio" style="display:flex;gap:20px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:48px;background:var(--bg-2);box-shadow:var(--card-shadow)">
       <img src="${esc(photo)}" alt="${esc(name)}" loading="lazy" style="width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
       <div>
-        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:4px">Written by</div>
+        <div style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--tx-60);margin-bottom:4px">Written by</div>
         <div style="font-weight:700"><a href="/authors/" style="color:inherit;text-decoration:none">${esc(name)}</a></div>${title ? `
-        <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin:2px 0 10px">${esc(title)}</div>` : ''}
-        <p style="margin:0 0 12px;opacity:.85">${esc(bio)}</p>
+        <div style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--tx-60);margin:2px 0 10px">${esc(title)}</div>` : ''}
+        <p style="margin:0 0 12px;color:var(--tx-60)">${esc(bio)}</p>
         <div style="display:flex;gap:16px"><a href="/about/">More about ${esc(name.split(' ')[0])} &rarr;</a>${linkedin ? `<a href="${esc(linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ''}</div>
       </div>
     </aside>`;
@@ -75,20 +75,21 @@ function recentCard(p) {
   return `<a class="post" href="/blog/${esc(p.slug)}/">${img}<div class="bd"><h3>${esc(p.title)}</h3>${ex}<span class="go">READ &#8594;</span></div></a>`;
 }
 
-// End-of-post membership promo. One paid plan since 11 Sept 2026 (Sessions,
-// $1,200 a year); the founding-rate Full plan was withdrawn.
+// End-of-post AI Sprints promo. Dates and prices are deliberately not printed
+// here (they live on resources.aifirstmindset.ai/membership), so the site can
+// never contradict the live offer.
 const MEMBERSHIP_URL = 'https://resources.aifirstmindset.ai/membership'
   + '?utm_source=rajgoodman.com&utm_medium=referral&utm_campaign=membership-2026&utm_content=blog-post';
 
 export function membershipCta() {
-  const detail = 'Join Raj&rsquo;s year-long AI-First Mindset&reg; Membership: 12 live build sessions, three deployed AI systems, $100 a month';
+  const detail = 'AI Sprints: live online sprints for leadership teams, run by Raj';
   return `<section class="wrap" style="max-width:760px;padding-bottom:30px">
     <div class="pcta">
       <div>
-        <div class="pcta-t">Go from reading about AI to shipping it</div>
+        <div class="pcta-t">Put AI to work with your leadership team</div>
         <div class="pcta-d">${detail}</div>
       </div>
-      <a class="btn btn-y" href="${MEMBERSHIP_URL}" target="_blank" rel="noopener">See the membership <span class="ar">&rarr;</span></a>
+      <a class="btn btn-y" href="${MEMBERSHIP_URL}" target="_blank" rel="noopener">See dates and prices <span class="ar">&rarr;</span></a>
     </div>
   </section>`;
 }
@@ -218,20 +219,20 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
 <!-- TODO(site-wide): inject GTM-PQ6PSBZN here once analytics is added to the build (REQ-014/017) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
 <link rel="stylesheet" href="/blog-content.css" />
 </head>
 <body data-page="blog">
 <main>
   <article class="wrap" style="max-width:760px;padding-top:120px;padding-bottom:80px">
-    <a href="/blog/" style="opacity:.7;text-decoration:none">&larr; All articles</a>
+    <a href="/blog/" style="color:var(--tx-60);font-weight:600;text-decoration:underline;text-underline-offset:2px;display:inline-flex;align-items:center;min-height:44px">&larr; All articles</a>
     <h1 style="margin:18px 0 10px">${esc(post.title)}</h1>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
       <img src="${esc((profile && profile.image_url) || AUTHOR_PHOTO)}" alt="" loading="lazy" style="width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex-shrink:0" />
-      <span style="opacity:.7">By <a href="/authors/" style="color:inherit">${esc(post.author)}</a>${profile && profile.title ? `, ${esc(profile.title)}` : ''}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
+      <span style="color:var(--tx-60)">By <a href="/authors/" style="color:inherit;text-decoration:underline;text-underline-offset:2px">${esc(post.author)}</a>${profile && profile.title ? `, ${esc(profile.title)}` : ''}${published ? ` &middot; ${esc(fmtDate(published))}` : ''}</span>
     </div>
-    ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);border:1px solid var(--line);padding:4px 11px;border-radius:4px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
+    ${(post.categories && post.categories.length) ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">${post.categories.map((c) => `<a href="/blog/category/${catSlug(c)}/" style="display:inline-flex;align-items:center;min-height:44px;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--bg-2);border:1px solid var(--field);padding:0 14px;border-radius:6px;text-decoration:none">${esc(c)}</a>`).join('')}</div>` : ''}
     ${post.featured_image && post.show_featured_image !== false ? `<img src="${esc(post.featured_image)}" alt="${esc(post.featured_image_alt || post.title)}"${heroSize(post)} fetchpriority="high" style="width:100%;height:auto;border-radius:10px;margin-bottom:28px" />` : ''}
     <div class="post-body">${prepVideos(post.body_html)}</div>${authorBio(post, profile)}
   </article>
@@ -242,7 +243,7 @@ ${modified ? `<meta property="article:modified_time" content="${esc(modified)}" 
     <div class="wrap">
       <div class="shead" style="justify-content:center"><span class="kick">Work With Us</span></div>
       <h2 style="max-width:18em;margin:0 auto">Have a question, or interested in working with Raj?</h2>
-      <a href="/#work" class="btn btn-y" style="margin-top:1.8rem">Get in touch <span class="ar">&rarr;</span></a>
+      <a href="/#work" class="btn btn-y" style="margin-top:1.8rem">Book a discovery call <span class="ar">&rarr;</span></a>
     </div>
   </section>
 ${recent.length ? `  <section class="sec">
@@ -265,7 +266,7 @@ export function renderNotFound() {
 <title>Article not found - ${SITE_NAME}</title><meta name="robots" content="noindex" />
 <link rel="stylesheet" href="/site.css" /></head>
 <body data-page="blog"><main><article class="wrap" style="max-width:760px;padding:140px 0 100px;text-align:center">
-<h1>Article not found</h1><p style="opacity:.75">That post doesn't exist or isn't published yet.</p>
+<h1>Article not found</h1><p style="color:var(--tx-60)">That post doesn't exist or isn't published yet.</p>
 <p><a href="/blog/">&larr; Back to all articles</a></p></article></main>
 <script src="/chrome.js"></script><script src="/common.js"></script></body></html>`;
 }

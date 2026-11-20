@@ -12,29 +12,29 @@
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 1.06rem;
   line-height: 1.75;
-  color: rgba(244, 239, 230, .62);
+  color: #44575f;
 }
 .post-body p, .ProseMirror p { margin: 0 0 1.2rem; }
 .post-body > :first-child, .ProseMirror > :first-child { margin-top: 0; }
-.post-body strong, .ProseMirror strong { color: #f4efe6; font-weight: 700; }
+.post-body strong, .ProseMirror strong { color: #10242c; font-weight: 700; }
 .post-body em, .ProseMirror em { font-style: italic; }
 
 .post-body h2, .ProseMirror h2 {
-  color: #f4efe6; font-weight: 800; letter-spacing: -.03em;
+  color: #10242c; font-weight: 800; letter-spacing: -.03em;
   font-size: 1.85rem; line-height: 1.2; margin: 2.4rem 0 .9rem;
 }
 .post-body h3, .ProseMirror h3 {
-  color: #f4efe6; font-weight: 700; letter-spacing: -.02em;
+  color: #10242c; font-weight: 700; letter-spacing: -.02em;
   font-size: 1.5rem; line-height: 1.25; margin: 2.2rem 0 .8rem;
 }
 
 .post-body a, .ProseMirror a {
-  color: #f3af00; text-decoration: underline; text-underline-offset: 2px;
+  color: #207796; text-decoration: underline; text-underline-offset: 2px;
 }
 
 .post-body blockquote, .ProseMirror blockquote {
   margin: 1.6rem 0; padding: .4rem 0 .4rem 1.2rem;
-  border-left: 3px solid #f3af00; color: #f4efe6; font-style: italic;
+  border-left: 3px solid #207796; color: #10242c; font-style: italic;
 }
 
 .post-body ul, .post-body ol, .ProseMirror ul, .ProseMirror ol {
@@ -47,13 +47,13 @@
 
 .post-body img, .ProseMirror img {
   width: 100%; height: auto; margin: 1.6rem 0;
-  border: 1px solid rgba(244, 239, 230, .12); border-radius: 6px;
+  border: 1px solid #cfd8db; border-radius: 6px;
 }
 
 .post-body pre, .ProseMirror pre {
   font-family: 'JetBrains Mono', monospace; font-size: .92em; line-height: 1.6;
-  background: rgba(0, 0, 0, .3); padding: 1rem 1.2rem; border-radius: 6px;
-  overflow: auto; margin: 1.4rem 0; color: #f4efe6;
+  background: #f2f2ef; padding: 1rem 1.2rem; border-radius: 6px;
+  overflow: auto; margin: 1.4rem 0; color: #10242c;
 }
 .post-body code, .ProseMirror code { font-family: 'JetBrains Mono', monospace; font-size: .92em; }
 
@@ -65,10 +65,10 @@
   border-collapse: collapse; margin: 1.6rem 0; font-size: .95em; line-height: 1.55;
 }
 .post-body th, .post-body td, .ProseMirror th, .ProseMirror td {
-  border: 1px solid rgba(244, 239, 230, .16); padding: .55rem .8rem;
+  border: 1px solid #cfd8db; padding: .55rem .8rem;
   text-align: left; vertical-align: top; min-width: 7rem;
 }
-.post-body th, .ProseMirror th { color: #f4efe6; font-weight: 700; background: rgba(244, 239, 230, .05); }
+.post-body th, .ProseMirror th { color: #10242c; font-weight: 700; background: #f2f2ef; }
 .post-body td > p, .post-body th > p, .ProseMirror td > p, .ProseMirror th > p { margin: 0 0 .5rem; }
 .post-body td > p:last-child, .post-body th > p:last-child, .ProseMirror td > p:last-child, .ProseMirror th > p:last-child { margin-bottom: 0; }
 /* The admin page styles its own posts table with bare table/th/td selectors
@@ -77,7 +77,7 @@
 .ProseMirror table { background: transparent; border: 0; border-radius: 0; width: auto; }
 .ProseMirror table tr th, .ProseMirror table tr td {
   font-size: inherit; letter-spacing: normal; text-transform: none;
-  border: 1px solid rgba(244, 239, 230, .16);
+  border: 1px solid #cfd8db;
 }
 .ProseMirror table tr td { color: inherit; background: transparent; }
 
@@ -88,18 +88,18 @@
    The markup differs (posts have no .pm-ic span or .ans wrapper), so the marker
    is drawn on summary::after with two gradients instead. */
 .post-body details, .ProseMirror .faq-item[data-type="details"] {
-  border: 0; border-bottom: 1px solid var(--line, rgba(244,239,230,.12));
+  border: 0; border-bottom: 1px solid var(--line, #cfd8db);
   border-radius: 0; background: none; margin: 0; padding: 0;
   max-width: 54em;
 }
 /* First of a run gets the top rule; runs of items share their dividers. */
-.post-body details { border-top: 1px solid var(--line, rgba(244,239,230,.12)); }
+.post-body details { border-top: 1px solid var(--line, #cfd8db); }
 .post-body details + details { border-top: 0; }
-.ProseMirror .faq-item[data-type="details"] { border-top: 1px solid var(--line, rgba(244,239,230,.12)); }
+.ProseMirror .faq-item[data-type="details"] { border-top: 1px solid var(--line, #cfd8db); }
 .ProseMirror .faq-item[data-type="details"] + .faq-item[data-type="details"] { border-top: 0; }
 
 .post-body summary, .ProseMirror summary {
-  cursor: pointer; font-weight: 700; color: #f4efe6;
+  cursor: pointer; font-weight: 700; color: #10242c;
   list-style: none; margin: 0; padding: 22px 0;
   display: flex; justify-content: space-between; align-items: center; gap: 20px;
   font-size: 1.08rem;
@@ -110,19 +110,19 @@
    collapses when the item opens. Mirrors .faq summary .pm-ic in site.css. */
 .post-body summary::after, .ProseMirror summary::after {
   content: ""; flex: none; width: 26px; height: 26px;
-  border: 1px solid var(--line, rgba(244,239,230,.12)); transition: .2s;
-  background-image: linear-gradient(var(--yellow, #f3af00), var(--yellow, #f3af00)), linear-gradient(var(--yellow, #f3af00), var(--yellow, #f3af00));
+  border: 1.5px solid var(--field, #73858c); transition: .2s;
+  background-image: linear-gradient(var(--accent, #207796), var(--accent, #207796)), linear-gradient(var(--accent, #207796), var(--accent, #207796));
   background-repeat: no-repeat; background-position: center center;
   background-size: 11px 1.5px, 1.5px 11px;
 }
 .post-body details[open] summary::after {
-  border-color: var(--yellow, #f3af00);
+  border-color: var(--accent, #207796);
   background-size: 11px 1.5px, 1.5px 0;
 }
 
 /* Answer body — the muted, narrower column .faq details .ans gives pages. */
 .post-body details > div, .ProseMirror .faq-item[data-type="details"] [data-type="detailsContent"] {
-  color: var(--tx-60, rgba(244,239,230,.62)); padding: 0 0 22px; max-width: 50em;
+  color: var(--tx-60, #44555c); padding: 0 0 22px; max-width: 50em;
 }
 .post-body details > div > :last-child,
 .ProseMirror .faq-item[data-type="details"] [data-type="detailsContent"] > :last-child { margin-bottom: 0; }
@@ -158,28 +158,28 @@
 
 /* CTA block (self-contained so it styles in the editor too, where site.css isn't loaded) */
 .post-body .post-cta, .ProseMirror .post-cta {
-  border: 1px solid rgba(244, 239, 230, .14); border-radius: 12px; background: rgba(255, 255, 255, .03);
+  border: 1px solid #cfd8db; border-radius: 12px; background: #fff;
   padding: 30px 28px; margin: 1.8rem 0; text-align: center;
 }
 .post-body .post-cta-h, .ProseMirror .post-cta-h {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -.02em;
-  font-size: 1.5rem; color: #f4efe6; margin: 0 0 .4rem;
+  font-size: 1.5rem; color: #10242c; margin: 0 0 .4rem;
 }
-.post-body .post-cta p, .ProseMirror .post-cta p { color: rgba(244, 239, 230, .62); margin: 0 0 1.3rem; }
+.post-body .post-cta p, .ProseMirror .post-cta p { color: #44575f; margin: 0 0 1.3rem; }
 .post-body .post-cta-btn, .ProseMirror .post-cta-btn {
-  display: inline-block; background: #f3af00; color: #140e04; font-weight: 700;
+  display: inline-block; background: #f3b11a; color: #1a1300; font-weight: 700;
   padding: .85em 1.5em; border-radius: 4px; text-decoration: none;
 }
-.post-body .post-cta-btn:hover, .ProseMirror .post-cta-btn:hover { background: #d99c00; }
+.post-body .post-cta-btn:hover, .ProseMirror .post-cta-btn:hover { background: #dda012; }
 
 /* Form block. The published page styles it via site.css (.row2/.fld/.btn); the
    editor (no site.css) needs its own preview styling. */
 .post-body form.post-form, .ProseMirror form.post-form { margin: 1.8rem 0; }
-.ProseMirror form.post-form { border: 1px dashed rgba(244, 239, 230, .25); border-radius: 10px; padding: 18px 20px; }
+.ProseMirror form.post-form { border: 1px dashed #73858c; border-radius: 10px; padding: 18px 20px; }
 .ProseMirror form.post-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ProseMirror form.post-form .fld { margin-bottom: 12px; }
-.ProseMirror form.post-form label { display: block; color: #f4efe6; font-size: .8rem; font-weight: 600; margin: 0 0 4px; }
+.ProseMirror form.post-form label { display: block; color: #10242c; font-size: .8rem; font-weight: 600; margin: 0 0 4px; }
 .ProseMirror form.post-form input, .ProseMirror form.post-form select, .ProseMirror form.post-form textarea {
-  width: 100%; padding: 9px 11px; border: 1px solid rgba(244, 239, 230, .2); border-radius: 6px; background: #fff; color: #1f2933; font: inherit;
+  width: 100%; padding: 9px 11px; border: 1px solid #73858c; border-radius: 6px; background: #fff; color: #1f2933; font: inherit;
 }
-.ProseMirror form.post-form button { margin-top: 6px; background: #f3af00; color: #140e04; font-weight: 700; border: 0; padding: .7em 1.3em; border-radius: 4px; }
+.ProseMirror form.post-form button { margin-top: 6px; background: #f3b11a; color: #1a1300; font-weight: 700; border: 0; padding: .7em 1.3em; border-radius: 4px; }

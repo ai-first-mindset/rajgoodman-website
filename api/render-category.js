@@ -38,17 +38,15 @@ function page(name, slug, posts) {
 <meta property="og:site_name" content="Raj Goodman" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" />
 <link rel="icon" href="/assets/favicon-192.png" sizes="192x192" />
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
 </head>
 <body data-page="blog">
-<div class="bg-grid"></div>
-<div class="scan"></div>
 <main>
-<header class="phero" style="padding-bottom:30px">
+<header class="phero">
   <div class="wrap">
     <div class="crumbs"><a href="/">Home</a><span class="sep">/</span><a href="/blog/">Blog</a><span class="sep">/</span><span>${esc(name)}</span></div>
     <span class="eyebrow"><span class="live"></span>Category</span>
@@ -56,8 +54,9 @@ function page(name, slug, posts) {
     <p class="lede">${posts.length ? `${posts.length} article${posts.length === 1 ? '' : 's'} on ${esc(name)}.` : 'No articles in this category yet - browse all articles below.'}</p>
   </div>
 </header>
-<section class="sec" style="padding-top:30px">
+<section class="sec">
   <div class="wrap">
+    <h2 class="sr-only">Articles in ${esc(name)}</h2>
     <div class="blog-grid">${posts.map(card).join('')}</div>
     <div style="margin-top:40px"><a href="/blog/" class="btn btn-line">&larr; All articles</a></div>
   </div>

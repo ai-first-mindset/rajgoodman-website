@@ -19,6 +19,8 @@
     { "source": "/blog/generative-ai-in-search/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-for-personalization/", "destination": "/blog/", "statusCode": 301 },
     { "source": "/blog/ai-document-analysis/", "destination": "/blog/", "statusCode": 301 },
+    { "source": "/fractional-chief-ai-officer.html", "destination": "/ai-for-business-leaders/", "statusCode": 301 },
+    { "source": "/fractional-chief-ai-officer/", "destination": "/ai-for-business-leaders/", "statusCode": 301 },
     { "source": "/industries/", "destination": "/", "statusCode": 301 },
     { "source": "/industries/:path*/", "destination": "/", "statusCode": 301 },
     { "source": "/blog/author/:slug/", "destination": "/authors/", "statusCode": 301 },
@@ -28,6 +30,8 @@
     { "source": "/wp-content/uploads/:path*", "destination": "https://djpxdnxnvuokdfxlwktx.supabase.co/storage/v1/object/public/blog-media/wp-content/uploads/:path*", "statusCode": 301 }
   ],
   "rewrites": [
+    { "source": "/ai-business-consultant/", "destination": "/api/gone/" },
+    { "source": "/organizational-transformation-consultant/", "destination": "/api/gone/" },
     { "source": "/blog/", "destination": "/api/blog-index/" },
     { "source": "/feed/", "destination": "/api/feed/" },
     { "source": "/blog/feed/", "destination": "/api/feed/" },

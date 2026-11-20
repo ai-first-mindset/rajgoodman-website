@@ -153,14 +153,16 @@
       class: 'cc-banner', role: 'dialog', 'aria-live': 'polite',
       'aria-label': 'Cookie consent', id: 'cc-banner'
     });
+    // Slim one-line notice (Nov 2026): it sits flat along the bottom edge so it
+    // never covers the menu or the contact form fields.
     b.innerHTML =
-      '<h2>Your privacy</h2>' +
-      '<p>We use cookies to run the site and, with your consent, to measure traffic and ' +
-      'personalise marketing. See our <a href="' + PRIVACY_URL + '">Privacy Policy</a>.</p>' +
+      '<p><span class="cc-long">We use cookies to run the site and, with your consent, to measure traffic. </span>' +
+      '<span class="cc-short">We use cookies. </span>' +
+      '<a href="' + PRIVACY_URL + '">Privacy</a></p>' +
       '<div class="cc-actions">' +
         '<button type="button" class="cc-btn cc-btn-y" data-cc="accept">Accept all</button>' +
         '<button type="button" class="cc-btn cc-btn-line" data-cc="reject">Reject all</button>' +
-        '<button type="button" class="cc-btn cc-btn-ghost" data-cc="prefs">Preferences</button>' +
+        '<button type="button" class="cc-btn cc-btn-ghost" data-cc="prefs">Settings</button>' +
       '</div>';
     b.addEventListener('click', function (e) {
       var act = e.target.getAttribute && e.target.getAttribute('data-cc');
