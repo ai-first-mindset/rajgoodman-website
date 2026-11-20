@@ -39,7 +39,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@500;700&family=Libre+Baskerville:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
 <!-- Homepage-only layout. Colours, type, nav, footer, cards and forms all come
      from site.css (light theme, Nov 2026). -->
@@ -196,6 +196,69 @@
 @media(max-width:1180px){.wday{left:-18px}}
 @media(max-width:980px){.wday{position:relative;left:auto;bottom:auto;width:auto;margin:-30px 14px 0}}
 @media(max-width:600px){.hero-visual{order:-1}}
+
+/* ===== Hero (Nov 2026): Raj's workshop day on a flipchart ===== */
+.rh{position:relative;z-index:2;padding:120px 0 64px;text-align:center;overflow:hidden;background:#fbfbf9;border-bottom:1px solid var(--line)}
+.rblob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;pointer-events:none;animation:rblob 18s ease-in-out infinite alternate}
+.rb1{width:500px;height:420px;left:-140px;top:110px;background:#f6d9cf}
+.rb2{width:540px;height:440px;right:-150px;top:30px;background:#d7e8f0;animation-delay:-7s}
+.rb3{width:420px;height:340px;left:40%;bottom:-200px;background:#f8ecc4;opacity:.42;animation-delay:-12s}
+@keyframes rblob{to{transform:translate(36px,-28px) scale(1.08)}}
+.rh-in{position:relative;display:flex;flex-direction:column;align-items:center}
+.rh-eye{font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.rh-title{font-family:var(--ff);font-weight:800;font-size:clamp(2.5rem,5.6vw,4.8rem);letter-spacing:-.045em;line-height:1.02;color:var(--tx);max-width:16ch;margin-top:.9rem}
+.rh-title .hi{color:var(--blue);position:relative;display:inline-block}
+.rh-title .hi::after{content:"";position:absolute;left:0;right:0;bottom:.02em;height:.08em;background:var(--yellow);border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.2,.9,.25,1) 1.3s}
+.rh-title.in .hi::after{transform:scaleX(1)}
+.rh-title .w{display:inline-block;opacity:0;filter:blur(10px);transform:translateY(.3em);transition:opacity .7s ease,filter .7s ease,transform .8s cubic-bezier(.2,.9,.25,1.04)}
+.rh-title.in .w{opacity:1;filter:none;transform:none}
+.rh-sub{font-size:clamp(1.05rem,1.4vw,1.22rem);color:var(--tx-60);max-width:44ch;margin-top:1.2rem}
+.rh-cta{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;margin-top:1.8rem}
+.rh-sub,.rh-cta,.flip,.rh-cap,.rh-next{opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease}
+.rh.ready .rh-sub{opacity:1;transform:none;transition-delay:.8s}
+.rh.ready .rh-cta{opacity:1;transform:none;transition-delay:1s}
+.rh.ready .flip{opacity:1;transform:none;transition-delay:1.2s}
+.rh.ready .rh-cap{opacity:1;transform:none;transition-delay:1.35s}
+.rh.ready .rh-next{opacity:1;transform:none;transition-delay:1.5s}
+/* flipchart */
+.flip{position:relative;width:100%;max-width:540px;margin-top:2.2rem;perspective:900px}
+.pad{position:relative;background:#fff;border:1px solid #dfe5e7;border-radius:6px 6px 10px 10px;box-shadow:0 22px 46px -24px rgba(16,36,44,.38);padding:28px 34px 18px;min-height:220px}
+.pad-bind{position:absolute;left:-1px;right:-1px;top:-1px;height:16px;border-radius:6px 6px 0 0;background:var(--navy)}
+.page{text-align:left;transform-origin:50% 0;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease}
+.page.lift{transform:rotateX(78deg) translateY(-8px);opacity:0}
+.pg-head{display:flex;align-items:center;gap:.7rem;padding-bottom:10px;margin-bottom:6px;border-bottom:2px dashed #dfe5e7}
+.pg-k{font-family:'Caveat',cursive;font-weight:700;font-size:1.65rem;color:var(--tx)}
+.pg-room{margin-left:auto;font-size:.74rem;font-weight:800;color:#fff;background:var(--navy);padding:.32em .75em;border-radius:999px}
+.fls{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.fl{position:relative;display:grid;grid-template-columns:62px 1fr 28px;align-items:center;font-family:'Caveat',cursive;font-weight:700;font-size:1.42rem;line-height:1.25;color:#1d2a30;clip-path:inset(0 100% 0 0);transition:clip-path .9s linear}
+.fl.w-in{clip-path:inset(0 0 0 0)}
+.fl-t{color:var(--accent);font-size:1.25rem}
+.fl-x{justify-self:start;padding:0 .15em}
+.fl.now .fl-x{background:linear-gradient(transparent 62%,rgba(243,177,26,.55) 62%)}
+.fl-tick{width:24px;height:24px;fill:none;stroke:#2fa36b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;transition:stroke-dashoffset .45s ease}
+.fl.done .fl-tick{stroke-dashoffset:0}
+.easel{display:block;width:62%;height:34px;margin:-2px auto 0;fill:none;stroke:#b8c3c7;stroke-width:4;stroke-linecap:round}
+.rh-cap{margin-top:1rem;font-size:1.02rem;color:var(--tx-60);min-height:1.5em}
+.rh-cap span{display:inline-block;transition:opacity .35s ease,filter .35s ease}
+.rh-cap span.swap{opacity:0;filter:blur(6px)}
+.rh-next{display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-top:1.6rem;font-size:.92rem;color:var(--tx-60)}
+.rh-next .tag{font-size:.66rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:.32em .6em;border:1px solid var(--field);border-radius:4px;background:#fff}
+.rh-next b{color:var(--tx)}
+.rh-next .ar{color:var(--blue);display:inline-block;transition:transform .2s}.rh-next:hover .ar{transform:translateX(4px)}
+@media(max-width:600px){
+  .rh{padding:104px 0 50px}
+  .rh-cta .btn{flex:1 1 100%;justify-content:center}
+  .pad{padding:26px 18px 16px;min-height:220px}
+  .pg-k{font-size:1.4rem}.fl{font-size:1.18rem;grid-template-columns:50px 1fr 24px}.fl-t{font-size:1.05rem}
+  .rh-long{display:none}.rh-next{flex-direction:column;gap:.45rem}
+  .rblob{filter:blur(50px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .rh-title .w,.rh-sub,.rh-cta,.flip,.rh-cap,.rh-next{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}
+  .rh-title .hi::after{transform:scaleX(1);transition:none}
+  .rblob{animation:none}
+  .fl{clip-path:none}
+}
 </style>
 <meta property="article:modified_time" content="2026-11-20T12:00:00+00:00" />
 </head>
@@ -226,60 +289,85 @@
 </div>
 
 <main>
-<!-- HERO: owner workshops and OWNER/AI first. Keynotes sit further down. -->
-<header class="hero" id="top">
-  <div class="wrap hero-grid">
-    <div>
-      <!-- no data-reveal on the hero text: p.sub is the mobile LCP element -->
-      <span class="eyebrow">Raj Goodman Anand</span>
-      <h1>AI workshops for business owners and their leadership teams</h1>
-      <p class="sub">Hands-on sessions where you and your senior team learn to use AI on the real work of your business.</p>
-      <div class="hero-cta">
-        <a href="#work" class="btn btn-y">Book a discovery call <span class="ar">→</span></a>
-        <a href="https://aifirstmindset.ai/owner-ai/" target="_blank" rel="noopener" class="btn btn-line">See OWNER/AI</a>
-      </div>
-      <p class="hero-note"><b>OWNER/AI</b> is a 16-week programme for owners. It opens with a residency in Bangkok and starts on 29 April 2027. <a href="https://aifirstmindset.ai/owner-ai/" target="_blank" rel="noopener">Read about OWNER/AI</a></p>
+<!-- HERO (Nov 2026): message, who, actions, then Raj's workshop day on a flipchart. -->
+<header class="rh" id="top">
+  <span class="rblob rb1" aria-hidden="true"></span><span class="rblob rb2" aria-hidden="true"></span><span class="rblob rb3" aria-hidden="true"></span>
+  <div class="wrap rh-in">
+    <!-- 1. who this is -->
+    <span class="rh-eye">Raj Goodman Anand</span>
+    <!-- 2. the message -->
+    <h1 class="rh-title" data-words>AI workshops for business owners and their <span class="hi">leadership teams</span></h1>
+    <!-- 3. what you get -->
+    <p class="rh-sub">Hands-on sessions where you and your senior team learn to use AI on the real work of your business.</p>
+    <!-- 4. the actions -->
+    <div class="rh-cta">
+      <a href="#work" class="btn btn-y">Book a discovery call <span class="ar">&rarr;</span></a>
+      <a href="https://aifirstmindset.ai/owner-ai/" target="_blank" rel="noopener" class="btn btn-line">See OWNER/AI</a>
     </div>
-    <div class="hero-visual">
-    <figure class="hero-photo"><!-- no data-reveal: holds the LCP image -->
-      <img src="/assets/eofpk16jan-firstmindset-33-68b541dd241b9.webp" alt="Business leaders working on laptops during one of Raj Goodman's AI workshops" width="490" height="465" loading="eager" fetchpriority="high" />
-    </figure>
-      <!-- "A workshop day with Raj": four beats of a real session, cycling through
-           chapters Raj has taught. Decorative; one summary for screen readers. -->
-      <div class="wday" data-wday role="img" aria-label="A workshop day: live demos in the morning, the team picks three uses, builds a first AI workflow hands on, and everyone leaves with a plan.">
-        <div class="wday-head"><span class="wday-dot"></span><b>Workshop day</b><span class="wday-room" data-wday-room>EO Malaysia</span></div>
-        <ol class="wday-steps" aria-hidden="true">
-          <li><span class="wday-t">09:00</span><div><b>See what AI can already do</b><p>Live demos on the room&rsquo;s own work: quotes, reports, sales emails.</p></div></li>
-          <li><span class="wday-t">11:00</span><div><b>Pick the three uses that matter</b><p>Each team chooses where AI will save the most time.</p></div></li>
-          <li><span class="wday-t">14:00</span><div><b>Build it, hands on</b><p>Laptops open. Teams build their first AI workflow together.</p><span class="wday-bar"><i></i></span></div></li>
-          <li><span class="wday-t">17:00</span><div><b>Leave with a plan</b><p>Every participant leaves with a personal AI plan.</p></div></li>
-        </ol>
-        <div class="wday-foot"><span>Recent rooms</span><span class="wday-pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+    <!-- 5. the story: a workshop day with Raj, written on a flipchart and ticked off,
+         then the page flips to the next chapter. Decorative; the caption carries it. -->
+    <div class="flip" data-flip aria-hidden="true">
+      <div class="pad">
+        <span class="pad-bind"></span>
+        <div class="page" data-page>
+          <div class="pg-head"><span class="pg-k">Workshop day</span><span class="pg-room" data-room>EO Malaysia</span></div>
+          <ol class="fls"><li class="fl" data-l="0"><span class="fl-t">09:00</span><span class="fl-x">See what AI can already do</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li><li class="fl" data-l="1"><span class="fl-t">11:00</span><span class="fl-x">Pick the three uses that matter</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li><li class="fl" data-l="2"><span class="fl-t">14:00</span><span class="fl-x">Build it, hands on</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li><li class="fl" data-l="3"><span class="fl-t">17:00</span><span class="fl-x">Leave with a plan</span><svg class="fl-tick" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg></li></ol>
+        </div>
       </div>
+      <svg class="easel" viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M60 0L30 40M240 0L270 40M150 0v36"/></svg>
     </div>
+    <p class="rh-cap"><span data-cap>One day with your leadership team.</span></p>
+    <!-- 6. the next step for owners -->
+    <a href="https://aifirstmindset.ai/owner-ai/" target="_blank" rel="noopener" class="rh-next"><span class="tag">Next cohort</span><span><b>OWNER/AI</b><span class="rh-long"> &middot; 16 weeks for business owners</span> &middot; starts 29 April 2027 in Bangkok&nbsp;<span class="ar">&rarr;</span></span></a>
   </div>
 </header>
 
 <script>
-/* Hero motion: one workshop day in four beats, then the next chapter.
-   Static for reduced motion; pauses off-screen and in background tabs. */
+/* Hero: words blur in; then Raj's workshop day is written on a flipchart line by line,
+   each line ticked as the day moves on; the page flips to the next chapter.
+   Still under reduced motion; pauses off-screen or in a background tab. */
 (function(){
-  var el=document.querySelector('[data-wday]'); if(!el) return;
-  var steps=[].slice.call(el.querySelectorAll('.wday-steps li')), pips=[].slice.call(el.querySelectorAll('.wday-pips i')), room=el.querySelector('[data-wday-room]');
+  var hero=document.querySelector('.rh'); if(!hero) return;
+  var h1=hero.querySelector('[data-words]');
+  [].slice.call(h1.childNodes).forEach(function(n){
+    if(n.nodeType===3){var f=document.createDocumentFragment();n.textContent.split(/(\s+)/).forEach(function(t){if(!t)return;if(/^\s+$/.test(t)){f.appendChild(document.createTextNode(t));return;}var w=document.createElement('span');w.className='w';w.textContent=t;f.appendChild(w);});h1.replaceChild(f,n);}
+    else if(n.nodeType===1){n.classList.add('w');}
+  });
+  var ws=h1.querySelectorAll('.w');for(var i=0;i<ws.length;i++){ws[i].style.transitionDelay=(0.1+i*0.08)+'s';}
+  requestAnimationFrame(function(){h1.classList.add('in');hero.classList.add('ready');});
+  var page=hero.querySelector('[data-page]'),room=hero.querySelector('[data-room]'),cap=hero.querySelector('[data-cap]'),ls=[].slice.call(hero.querySelectorAll('.fl'));
   var ROOMS=['EO Malaysia','YPO Greater London','EO Kenya','EO Vietnam','EO Dubai','EO Sri Lanka'];
+  var CAPS=['One day with your leadership team.','Hands on, using your own work.','Your team picks what matters.','Everyone leaves with a plan.'];
+  function say(t){cap.classList.add('swap');setTimeout(function(){cap.textContent=t;cap.classList.remove('swap');},350);}
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var r=0,beat=0,visible=true;
-  function setRoom(i){room.classList.add('swap');setTimeout(function(){room.textContent=ROOMS[i];room.classList.remove('swap');},300);pips.forEach(function(p,j){p.classList.toggle('on',j===i);});}
-  function show(b){steps.forEach(function(s,j){s.classList.toggle('on',j===b);s.classList.toggle('done',j<b);});}
-  pips[0].classList.add('on');
-  if(reduce){steps.forEach(function(s){s.classList.add('on');});return;}
-  function tick(){
-    if(!visible||document.hidden){setTimeout(tick,600);return;}
-    if(beat>3){r=(r+1)%ROOMS.length;beat=0;steps.forEach(function(s){s.classList.remove('on','done');});setRoom(r);setTimeout(tick,600);return;}
-    show(beat);var wait=beat===2?2500:beat===3?2600:1900;beat++;setTimeout(tick,wait);
-  }
-  if('IntersectionObserver' in window){new IntersectionObserver(function(e){visible=e[0].isIntersecting;}).observe(el);}
-  setTimeout(tick,700);
+  if(reduce){ls.forEach(function(l){l.classList.add('w-in','done');});cap.textContent=CAPS[3];return;}
+  var visible=true,r=0;
+  if('IntersectionObserver' in window){new IntersectionObserver(function(e){visible=e[0].isIntersecting;}).observe(hero);}
+  var wait=function(ms){return new Promise(function(res){setTimeout(res,ms);});};
+  var gate=function(){return new Promise(function(res){(function c(){if(visible&&!document.hidden)res();else setTimeout(c,500);})();});};
+  (async function(){
+    await wait(1700);
+    while(true){
+      await gate();
+      say(CAPS[0]);
+      for(var i=0;i<ls.length;i++){ls[i].classList.add('w-in');await wait(700);}
+      await wait(500);
+      for(var j=0;j<ls.length;j++){
+        ls.forEach(function(l,k){l.classList.toggle('now',k===j);});
+        say(CAPS[Math.min(j,3)]);
+        await wait(1100);
+        ls[j].classList.add('done');
+        await wait(500);
+      }
+      ls.forEach(function(l){l.classList.remove('now');});
+      await wait(2300);
+      page.classList.add('lift');await wait(560);
+      r=(r+1)%ROOMS.length;room.textContent=ROOMS[r];
+      ls.forEach(function(l){l.style.transition='none';l.classList.remove('w-in','done','now');});
+      void page.offsetWidth;ls.forEach(function(l){l.style.transition='';});
+      page.classList.remove('lift');await wait(600);
+    }
+  })();
 })();
 </script>
 
