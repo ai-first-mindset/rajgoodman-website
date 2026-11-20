@@ -20,7 +20,7 @@
           '<a href="/eo-ypo-leadership/">EO Leadership &amp; YPO Impact</a>' +
         '</div>' +
       '</div>' +
-      '<div class="nav-item' + (['keynote','workshops','exec-training','biz-leaders','ai-trainer','ai-consultant','org-transform','caio'].indexOf(page) > -1 ? ' active' : '') + '"><a>Services</a>' +
+      '<div class="nav-item' + (['keynote','workshops','exec-training','biz-leaders','ai-trainer'].indexOf(page) > -1 ? ' active' : '') + '"><a>Services</a>' +
         '<div class="nav-menu">' +
           '<a href="/keynote-speaker/">Keynote Speaker</a>' +
           '<a href="/workshops/tech-workshop/">Workshops</a>' +
@@ -28,10 +28,6 @@
           '<a href="/ai-training-for-executives/">Executive AI Training</a>' +
           '<a href="/ai-for-business-leaders/">AI for Business Leaders</a>' +
           '<a href="/ai-trainer/">AI Trainer</a>' +
-          '<span class="grp">Consulting</span>' +
-          '<a href="/ai-business-consultant/">AI Business Consultant</a>' +
-          '<a href="/organizational-transformation-consultant/">Organizational Transformation</a>' +
-          '<a href="/fractional-chief-ai-officer/">Fractional Chief AI Officer</a>' +
         '</div>' +
       '</div>' +
       '<a href="/events/"' + on('events') + '>Events</a>' +
@@ -55,8 +51,7 @@
     '<span class="grp">Services</span>' +
     '<a href="/keynote-speaker/">Keynote Speaker</a><a href="/workshops/tech-workshop/">Workshops</a>' +
     '<a href="/ai-training-for-executives/">Executive AI Training</a><a href="/ai-for-business-leaders/">AI for Business Leaders</a>' +
-    '<a href="/ai-trainer/">AI Trainer</a><a href="/ai-business-consultant/">AI Business Consultant</a>' +
-    '<a href="/organizational-transformation-consultant/">Organizational Transformation</a><a href="/fractional-chief-ai-officer/">Fractional CAIO</a>' +
+    '<a href="/ai-trainer/">AI Trainer</a>' +
     '<span class="grp">More</span>' +
     '<a href="/events/">Events</a><a href="/blog/">Blog</a><a href="/media/">Media</a><a href="/authors/">Authors</a><a href="/testimonials/">Testimonials</a>' +
     '<a href="#work">Let\u2019s Talk</a>' +
@@ -69,7 +64,7 @@
       '<p>Insights from a visionary AI futurist speaker transforming business mindsets - changing how machines think, how businesses scale, and how entrepreneurs build tomorrow\u2019s solutions.</p>' +
     '</div>' +
     '<div class="fcol"><h4>Helping Through</h4>' +
-      '<a href="/workshops/tech-workshop/">Workshops</a><a href="/ai-training-for-executives/">AI Training</a><a href="/ai-business-consultant/">AI Business Consultant</a><a href="/organizational-transformation-consultant/">Organizational Transformation</a><a href="/fractional-chief-ai-officer/">Fractional CAIO</a>' +
+      '<a href="/workshops/tech-workshop/">Workshops</a><a href="/ai-training-for-executives/">AI Training</a>' +
     '</div>' +
     '<div class="fcol"><h4>Ventures</h4>' +
       '<a href="https://goodmanlantern.com/" target="_blank" rel="noopener">Goodman Lantern</a><a href="https://aifirstmindset.ai/" target="_blank" rel="noopener">AI-First Mindset</a>' +

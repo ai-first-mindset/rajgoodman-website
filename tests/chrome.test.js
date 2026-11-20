@@ -35,11 +35,19 @@ test('every major route is linked with the canonical trailing-slash form', () =>
   boot('');
   const all = inserted.afterbegin + inserted.beforeend;
   for (const href of ['/about/', '/eo-ypo-leadership/', '/keynote-speaker/', '/workshops/tech-workshop/',
-    '/ai-training-for-executives/', '/ai-for-business-leaders/', '/ai-trainer/', '/ai-business-consultant/',
-    '/organizational-transformation-consultant/', '/fractional-chief-ai-officer/', '/events/', '/blog/',
+    '/ai-training-for-executives/', '/ai-for-business-leaders/', '/ai-trainer/', '/events/', '/blog/',
     '/media/', '/testimonials/']) {
     assert.ok(all.includes(`href="${href}"`), `missing link to ${href}`);
   }
+});
+
+test('removed consulting/CAIO pages are not linked from the nav or footer (SEO round 1)', () => {
+  boot('');
+  const all = inserted.afterbegin + inserted.beforeend;
+  for (const href of ['/ai-business-consultant/', '/organizational-transformation-consultant/', '/fractional-chief-ai-officer/']) {
+    assert.ok(!all.includes(href), `still links to removed page ${href}`);
+  }
+  assert.doesNotMatch(all, /Fractional|Consultant|Organizational Transformation|>Consulting</);
 });
 
 test('data-page drives the active nav state (dropdown groups and flat links)', () => {

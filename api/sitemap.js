@@ -8,10 +8,10 @@ import { tagBlog } from './_cache.js';
 const SITE = 'https://rajgoodman.com';
 
 // The static pages (canonical paths) - kept in sync with the canonical tags.
-const PAGES = ['/', '/about/', '/ai-business-consultant/', '/keynote-speaker/',
+// Removed pages (301 or 410 in vercel.json) must stay out of this list.
+const PAGES = ['/', '/about/', '/keynote-speaker/',
   '/ai-for-business-leaders/', '/ai-trainer/', '/events/', '/media/',
   '/ai-training-for-executives/', '/blog/', '/testimonials/', '/eo-ypo-leadership/',
-  '/fractional-chief-ai-officer/', '/organizational-transformation-consultant/',
   '/workshops/tech-workshop/', '/privacy-policy/', '/authors/', '/terms-and-conditions/',
   '/site-map/'];
 

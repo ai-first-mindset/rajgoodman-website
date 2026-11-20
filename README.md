@@ -47,7 +47,7 @@ right after yours — so `git pull --rebase` before pushing twice in a row.
 
 ## How it's built
 
-- **Pages** — 17 static HTML files at the root. `chrome.js` injects the shared nav
+- **Pages** — 14 static HTML files at the root. `chrome.js` injects the shared nav
   and footer; `common.js` handles scroll reveal, counters, the video lightbox and
   the LinkedIn widget; `site.css` is the Signal design system.
 - **Blog** — server-rendered from Supabase. `vercel.json` rewrites `/blog/:slug/`
@@ -68,3 +68,7 @@ right after yours — so `git pull --rebase` before pushing twice in a row.
   `scripts/sync-linkedin-fallback.mjs` (CI does this on every push).
 - WordPress-era URLs are preserved by 301s in `vercel.json` — check there before
   assuming a path is dead.
+- Removed for good (SEO round 1, Nov 2026): `/fractional-chief-ai-officer/` 301s to
+  `/ai-for-business-leaders/`; `/ai-business-consultant/` and
+  `/organizational-transformation-consultant/` return 410 Gone via `api/gone.js`.
+  Keep them out of nav, footer, forms and sitemaps (`tests/seo-round-1.test.js`).
